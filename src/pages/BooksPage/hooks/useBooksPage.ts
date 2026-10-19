@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../../store/authStore';
 import { getBooks, getGenres, createBook, updateBook, deleteBook } from '../../../api/booksApi';
-import type { Book, BookFormData, Genre } from '../../../types/book';
+import type { Book, BookFormData, Genre, BooksPagination } from '../../../types/book';
 import type { ToastMessage } from '../../../components/Toast';
 
 export interface UseBooksPageOptions {
@@ -16,6 +16,16 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(12);
+  const [pagination, setPagination] = useState<BooksPagination>({
+    total: 0,
+    page: 1,
+    limit: 12,
+    totalPages: 1,
+  });
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,6 +83,11 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     fetchGenres();
   }, [fetchGenres]);
 
+  // Reset page to 1 whenever search, scope, or any filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [scope, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo]);
+
   // Fetch books when filters or search change
   useEffect(() => {
     if (scope === 'my' && !userId) return;
@@ -90,10 +105,15 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
       yearFrom: parsedYearFrom,
       yearTo: parsedYearTo,
+      page,
+      limit,
     })
       .then((data) => {
         if (isMounted) {
           setBooks(data.books || []);
+          if (data.pagination) {
+            setPagination(data.pagination);
+          }
           setError('');
           setLoading(false);
         }
@@ -109,7 +129,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     return () => {
       isMounted = false;
     };
-  }, [scope, userId, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo]);
+  }, [scope, userId, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo, page, limit]);
 
   const handleManualRefresh = async () => {
     if (scope === 'my' && !userId) return;
@@ -127,10 +147,15 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
           languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
           yearFrom: parsedYearFrom,
           yearTo: parsedYearTo,
+          page,
+          limit,
         }),
         fetchGenres(),
       ]);
       setBooks(booksData.books || []);
+      if (booksData.pagination) {
+        setPagination(booksData.pagination);
+      }
       setError('');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Не удалось загрузить книги';
@@ -157,6 +182,26 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     setYearTo(to);
   };
 
+  const changePage = (newPage: number, scrollToTop = false) => {
+    const target = Math.max(1, Math.min(pagination.totalPages || 1, newPage));
+    setPage(target);
+    if (scrollToTop && typeof window !== 'undefined') {
+      const targetEl =
+        document.querySelector('.books-toolbar-section') ||
+        document.querySelector('.books-main-container');
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
+
+  const changeLimit = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   const resetFilters = () => {
     setSearchQuery('');
     setDebouncedSearch('');
@@ -165,6 +210,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     setSelectedLanguages([]);
     setYearFrom('');
     setYearTo('');
+    setPage(1);
   };
 
   const hasActiveFilters = Boolean(
@@ -224,6 +270,15 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     genres,
     loading,
     error,
+    // Pagination
+    page,
+    setPage,
+    limit,
+    setLimit,
+    pagination,
+    changePage,
+    changeLimit,
+    // Search
     searchQuery,
     setSearchQuery,
     debouncedSearch,

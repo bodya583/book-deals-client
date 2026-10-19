@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useBooksPage from './hooks/useBooksPage';
 import BooksHeader from './components/BooksHeader';
 import BooksToolbar from './components/BooksToolbar';
+import BooksPagination from './components/BooksPagination';
 import BooksEmptyState from './components/BooksEmptyState';
 import BookCard from '../../components/BookCard';
 import BooksModals from '../../components/BooksModals';
@@ -20,26 +21,27 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
     genres,
     loading,
     error,
+    // Pagination
+    pagination,
+    changePage,
+    changeLimit,
+    // Search & Filters
     searchQuery,
     setSearchQuery,
     debouncedSearch,
-    // Genres filter
     selectedGenres,
     setSelectedGenres,
     toggleGenre,
     strictGenres,
     setStrictGenres,
-    // Languages filter
     selectedLanguages,
     setSelectedLanguages,
     toggleLanguage,
-    // Year filter
     yearFrom,
     setYearFrom,
     yearTo,
     setYearTo,
     setYearRange,
-    // Global filter resets & state
     resetFilters,
     hasActiveFilters,
     handleManualRefresh,
@@ -79,7 +81,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
         onClearYears={() => setYearRange('', '')}
         onResetFilters={resetFilters}
         hasActiveFilters={hasActiveFilters}
-        count={books.length}
+        count={pagination.total}
       />
 
       {/* 3. Error Banner */}
@@ -92,7 +94,17 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
         </div>
       )}
 
-      {/* 4. Content Area (Loading / Empty / Grid) */}
+      {/* 4. Top Pagination (Pages selector & limit on page) */}
+      {!loading && books.length > 0 && (
+        <BooksPagination
+          pagination={pagination}
+          onPageChange={changePage}
+          onLimitChange={changeLimit}
+          variant="top"
+        />
+      )}
+
+      {/* 5. Content Area (Loading / Empty / Grid) */}
       {loading ? (
         <div className="books-loading-state">
           <div className="books-spinner" />
@@ -126,7 +138,17 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
         </div>
       )}
 
-      {/* 5. Modals & Toasts Container */}
+      {/* 6. Bottom Pagination (Pages selector & limit on page) */}
+      {!loading && books.length > 0 && (
+        <BooksPagination
+          pagination={pagination}
+          onPageChange={changePage}
+          onLimitChange={changeLimit}
+          variant="bottom"
+        />
+      )}
+
+      {/* 7. Modals & Toasts Container */}
       <BooksModals
         state={modalsState}
         actions={modalsActions}
