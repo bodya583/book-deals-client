@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { Book, BookFormData, Genre } from '../types/book';
 import { BOOK_LANGUAGES } from '../types/book';
 import { getGenres } from '../api/booksApi';
+import { uploadBookCover } from '../api/uploadApi';
 import {
   CloseIcon,
   BookOpenIcon,
@@ -61,6 +62,7 @@ const FormContent: React.FC<FormContentProps> = ({
   const [coverURL, setCoverURL] = useState(
     mode === 'edit' && initialBook ? initialBook.coverURL || '' : ''
   );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [language, setLanguage] = useState<string>(
     mode === 'edit' && initialBook?.language ? initialBook.language : ''
@@ -76,6 +78,7 @@ const FormContent: React.FC<FormContentProps> = ({
   const [availableGenres, setAvailableGenres] = useState<string[]>(DEFAULT_POPULAR_GENRES);
 
   const [loading, setLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState('');
   const [error, setError] = useState('');
   const [previewError, setPreviewError] = useState(false);
 
@@ -127,8 +130,10 @@ const FormContent: React.FC<FormContentProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       setSelectedFileName(file.name);
       setPreviewError(false);
+      setError('');
       // Create local data URL for instantaneous live preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -141,6 +146,7 @@ const FormContent: React.FC<FormContentProps> = ({
   };
 
   const handleClearCover = () => {
+    setSelectedFile(null);
     setCoverURL('');
     setSelectedFileName('');
     setPreviewError(false);
@@ -164,11 +170,35 @@ const FormContent: React.FC<FormContentProps> = ({
     setLoading(true);
 
     try {
+      let finalCoverURL = coverURL.trim();
+
+      // If user selected a new file, upload it to Cloudinary first
+      if (selectedFile) {
+        setLoadingStatus('Загрузка обложки в Cloudinary...');
+        try {
+          const uploadRes = await uploadBookCover(selectedFile);
+          finalCoverURL = uploadRes.url;
+        } catch (uploadErr: any) {
+          const uploadMsg =
+            uploadErr?.response?.data?.message ||
+            uploadErr?.message ||
+            'Ошибка при загрузке обложки в Cloudinary';
+          setError(uploadMsg);
+          setLoading(false);
+          setLoadingStatus('');
+          return;
+        }
+      } else if (finalCoverURL.startsWith('data:')) {
+        // Clear local base64 fallback if not backed by a selectedFile
+        finalCoverURL = '';
+      }
+
+      setLoadingStatus('Сохранение книги...');
       await onSubmit({
         title: title.trim(),
         author: author.trim(),
         description: description.trim(),
-        coverURL: coverURL.trim(),
+        coverURL: finalCoverURL,
         language: language.trim() || undefined,
         year: year.trim() && !isNaN(parseInt(year.trim(), 10)) ? parseInt(year.trim(), 10) : undefined,
         genres: selectedGenres,
@@ -179,6 +209,7 @@ const FormContent: React.FC<FormContentProps> = ({
       setError(msg);
     } finally {
       setLoading(false);
+      setLoadingStatus('');
     }
   };
 
@@ -465,7 +496,7 @@ const FormContent: React.FC<FormContentProps> = ({
             {loading ? (
               <>
                 <span className="spinner-small" />
-                <span>Сохранение...</span>
+                <span>{loadingStatus || 'Сохранение...'}</span>
               </>
             ) : (
               <span>{mode === 'create' ? 'Добавить книгу' : 'Сохранить изменения'}</span>
