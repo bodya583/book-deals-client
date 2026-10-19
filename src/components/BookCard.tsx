@@ -97,8 +97,8 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
 
-        {/* Action bar with owner controls only */}
-        {isOwner && (
+        {/* Action bar with owner controls OR subtle creator tag */}
+        {isOwner ? (
           <div className="book-card-actions" onClick={(e) => e.stopPropagation()}>
             <div className="book-card-owner-actions">
               <button
@@ -121,7 +121,14 @@ export const BookCard: React.FC<BookCardProps> = ({
               </button>
             </div>
           </div>
-        )}
+        ) : book.user?.username ? (
+          <div className="book-card-actions creator-bar">
+            <span className="book-card-creator" title={`Книга пользователя ${book.user.username}`}>
+              <span className="creator-label">от</span>
+              <span className="creator-name">@{book.user.username}</span>
+            </span>
+          </div>
+        ) : null}
       </div>
     </article>
   );

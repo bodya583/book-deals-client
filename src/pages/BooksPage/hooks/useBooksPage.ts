@@ -4,13 +4,17 @@ import { getBooks, getGenres, createBook, updateBook, deleteBook } from '../../.
 import type { Book, BookFormData, Genre } from '../../../types/book';
 import type { ToastMessage } from '../../../components/Toast';
 
-export const useBooksPage = () => {
+export interface UseBooksPageOptions {
+  scope?: 'my' | 'all';
+}
+
+export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   const user = useAuthStore((s) => s.user);
   const userId = user?.id;
 
   const [books, setBooks] = useState<Book[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
-  const [loading, setLoading] = useState(Boolean(userId));
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Filters state
@@ -71,14 +75,15 @@ export const useBooksPage = () => {
 
   // Fetch books when filters or search change
   useEffect(() => {
-    if (!userId) return;
+    if (scope === 'my' && !userId) return;
     let isMounted = true;
+    setLoading(true);
 
     const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
     const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
 
     getBooks({
-      userId,
+      userId: scope === 'my' ? userId : undefined,
       search: debouncedSearch.trim() || undefined,
       genres: selectedGenres.length > 0 ? selectedGenres : undefined,
       strictGenres,
@@ -104,10 +109,10 @@ export const useBooksPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [userId, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo]);
+  }, [scope, userId, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo]);
 
   const handleManualRefresh = async () => {
-    if (!userId) return;
+    if (scope === 'my' && !userId) return;
     setLoading(true);
     try {
       const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
@@ -115,7 +120,7 @@ export const useBooksPage = () => {
 
       const [booksData] = await Promise.all([
         getBooks({
-          userId,
+          userId: scope === 'my' ? userId : undefined,
           search: debouncedSearch.trim() || undefined,
           genres: selectedGenres.length > 0 ? selectedGenres : undefined,
           strictGenres,

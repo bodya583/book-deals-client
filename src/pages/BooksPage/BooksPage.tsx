@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import useBooksPage from './hooks/useBooksPage';
 import BooksHeader from './components/BooksHeader';
 import BooksToolbar from './components/BooksToolbar';
@@ -7,7 +8,12 @@ import BookCard from '../../components/BookCard';
 import BooksModals from '../../components/BooksModals';
 import '../books.css';
 
-export const BooksPage: React.FC = () => {
+interface BooksPageProps {
+  scope?: 'my' | 'all';
+}
+
+export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
+  const navigate = useNavigate();
   const {
     userId,
     books,
@@ -41,12 +47,16 @@ export const BooksPage: React.FC = () => {
     modalsActions,
     toasts,
     removeToast,
-  } = useBooksPage();
+  } = useBooksPage({ scope });
 
   return (
     <div className="books-main-container">
-      {/* 1. Header */}
-      <BooksHeader onAddBook={modalsActions.openCreate} />
+      {/* 1. Header with Scope Switch & Add Book Action */}
+      <BooksHeader
+        scope={scope}
+        onScopeChange={(newScope) => navigate(newScope === 'all' ? '/catalog' : '/my-books')}
+        onAddBook={modalsActions.openCreate}
+      />
 
       {/* 2. Toolbar (Search, Multi-Genres with strict toggle, Multi-Languages, Year Range, Stats) */}
       <BooksToolbar
@@ -86,10 +96,11 @@ export const BooksPage: React.FC = () => {
       {loading ? (
         <div className="books-loading-state">
           <div className="books-spinner" />
-          <p>Загрузка книг вашей библиотеки...</p>
+          <p>{scope === 'all' ? 'Загрузка общего каталога книг...' : 'Загрузка книг вашей библиотеки...'}</p>
         </div>
       ) : books.length === 0 ? (
         <BooksEmptyState
+          scope={scope}
           isFiltered={hasActiveFilters}
           searchQuery={debouncedSearch}
           selectedGenres={selectedGenres}
@@ -106,7 +117,7 @@ export const BooksPage: React.FC = () => {
             <BookCard
               key={book.id}
               book={book}
-              isOwner={book.userId === userId || !book.userId}
+              isOwner={Boolean(userId && book.userId === userId)}
               onView={modalsActions.openDetails}
               onEdit={modalsActions.openEdit}
               onDelete={modalsActions.openDelete}

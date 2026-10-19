@@ -63,8 +63,11 @@ function App() {
         {/* Protected user routes with AppLayout */}
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<BooksPage />} />
-            <Route path="/books" element={<BooksPage />} />
+            <Route path="/" element={<BooksPage scope="all" />} />
+            <Route path="/catalog" element={<BooksPage scope="all" />} />
+            <Route path="/all-books" element={<BooksPage scope="all" />} />
+            <Route path="/my-books" element={<BooksPage scope="my" />} />
+            <Route path="/books" element={<BooksPage scope="my" />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

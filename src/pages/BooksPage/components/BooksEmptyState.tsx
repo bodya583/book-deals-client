@@ -2,6 +2,7 @@ import React from 'react';
 import { BookOpenIcon, PlusIcon, CloseIcon } from '../../../components/icons';
 
 interface BooksEmptyStateProps {
+  scope?: 'my' | 'all';
   isFiltered: boolean;
   searchQuery?: string;
   selectedGenres?: string[];
@@ -14,6 +15,7 @@ interface BooksEmptyStateProps {
 }
 
 export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
+  scope = 'my',
   isFiltered,
   searchQuery,
   selectedGenres = [],
@@ -24,6 +26,8 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
   onResetFilters,
   onAddBook,
 }) => {
+  const isAll = scope === 'all';
+
   return (
     <div className="books-empty-card">
       <div className="empty-icon-box">
@@ -73,6 +77,22 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
           >
             <CloseIcon size={16} />
             <span>Сбросить все фильтры</span>
+          </button>
+        </>
+      ) : isAll ? (
+        <>
+          <h3 className="empty-title">В каталоге пока нет книг</h3>
+          <p className="empty-desc">
+            Книги других читателей пока не добавлены. Вы можете стать первым, кто добавит книгу в общий каталог!
+          </p>
+          <button
+            id="add-first-book-btn"
+            type="button"
+            className="btn-primary-action"
+            onClick={onAddBook}
+          >
+            <PlusIcon size={20} />
+            <span>Добавить книгу</span>
           </button>
         </>
       ) : (

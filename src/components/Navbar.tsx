@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import api from '../api/axiosInstance';
-import { BookOpenIcon, UserIcon, LogOutIcon } from './icons';
+import { BookOpenIcon, UserIcon, LogOutIcon, GlobeIcon } from './icons';
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
@@ -30,7 +30,7 @@ export const Navbar: React.FC = () => {
     <header className="navbar">
       <div className="navbar-container">
         {/* Brand */}
-        <Link to="/" className="navbar-brand">
+        <Link to="/catalog" className="navbar-brand">
           <div className="navbar-brand-icon">
             <BookOpenIcon size={22} />
           </div>
@@ -40,8 +40,15 @@ export const Navbar: React.FC = () => {
         {/* Navigation items */}
         <nav className="navbar-nav">
           <Link
-            to="/"
-            className={`navbar-link ${location.pathname === '/' || location.pathname === '/books' ? 'active' : ''}`}
+            to="/catalog"
+            className={`navbar-link ${location.pathname === '/catalog' || location.pathname === '/all-books' ? 'active' : ''}`}
+          >
+            <GlobeIcon size={18} />
+            <span>Все книги</span>
+          </Link>
+          <Link
+            to="/my-books"
+            className={`navbar-link ${location.pathname === '/my-books' || location.pathname === '/books' || location.pathname === '/' ? 'active' : ''}`}
           >
             <BookOpenIcon size={18} />
             <span>Мои книги</span>
