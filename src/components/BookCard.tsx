@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Book } from '../types/book';
-import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, CalendarIcon, GlobeIcon, TagIcon } from './icons';
+import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon } from './icons';
 
 interface BookCardProps {
   book: Book;
@@ -18,20 +18,6 @@ export const BookCard: React.FC<BookCardProps> = ({
   isOwner = true,
 }) => {
   const [imgError, setImgError] = useState(false);
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    try {
-      const d = new Date(dateString);
-      return d.toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
-    } catch {
-      return '';
-    }
-  };
 
   return (
     <article className="book-card" onClick={() => onView(book)}>
@@ -53,49 +39,40 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
 
-        {/* Floating Badges on top of cover */}
-        <div className="book-card-floating-badges">
-          {book.language && (
+        {/* Floating Language Badge on top of cover */}
+        {book.language && (
+          <div className="book-card-floating-badges">
             <span className="book-card-lang-badge" title={`Язык издания: ${book.language}`}>
               <GlobeIcon size={12} />
               <span>{book.language}</span>
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
+        {/* Subtle hover indicator (not a button) */}
         <div className="book-card-overlay">
-          <button
-            type="button"
-            className="book-card-overlay-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(book);
-            }}
-            title="Открыть описание книги"
-          >
-            <EyeIcon size={18} />
+          <span className="book-card-hover-hint">
+            <EyeIcon size={14} />
             <span>Подробнее</span>
-          </button>
+          </span>
         </div>
       </div>
 
       {/* Book details */}
       <div className="book-card-content">
+        {/* Author & Year row */}
         <div className="book-card-meta">
-          <span className="book-card-author">{book.author}</span>
+          <span className="book-card-author" title={book.author}>
+            {book.author}
+          </span>
           {book.year && (
             <span className="book-card-year-badge" title={`Год издания: ${book.year}`}>
               {book.year} г.
             </span>
           )}
-          {book.createdAt && (
-            <span className="book-card-date" title={`Добавлено: ${new Date(book.createdAt).toLocaleString('ru-RU')}`}>
-              <CalendarIcon size={13} />
-              {formatDate(book.createdAt)}
-            </span>
-          )}
         </div>
 
+        {/* Book Title */}
         <h3 className="book-card-title" title={book.title}>
           {book.title}
         </h3>
@@ -110,32 +87,19 @@ export const BookCard: React.FC<BookCardProps> = ({
               </span>
             ))}
             {book.genres.length > 2 && (
-              <span className="book-card-genre-more" title={book.genres.slice(2).map((g) => g.name).join(', ')}>
+              <span
+                className="book-card-genre-more"
+                title={book.genres.slice(2).map((g) => g.name).join(', ')}
+              >
                 +{book.genres.length - 2}
               </span>
             )}
           </div>
         )}
 
-        {book.description ? (
-          <p className="book-card-description">{book.description}</p>
-        ) : (
-          <p className="book-card-description empty">Описание книги не указано</p>
-        )}
-
-        {/* Action bar for user */}
-        <div className="book-card-actions" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            className="book-action-btn view-btn"
-            onClick={() => onView(book)}
-            title="Открыть книгу"
-          >
-            <EyeIcon size={16} />
-            <span>Открыть</span>
-          </button>
-
-          {isOwner && (
+        {/* Action bar with owner controls only */}
+        {isOwner && (
+          <div className="book-card-actions" onClick={(e) => e.stopPropagation()}>
             <div className="book-card-owner-actions">
               <button
                 type="button"
@@ -144,7 +108,7 @@ export const BookCard: React.FC<BookCardProps> = ({
                 title="Редактировать книгу"
                 aria-label="Редактировать книгу"
               >
-                <EditIcon size={16} />
+                <EditIcon size={15} />
               </button>
               <button
                 type="button"
@@ -153,11 +117,11 @@ export const BookCard: React.FC<BookCardProps> = ({
                 title="Удалить книгу"
                 aria-label="Удалить книгу"
               >
-                <TrashIcon size={16} />
+                <TrashIcon size={15} />
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </article>
   );

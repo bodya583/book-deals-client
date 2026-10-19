@@ -273,51 +273,47 @@
 .book-card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
   backdrop-filter: blur(2px);
+  pointer-events: none;
 }
 
 .book-card:hover .book-card-overlay {
   opacity: 1;
 }
 
-.book-card-overlay-btn {
-  display: flex;
+.book-card-hover-hint {
+  display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: #ffffff;
-  color: #1a1a1a;
-  border: none;
-  border-radius: 10px;
-  padding: 0.6rem 1rem;
-  font-size: 0.875rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: #1b4332;
+  border-radius: 20px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transform: translateY(4px);
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(8px);
+  transform: translateY(6px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.01em;
 }
 
-.book-card:hover .book-card-overlay-btn {
+.book-card:hover .book-card-hover-hint {
   transform: translateY(0);
 }
 
-.book-card-overlay-btn:hover {
-  background: #f7f7f4;
-  color: #2d6a4f;
-}
-
 .book-card-content {
-  padding: 1.2rem;
+  padding: 1.15rem 1.2rem 1.05rem;
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 0.6rem;
+  gap: 0.45rem;
 }
 
 .book-card-meta {
@@ -325,7 +321,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  font-size: 0.8rem;
 }
 
 .book-card-author {
@@ -333,25 +328,18 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 0.75rem;
+  font-size: 0.775rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.book-card-date {
-  color: #888882;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 .book-card-title {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1a1a1a;
-  line-height: 1.3;
+  line-height: 1.35;
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -359,29 +347,12 @@
   overflow: hidden;
 }
 
-.book-card-description {
-  color: #666660;
-  font-size: 0.875rem;
-  line-height: 1.45;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex-grow: 1;
-}
-
-.book-card-description.empty {
-  color: #a0a09a;
-  font-style: italic;
-}
-
 .book-card-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding-top: 0.75rem;
-  border-top: 1px solid #f0f0eb;
+  justify-content: flex-end;
+  padding-top: 0.6rem;
+  border-top: 1px solid #f2f2ee;
   margin-top: auto;
 }
 
@@ -395,18 +366,6 @@
   border-radius: 8px;
   font-family: inherit;
   transition: all 0.15s ease;
-}
-
-.book-action-btn.view-btn {
-  gap: 0.4rem;
-  color: #2d6a4f;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.4rem 0.6rem;
-}
-
-.book-action-btn.view-btn:hover {
-  background: rgba(45, 106, 79, 0.08);
 }
 
 .book-card-owner-actions {
