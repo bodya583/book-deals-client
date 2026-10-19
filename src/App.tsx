@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import BooksPage from './pages/BooksPage';
 import ProfilePage from './pages/ProfilePage';
 import PrivateRoute from './components/PrivateRoute';
+import AppLayout from './layouts/AppLayout';
 import { useAuthStore } from './store/authStore';
 
 function App() {
@@ -59,11 +60,13 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected user routes */}
+        {/* Protected user routes with AppLayout */}
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<BooksPage />} />
-          <Route path="/books" element={<BooksPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<BooksPage />} />
+            <Route path="/books" element={<BooksPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
         </Route>
 
         {/* Fallback */}
