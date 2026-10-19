@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import api from '../api/axiosInstance';
 import { useAuthStore } from '../store/authStore';
 import './auth.css';
@@ -14,7 +15,7 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -22,8 +23,12 @@ const RegisterPage = () => {
       const { data } = await api.post('/auth/register', { username, email, password });
       setAuth(data.user, data.accessToken);
       navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration error');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Registration error');
+      } else {
+        setError('Registration error');
+      }
     } finally {
       setLoading(false);
     }

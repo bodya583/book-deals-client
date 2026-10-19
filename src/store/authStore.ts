@@ -1,6 +1,6 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 
-interface User {
+export interface User {
   id: string;
   username: string;
   email: string;
@@ -14,6 +14,7 @@ interface AuthState {
   isAuthenticated: boolean;
   setAuth: (user: User, accessToken: string) => void;
   setAccessToken: (token: string) => void;
+  updateUser: (updatedFields: Partial<User>) => void;
   logout: () => void;
 }
 
@@ -27,6 +28,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setAccessToken: (accessToken) =>
     set({ accessToken }),
+
+  updateUser: (updatedFields) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...updatedFields } : null,
+    })),
 
   logout: () =>
     set({ user: null, accessToken: null, isAuthenticated: false }),

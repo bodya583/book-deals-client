@@ -1,17 +1,12 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import BooksPage from './pages/BooksPage';
+import ProfilePage from './pages/ProfilePage';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuthStore } from './store/authStore';
-
-const HomePage = () => (
-  <div style={{ color: "#1a1a1a", padding: "2rem", fontFamily: "Inter, sans-serif" }}>
-    <h1>Home page</h1>
-    <p>You are authenticated!</p>
-  </div>
-);
 
 function App() {
   const [checking, setChecking] = useState(true);
@@ -29,12 +24,29 @@ function App() {
       .finally(() => {
         setChecking(false);
       });
-  }, []);
+  }, [setAuth]);
 
   if (checking) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f0' }}>
-        <div style={{ width: 32, height: 32, border: '3px solid #e0e0db', borderTopColor: '#2d6a4f', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#f5f5f0',
+        }}
+      >
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            border: '3px solid #e0e0db',
+            borderTopColor: '#2d6a4f',
+            borderRadius: '50%',
+            animation: 'spin 0.7s linear infinite',
+          }}
+        />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -43,12 +55,19 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public auth routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected user routes */}
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<BooksPage />} />
+          <Route path="/books" element={<BooksPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/login" replace />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
