@@ -21,58 +21,61 @@ export const BookCard: React.FC<BookCardProps> = ({
 
   return (
     <article className="book-card" onClick={() => onView(book)}>
-      {/* Cover Image or Fallback */}
-      <div className="book-card-cover-wrapper">
-        {book.coverURL && !imgError ? (
-          <img
-            src={book.coverURL}
-            alt={book.title}
-            className="book-card-cover-img"
-            loading="lazy"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="book-card-cover-placeholder">
-            <BookOpenIcon size={36} className="book-cover-placeholder-icon" />
-            <span className="book-cover-placeholder-title">{book.title}</span>
-            <span className="book-cover-placeholder-author">{book.author}</span>
-          </div>
+      {/* Light podium with floating book cover */}
+      <div className="book-card-podium">
+        {/* Floating Language Badge */}
+        {book.language && (
+          <span className="book-card-lang-tag" title={`Язык издания: ${book.language}`}>
+            <GlobeIcon size={11} />
+            <span>{book.language}</span>
+          </span>
         )}
 
-        {/* Floating Language Badge on top of cover */}
-        {book.language && (
-          <div className="book-card-floating-badges">
-            <span className="book-card-lang-badge" title={`Язык издания: ${book.language}`}>
-              <GlobeIcon size={12} />
-              <span>{book.language}</span>
+        {/* Floating Year Badge */}
+        {book.year && (
+          <span className="book-card-year-tag" title={`Год издания: ${book.year}`}>
+            {book.year} г.
+          </span>
+        )}
+
+        {/* Floating Book Cover (Vertical 2:3 with soft drop-shadow) */}
+        <div className="book-card-floating-cover">
+          {book.coverURL && !imgError ? (
+            <img
+              src={book.coverURL}
+              alt={book.title}
+              className="book-card-cover-img"
+              loading="lazy"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="book-card-cover-placeholder">
+              <BookOpenIcon size={32} className="book-cover-placeholder-icon" />
+              <span className="book-cover-placeholder-title">{book.title}</span>
+              <span className="book-cover-placeholder-author">{book.author}</span>
+            </div>
+          )}
+
+          {/* Hover hint */}
+          <div className="book-card-overlay">
+            <span className="book-card-hover-hint">
+              <EyeIcon size={13} />
+              <span>Подробнее</span>
             </span>
           </div>
-        )}
-
-        {/* Subtle hover indicator (not a button) */}
-        <div className="book-card-overlay">
-          <span className="book-card-hover-hint">
-            <EyeIcon size={14} />
-            <span>Подробнее</span>
-          </span>
         </div>
       </div>
 
       {/* Book details */}
       <div className="book-card-content">
-        {/* Author & Year row */}
+        {/* Author */}
         <div className="book-card-meta">
           <span className="book-card-author" title={book.author}>
             {book.author}
           </span>
-          {book.year && (
-            <span className="book-card-year-badge" title={`Год издания: ${book.year}`}>
-              {book.year} г.
-            </span>
-          )}
         </div>
 
-        {/* Book Title */}
+        {/* Title */}
         <h3 className="book-card-title" title={book.title}>
           {book.title}
         </h3>
