@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Book, BookFormData, Genre } from '../types/book';
 import { BOOK_LANGUAGES } from '../types/book';
 import { getGenres } from '../api/booksApi';
-import { CloseIcon, BookOpenIcon, SparklesIcon, TagIcon, GlobeIcon, PlusIcon, CalendarIcon } from './icons';
+import {
+  CloseIcon,
+  BookOpenIcon,
+  TagIcon,
+  GlobeIcon,
+  CalendarIcon,
+  UploadIcon,
+  ImageIcon,
+} from './icons';
 
 interface BookFormModalProps {
   isOpen: boolean;
@@ -11,25 +19,6 @@ interface BookFormModalProps {
   onClose: () => void;
   onSubmit: (formData: BookFormData) => Promise<void>;
 }
-
-const PRESET_COVERS = [
-  {
-    name: 'Изумрудный переплет',
-    url: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Старинный фолиант',
-    url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Минимализм',
-    url: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Атмосферный кофе',
-    url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=600&auto=format&fit=crop',
-  },
-];
 
 const DEFAULT_POPULAR_GENRES = [
   'Художественная литература',
@@ -72,6 +61,7 @@ const FormContent: React.FC<FormContentProps> = ({
   const [coverURL, setCoverURL] = useState(
     mode === 'edit' && initialBook ? initialBook.coverURL || '' : ''
   );
+  const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [language, setLanguage] = useState<string>(
     mode === 'edit' && initialBook?.language ? initialBook.language : ''
   );
@@ -83,12 +73,13 @@ const FormContent: React.FC<FormContentProps> = ({
       ? initialBook.genres.map((g) => g.name)
       : []
   );
-  const [customGenreInput, setCustomGenreInput] = useState('');
   const [availableGenres, setAvailableGenres] = useState<string[]>(DEFAULT_POPULAR_GENRES);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [previewError, setPreviewError] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch all genres from server to stay in sync with DB
   useEffect(() => {
@@ -129,20 +120,33 @@ const FormContent: React.FC<FormContentProps> = ({
     );
   };
 
-  const handleAddCustomGenre = () => {
-    const trimmed = customGenreInput.trim();
-    if (!trimmed) return;
-    if (!selectedGenres.includes(trimmed)) {
-      setSelectedGenres((prev) => [...prev, trimmed]);
-    }
-    if (!availableGenres.includes(trimmed)) {
-      setAvailableGenres((prev) => [...prev, trimmed]);
-    }
-    setCustomGenreInput('');
-  };
-
   const handleRemoveGenre = (genreName: string) => {
     setSelectedGenres((prev) => prev.filter((g) => g !== genreName));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFileName(file.name);
+      setPreviewError(false);
+      // Create local data URL for instantaneous live preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setCoverURL(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClearCover = () => {
+    setCoverURL('');
+    setSelectedFileName('');
+    setPreviewError(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -203,7 +207,7 @@ const FormContent: React.FC<FormContentProps> = ({
           </h3>
           <p className="modal-subtitle">
             {mode === 'create'
-              ? 'Заполните информацию о книге, укажите жанры, язык и год издания для удобного поиска'
+              ? 'Заполните информацию о книге, выберите обложку, жанры и язык издания'
               : 'Внесите необходимые изменения в информацию о книге'}
           </p>
         </div>
@@ -213,7 +217,7 @@ const FormContent: React.FC<FormContentProps> = ({
 
       <form onSubmit={handleSubmit} className="book-modal-form">
         <div className="modal-form-grid">
-          {/* Form Fields */}
+          {/* Left Column: Form Fields */}
           <div className="modal-form-fields">
             <div className="form-group">
               <label htmlFor="book-title">
@@ -251,7 +255,7 @@ const FormContent: React.FC<FormContentProps> = ({
               {/* Language Selector */}
               <div className="form-group">
                 <label htmlFor="book-language" className="label-with-icon">
-                  <GlobeIcon size={16} />
+                  <GlobeIcon size={15} />
                   <span>Язык издания</span>
                 </label>
                 <select
@@ -261,7 +265,7 @@ const FormContent: React.FC<FormContentProps> = ({
                   disabled={loading}
                   className="modal-select-field"
                 >
-                  <option value="">Не указан (Любой)</option>
+                  <option value="">Не указан</option>
                   {BOOK_LANGUAGES.map((lang) => (
                     <option key={lang} value={lang}>
                       {lang}
@@ -273,7 +277,7 @@ const FormContent: React.FC<FormContentProps> = ({
               {/* Year of Publication */}
               <div className="form-group">
                 <label htmlFor="book-year" className="label-with-icon">
-                  <CalendarIcon size={16} />
+                  <CalendarIcon size={15} />
                   <span>Год издания</span>
                 </label>
                 <input
@@ -291,13 +295,15 @@ const FormContent: React.FC<FormContentProps> = ({
 
             {/* Genres Section */}
             <div className="form-group">
-              <label className="label-with-icon">
-                <TagIcon size={16} />
-                <span>Жанры</span>
+              <div className="genres-label-row">
+                <span className="label-with-icon">
+                  <TagIcon size={15} />
+                  <span>Жанры</span>
+                </span>
                 {selectedGenres.length > 0 && (
                   <span className="selected-count-pill">{selectedGenres.length}</span>
                 )}
-              </label>
+              </div>
 
               {/* Selected Genres Chips */}
               {selectedGenres.length > 0 && (
@@ -318,39 +324,10 @@ const FormContent: React.FC<FormContentProps> = ({
                 </div>
               )}
 
-              {/* Add Custom Genre input */}
-              <div className="custom-genre-row">
-                <input
-                  type="text"
-                  placeholder="Добавить свой жанр..."
-                  value={customGenreInput}
-                  onChange={(e) => setCustomGenreInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddCustomGenre();
-                    }
-                  }}
-                  disabled={loading}
-                  className="custom-genre-input"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddCustomGenre}
-                  disabled={!customGenreInput.trim() || loading}
-                  className="add-custom-genre-btn"
-                  title="Добавить жанр"
-                >
-                  <PlusIcon size={15} />
-                  <span>Добавить</span>
-                </button>
-              </div>
-
-              {/* Quick-Pick Popular Genres */}
+              {/* Genre selection chips cloud */}
               <div className="form-genres-quickpick">
-                <span className="genres-quickpick-title">Популярные жанры:</span>
                 <div className="genres-quickpick-list">
-                  {availableGenres.slice(0, 15).map((genreName) => {
+                  {availableGenres.map((genreName) => {
                     const isSelected = selectedGenres.includes(genreName);
                     return (
                       <button
@@ -368,48 +345,12 @@ const FormContent: React.FC<FormContentProps> = ({
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="book-cover">Ссылка на обложку (URL)</label>
-              <input
-                id="book-cover"
-                type="url"
-                placeholder="https://example.com/cover.jpg"
-                value={coverURL}
-                onChange={(e) => {
-                  setCoverURL(e.target.value);
-                  setPreviewError(false);
-                }}
-                disabled={loading}
-              />
-
-              {/* Preset covers picker */}
-              <div className="preset-covers">
-                <span className="preset-label">
-                  <SparklesIcon size={14} /> Выбрать готовую обложку:
-                </span>
-                <div className="preset-chips">
-                  {PRESET_COVERS.map((preset) => (
-                    <button
-                      key={preset.name}
-                      type="button"
-                      className={`preset-chip ${coverURL === preset.url ? 'active' : ''}`}
-                      onClick={() => {
-                        setCoverURL(preset.url);
-                        setPreviewError(false);
-                      }}
-                    >
-                      {preset.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
+            {/* Description */}
             <div className="form-group">
               <label htmlFor="book-description">Описание книги</label>
               <textarea
                 id="book-description"
-                rows={4}
+                rows={3}
                 placeholder="Краткое описание сюжета, ваши впечатления или заметки..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -418,8 +359,8 @@ const FormContent: React.FC<FormContentProps> = ({
             </div>
           </div>
 
-          {/* Live Cover Preview */}
-          <div className="modal-form-preview">
+          {/* Right Column: Cover Preview & File Upload */}
+          <div className="modal-form-preview-col">
             <span className="preview-heading">Предпросмотр карточки</span>
             <div className="preview-cover-card">
               {coverURL && !previewError ? (
@@ -431,7 +372,7 @@ const FormContent: React.FC<FormContentProps> = ({
                 />
               ) : (
                 <div className="preview-fallback">
-                  <BookOpenIcon size={40} className="preview-fallback-icon" />
+                  <BookOpenIcon size={44} className="preview-fallback-icon" />
                   <span className="preview-fallback-title">
                     {title || 'Название книги'}
                   </span>
@@ -441,25 +382,67 @@ const FormContent: React.FC<FormContentProps> = ({
                 </div>
               )}
 
-              {/* Floating badges in preview */}
+              {/* Floating badges on live preview */}
               <div className="preview-meta-badges">
                 {language && (
                   <span className="preview-lang-pill">
-                    <GlobeIcon size={12} /> {language}
+                    <GlobeIcon size={11} /> {language}
                   </span>
                 )}
                 {year && (
                   <span className="preview-year-pill">
-                    <CalendarIcon size={12} /> {year} г.
+                    <CalendarIcon size={11} /> {year} г.
                   </span>
                 )}
                 {selectedGenres.length > 0 && (
                   <span className="preview-genre-pill">
-                    <TagIcon size={12} /> {selectedGenres[0]}
+                    <TagIcon size={11} /> {selectedGenres[0]}
                     {selectedGenres.length > 1 ? ` +${selectedGenres.length - 1}` : ''}
                   </span>
                 )}
               </div>
+            </div>
+
+            {/* File Upload Component */}
+            <div className="cover-upload-section">
+              <input
+                ref={fileInputRef}
+                id="book-cover-file"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/jpg"
+                onChange={handleFileChange}
+                disabled={loading}
+                className="visually-hidden-file-input"
+              />
+
+              <button
+                type="button"
+                className="file-upload-btn"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+              >
+                <UploadIcon size={16} />
+                <span>{coverURL ? 'Заменить файл' : 'Выбрать файл'}</span>
+              </button>
+
+              {selectedFileName ? (
+                <div className="file-selected-status">
+                  <ImageIcon size={13} />
+                  <span className="file-name-text" title={selectedFileName}>
+                    {selectedFileName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleClearCover}
+                    className="clear-file-btn"
+                    title="Удалить файл"
+                  >
+                    <CloseIcon size={13} />
+                  </button>
+                </div>
+              ) : (
+                <span className="file-upload-hint">JPG, PNG, WEBP до 5 МБ</span>
+              )}
             </div>
           </div>
         </div>
