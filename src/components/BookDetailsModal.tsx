@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Book } from '../types/book';
-import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon } from './icons';
+import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon, GlobeIcon, TagIcon } from './icons';
 
 interface BookDetailsModalProps {
   book: Book | null;
@@ -108,13 +108,41 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
             <div className="book-popup-header">
               <span className="book-popup-author-badge">{book.author}</span>
               <h2 className="book-popup-title">{book.title}</h2>
+              {book.year && (
+                <div className="book-popup-meta-item">
+                  <CalendarIcon size={15} />
+                  <span>Год издания: <strong>{book.year} г.</strong></span>
+                </div>
+              )}
               {book.createdAt && (
                 <div className="book-popup-meta-item">
                   <CalendarIcon size={15} />
                   <span>Добавлено: {formatDate(book.createdAt)}</span>
                 </div>
               )}
+              {book.language && (
+                <div className="book-popup-meta-item">
+                  <GlobeIcon size={15} />
+                  <span>Язык: <strong>{book.language}</strong></span>
+                </div>
+              )}
             </div>
+
+            {/* Genres Section */}
+            {book.genres && book.genres.length > 0 && (
+              <div className="book-popup-genres-box">
+                <h4 className="description-heading">
+                  <TagIcon size={14} /> Жанры
+                </h4>
+                <div className="book-popup-genres-list">
+                  {book.genres.map((g) => (
+                    <span key={g.id || g.name} className="book-popup-genre-pill">
+                      {g.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="book-popup-description-box">
               <h4 className="description-heading">Описание</h4>

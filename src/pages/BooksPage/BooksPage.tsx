@@ -11,11 +11,31 @@ export const BooksPage: React.FC = () => {
   const {
     userId,
     books,
+    genres,
     loading,
     error,
     searchQuery,
     setSearchQuery,
     debouncedSearch,
+    // Genres filter
+    selectedGenres,
+    setSelectedGenres,
+    toggleGenre,
+    strictGenres,
+    setStrictGenres,
+    // Languages filter
+    selectedLanguages,
+    setSelectedLanguages,
+    toggleLanguage,
+    // Year filter
+    yearFrom,
+    setYearFrom,
+    yearTo,
+    setYearTo,
+    setYearRange,
+    // Global filter resets & state
+    resetFilters,
+    hasActiveFilters,
     handleManualRefresh,
     modalsState,
     modalsActions,
@@ -28,10 +48,27 @@ export const BooksPage: React.FC = () => {
       {/* 1. Header */}
       <BooksHeader onAddBook={modalsActions.openCreate} />
 
-      {/* 2. Toolbar (Search & Stats) */}
+      {/* 2. Toolbar (Search, Multi-Genres with strict toggle, Multi-Languages, Year Range, Stats) */}
       <BooksToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        selectedGenres={selectedGenres}
+        onToggleGenre={toggleGenre}
+        onClearGenres={() => setSelectedGenres([])}
+        strictGenres={strictGenres}
+        onStrictGenresChange={setStrictGenres}
+        availableGenres={genres}
+        selectedLanguages={selectedLanguages}
+        onToggleLanguage={toggleLanguage}
+        onClearLanguages={() => setSelectedLanguages([])}
+        yearFrom={yearFrom}
+        onYearFromChange={setYearFrom}
+        yearTo={yearTo}
+        onYearToChange={setYearTo}
+        onSetYearRange={setYearRange}
+        onClearYears={() => setYearRange('', '')}
+        onResetFilters={resetFilters}
+        hasActiveFilters={hasActiveFilters}
         count={books.length}
       />
 
@@ -53,9 +90,14 @@ export const BooksPage: React.FC = () => {
         </div>
       ) : books.length === 0 ? (
         <BooksEmptyState
-          isSearch={Boolean(debouncedSearch)}
+          isFiltered={hasActiveFilters}
           searchQuery={debouncedSearch}
-          onClearSearch={() => setSearchQuery('')}
+          selectedGenres={selectedGenres}
+          strictGenres={strictGenres}
+          selectedLanguages={selectedLanguages}
+          yearFrom={yearFrom}
+          yearTo={yearTo}
+          onResetFilters={resetFilters}
           onAddBook={modalsActions.openCreate}
         />
       ) : (

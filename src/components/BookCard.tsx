@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Book } from '../types/book';
-import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, CalendarIcon } from './icons';
+import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, CalendarIcon, GlobeIcon, TagIcon } from './icons';
 
 interface BookCardProps {
   book: Book;
@@ -52,6 +52,17 @@ export const BookCard: React.FC<BookCardProps> = ({
             <span className="book-cover-placeholder-author">{book.author}</span>
           </div>
         )}
+
+        {/* Floating Badges on top of cover */}
+        <div className="book-card-floating-badges">
+          {book.language && (
+            <span className="book-card-lang-badge" title={`Язык издания: ${book.language}`}>
+              <GlobeIcon size={12} />
+              <span>{book.language}</span>
+            </span>
+          )}
+        </div>
+
         <div className="book-card-overlay">
           <button
             type="button"
@@ -72,6 +83,11 @@ export const BookCard: React.FC<BookCardProps> = ({
       <div className="book-card-content">
         <div className="book-card-meta">
           <span className="book-card-author">{book.author}</span>
+          {book.year && (
+            <span className="book-card-year-badge" title={`Год издания: ${book.year}`}>
+              {book.year} г.
+            </span>
+          )}
           {book.createdAt && (
             <span className="book-card-date" title={`Добавлено: ${new Date(book.createdAt).toLocaleString('ru-RU')}`}>
               <CalendarIcon size={13} />
@@ -83,6 +99,23 @@ export const BookCard: React.FC<BookCardProps> = ({
         <h3 className="book-card-title" title={book.title}>
           {book.title}
         </h3>
+
+        {/* Genres row */}
+        {book.genres && book.genres.length > 0 && (
+          <div className="book-card-genres">
+            {book.genres.slice(0, 2).map((genre) => (
+              <span key={genre.id || genre.name} className="book-card-genre-pill">
+                <TagIcon size={10} />
+                <span>{genre.name}</span>
+              </span>
+            ))}
+            {book.genres.length > 2 && (
+              <span className="book-card-genre-more" title={book.genres.slice(2).map((g) => g.name).join(', ')}>
+                +{book.genres.length - 2}
+              </span>
+            )}
+          </div>
+        )}
 
         {book.description ? (
           <p className="book-card-description">{book.description}</p>

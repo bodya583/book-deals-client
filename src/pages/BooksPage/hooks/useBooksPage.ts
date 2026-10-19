@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../../store/authStore';
-import { getBooks, createBook, updateBook, deleteBook } from '../../../api/booksApi';
-import type { Book, BookFormData } from '../../../types/book';
+import { getBooks, getGenres, createBook, updateBook, deleteBook } from '../../../api/booksApi';
+import type { Book, BookFormData, Genre } from '../../../types/book';
 import type { ToastMessage } from '../../../components/Toast';
 
 export const useBooksPage = () => {
@@ -9,10 +9,18 @@ export const useBooksPage = () => {
   const userId = user?.id;
 
   const [books, setBooks] = useState<Book[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(Boolean(userId));
   const [error, setError] = useState('');
+
+  // Filters state
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [strictGenres, setStrictGenres] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [yearFrom, setYearFrom] = useState('');
+  const [yearTo, setYearTo] = useState('');
 
   // Modals state
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -47,14 +55,36 @@ export const useBooksPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch books
+  // Fetch available genres from backend
+  const fetchGenres = useCallback(async () => {
+    try {
+      const data = await getGenres();
+      setGenres(data || []);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchGenres();
+  }, [fetchGenres]);
+
+  // Fetch books when filters or search change
   useEffect(() => {
     if (!userId) return;
     let isMounted = true;
 
+    const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
+    const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
+
     getBooks({
       userId,
       search: debouncedSearch.trim() || undefined,
+      genres: selectedGenres.length > 0 ? selectedGenres : undefined,
+      strictGenres,
+      languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
+      yearFrom: parsedYearFrom,
+      yearTo: parsedYearTo,
     })
       .then((data) => {
         if (isMounted) {
@@ -74,17 +104,28 @@ export const useBooksPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [userId, debouncedSearch]);
+  }, [userId, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo]);
 
   const handleManualRefresh = async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      const data = await getBooks({
-        userId,
-        search: debouncedSearch.trim() || undefined,
-      });
-      setBooks(data.books || []);
+      const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
+      const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
+
+      const [booksData] = await Promise.all([
+        getBooks({
+          userId,
+          search: debouncedSearch.trim() || undefined,
+          genres: selectedGenres.length > 0 ? selectedGenres : undefined,
+          strictGenres,
+          languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
+          yearFrom: parsedYearFrom,
+          yearTo: parsedYearTo,
+        }),
+        fetchGenres(),
+      ]);
+      setBooks(booksData.books || []);
       setError('');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Не удалось загрузить книги';
@@ -93,6 +134,41 @@ export const useBooksPage = () => {
       setLoading(false);
     }
   };
+
+  const toggleGenre = (genreName: string) => {
+    setSelectedGenres((prev) =>
+      prev.includes(genreName) ? prev.filter((g) => g !== genreName) : [...prev, genreName]
+    );
+  };
+
+  const toggleLanguage = (langName: string) => {
+    setSelectedLanguages((prev) =>
+      prev.includes(langName) ? prev.filter((l) => l !== langName) : [...prev, langName]
+    );
+  };
+
+  const setYearRange = (from: string, to: string) => {
+    setYearFrom(from);
+    setYearTo(to);
+  };
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setSelectedGenres([]);
+    setStrictGenres(false);
+    setSelectedLanguages([]);
+    setYearFrom('');
+    setYearTo('');
+  };
+
+  const hasActiveFilters = Boolean(
+    debouncedSearch.trim() ||
+    selectedGenres.length > 0 ||
+    selectedLanguages.length > 0 ||
+    yearFrom.trim() ||
+    yearTo.trim()
+  );
 
   // Modal open/close helpers
   const openDetails = (book: Book) => setSelectedBook(book);
@@ -109,6 +185,7 @@ export const useBooksPage = () => {
   const handleCreateSubmit = async (formData: BookFormData) => {
     const newBook = await createBook(formData);
     setBooks((prev) => [newBook, ...prev]);
+    fetchGenres();
     showToast(`Книга «${newBook.title}» успешно добавлена в библиотеку!`);
   };
 
@@ -119,6 +196,7 @@ export const useBooksPage = () => {
     if (selectedBook?.id === updated.id) {
       setSelectedBook(updated);
     }
+    fetchGenres();
     showToast(`Книга «${updated.title}» успешно обновлена!`);
   };
 
@@ -128,6 +206,7 @@ export const useBooksPage = () => {
     if (selectedBook?.id === bookId) {
       setSelectedBook(null);
     }
+    fetchGenres();
     showToast('Книга успешно удалена из библиотеки', 'info');
   };
 
@@ -137,11 +216,31 @@ export const useBooksPage = () => {
     user,
     userId,
     books,
+    genres,
     loading,
     error,
     searchQuery,
     setSearchQuery,
     debouncedSearch,
+    // Genres filter
+    selectedGenres,
+    setSelectedGenres,
+    toggleGenre,
+    strictGenres,
+    setStrictGenres,
+    // Languages filter
+    selectedLanguages,
+    setSelectedLanguages,
+    toggleLanguage,
+    // Year filter
+    yearFrom,
+    setYearFrom,
+    yearTo,
+    setYearTo,
+    setYearRange,
+    // Global filter resets & state
+    resetFilters,
+    hasActiveFilters,
     handleManualRefresh,
     // Modals state & actions
     modalsState: {
