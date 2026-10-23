@@ -1,5 +1,5 @@
 import api from './axiosInstance';
-import type { Book, BooksResponse, BookFormData, Genre } from '../types/book';
+import type { Book, BooksResponse, BookFormData, Genre, Settlement } from '../types/book';
 
 export interface GetBooksParams {
   userId?: string;
@@ -14,6 +14,13 @@ export interface GetBooksParams {
   yearTo?: number;
   page?: number;
   limit?: number;
+  // Proximity filter
+  nearLat?: number;
+  nearLng?: number;
+  radius?: number; // km
+  // Settlement filter
+  city?: string;
+  cities?: string[];
 }
 
 export const getBooks = async (params?: GetBooksParams): Promise<BooksResponse> => {
@@ -24,6 +31,9 @@ export const getBooks = async (params?: GetBooksParams): Promise<BooksResponse> 
   }
   if (Array.isArray(params?.languages)) {
     queryParams.languages = params.languages.join(',');
+  }
+  if (Array.isArray(params?.cities)) {
+    queryParams.cities = params.cities.join(',');
   }
 
   const response = await api.get<BooksResponse>('/books', { params: queryParams });
@@ -37,6 +47,11 @@ export const getBookDetails = async (id: string): Promise<Book & { moreByAuthor?
 
 export const getGenres = async (): Promise<Genre[]> => {
   const response = await api.get<Genre[]>('/genres');
+  return response.data;
+};
+
+export const getSettlements = async (): Promise<Settlement[]> => {
+  const response = await api.get<Settlement[]>('/books/settlements');
   return response.data;
 };
 

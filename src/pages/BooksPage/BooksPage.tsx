@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import useBooksPage from './hooks/useBooksPage';
 import BooksHeader from './components/BooksHeader';
 import BooksToolbar from './components/BooksToolbar';
@@ -14,8 +13,9 @@ interface BooksPageProps {
 }
 
 export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
-  const navigate = useNavigate();
+
   const {
+    user,
     userId,
     books,
     genres,
@@ -42,6 +42,16 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
     yearTo,
     setYearTo,
     setYearRange,
+    settlements,
+    selectedSettlements,
+    toggleSettlement,
+    clearSettlements,
+    nearMe,
+    setNearMe,
+    radius,
+    setRadius,
+    nearCenter,
+    setNearCenter,
     resetFilters,
     hasActiveFilters,
     handleManualRefresh,
@@ -53,14 +63,13 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
 
   return (
     <div className="books-main-container">
-      {/* 1. Header with Scope Switch & Add Book Action */}
+      {/* 1. Header with Add Book Action */}
       <BooksHeader
         scope={scope}
-        onScopeChange={(newScope) => navigate(newScope === 'all' ? '/catalog' : '/my-books')}
         onAddBook={modalsActions.openCreate}
       />
 
-      {/* 2. Toolbar (Search, Multi-Genres with strict toggle, Multi-Languages, Year Range, Stats) */}
+      {/* 2. Toolbar (Search, Multi-Genres with strict toggle, Multi-Languages, Year Range, Settlements & Distance, Stats) */}
       <BooksToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -79,6 +88,17 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
         onYearToChange={setYearTo}
         onSetYearRange={setYearRange}
         onClearYears={() => setYearRange('', '')}
+        availableSettlements={settlements}
+        selectedSettlements={selectedSettlements}
+        onToggleSettlement={toggleSettlement}
+        onClearSettlements={clearSettlements}
+        nearMe={nearMe}
+        onNearMeChange={setNearMe}
+        radius={radius}
+        onRadiusChange={setRadius}
+        nearCenter={nearCenter}
+        onNearCenterChange={setNearCenter}
+        userCoords={{ latitude: user?.latitude ?? null, longitude: user?.longitude ?? null }}
         onResetFilters={resetFilters}
         hasActiveFilters={hasActiveFilters}
         count={pagination.total}

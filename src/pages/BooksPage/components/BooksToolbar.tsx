@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { Genre } from '../../../types/book';
+import type { Genre, Settlement } from '../../../types/book';
 import { BOOK_LANGUAGES } from '../../../types/book';
 import {
   SearchIcon,
-  BookOpenIcon,
   CloseIcon,
   GlobeIcon,
   TagIcon,
@@ -11,6 +10,8 @@ import {
   CalendarIcon,
   ChevronDownIcon,
   CheckIcon,
+  MapPinIcon,
+  NavigationIcon,
 } from '../../../components/icons';
 
 interface BooksToolbarProps {
@@ -34,6 +35,19 @@ interface BooksToolbarProps {
   onYearToChange: (val: string) => void;
   onSetYearRange: (from: string, to: string) => void;
   onClearYears: () => void;
+  // Settlement filter
+  availableSettlements: Settlement[];
+  selectedSettlements: string[];
+  onToggleSettlement: (cityName: string) => void;
+  onClearSettlements: () => void;
+  // Proximity / Distance filter
+  nearMe: boolean;
+  onNearMeChange: (val: boolean) => void;
+  radius: number;
+  onRadiusChange: (val: number) => void;
+  nearCenter: { name: string; lat: number; lng: number } | null;
+  onNearCenterChange: (center: { name: string; lat: number; lng: number } | null) => void;
+  userCoords?: { latitude: number | null; longitude: number | null };
   // Global actions
   onResetFilters: () => void;
   hasActiveFilters: boolean;
@@ -66,13 +80,28 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
   onYearToChange,
   onSetYearRange,
   onClearYears,
+  availableSettlements,
+  selectedSettlements,
+  onToggleSettlement,
+  onClearSettlements,
+  nearMe,
+  onNearMeChange,
+  radius,
+  onRadiusChange,
+  nearCenter,
+  onNearCenterChange,
+  userCoords,
   onResetFilters,
   hasActiveFilters,
   count,
 }) => {
   // Popover open states
-  const [openDropdown, setOpenDropdown] = useState<'none' | 'genres' | 'languages' | 'year'>('none');
+  const [openDropdown, setOpenDropdown] = useState<'none' | 'genres' | 'languages' | 'year' | 'location'>('none');
   const [genreSearch, setGenreSearch] = useState('');
+  const [settlementSearch, setSettlementSearch] = useState('');
+  const [locTab, setLocTab] = useState<'settlement' | 'radius'>('settlement');
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState('');
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -88,14 +117,21 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const formatCount = (n: number) => {
-    if (n === 1) return '1 книга';
-    if (n > 1 && n < 5) return `${n} книги`;
-    return `${n} книг`;
+  const getCountNoun = (n: number) => {
+    const abs = Math.abs(n) % 100;
+    const num = abs % 10;
+    if (abs > 10 && abs < 20) return 'книг';
+    if (num > 1 && num < 5) return 'книги';
+    if (num === 1) return 'книга';
+    return 'книг';
   };
 
   const filteredGenres = availableGenres.filter((g) =>
     g.name.toLowerCase().includes(genreSearch.toLowerCase().trim())
+  );
+
+  const filteredSettlements = availableSettlements.filter((s) =>
+    s.name.toLowerCase().includes(settlementSearch.toLowerCase().trim())
   );
 
   const getGenreButtonLabel = () => {
@@ -115,6 +151,48 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
     if (yearFrom) return `От ${yearFrom} г.`;
     if (yearTo) return `До ${yearTo} г.`;
     return 'Год издания';
+  };
+
+  const getLocationButtonLabel = () => {
+    if (selectedSettlements.length > 0) {
+      if (selectedSettlements.length === 1) return selectedSettlements[0];
+      return `${selectedSettlements.length} гор.`;
+    }
+    if (nearMe) {
+      if (nearCenter) return `${radius} км от ${nearCenter.name}`;
+      return `В радиусе ${radius} км`;
+    }
+    return 'Локация / Рядом';
+  };
+
+  const isLocationActive = selectedSettlements.length > 0 || nearMe;
+  const locationActiveCount = selectedSettlements.length + (nearMe ? 1 : 0);
+
+  const userHasCoords = Boolean(userCoords?.latitude != null && userCoords?.longitude != null);
+
+  const handleRequestLocation = () => {
+    if (!navigator.geolocation) {
+      setGeoError('Геолокация не поддерживается вашим браузером');
+      return;
+    }
+    setGeoLoading(true);
+    setGeoError('');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeoLoading(false);
+        onNearCenterChange({
+          name: 'Моя геопозиция',
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+        onNearMeChange(true);
+      },
+      () => {
+        setGeoLoading(false);
+        setGeoError('Доступ к геолокации отклонён браузером');
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
   };
 
   return (
@@ -385,6 +463,232 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
             )}
           </div>
 
+          {/* 4. Location & Settlements Popover */}
+          <div className="filter-popover-anchor">
+            <button
+              type="button"
+              id="filter-location-button"
+              className={`filter-trigger-btn ${isLocationActive ? 'active' : ''}`}
+              onClick={() => setOpenDropdown(openDropdown === 'location' ? 'none' : 'location')}
+              title="Фильтр по населённым пунктам и дистанции"
+            >
+              <MapPinIcon size={15} />
+              <span className="filter-trigger-text">{getLocationButtonLabel()}</span>
+              {locationActiveCount > 0 && (
+                <span className="filter-count-badge">{locationActiveCount}</span>
+              )}
+              <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'location' ? 'open' : ''}`} />
+            </button>
+
+            {openDropdown === 'location' && (
+              <div className="filter-popover-menu filter-popover-location" onClick={(e) => e.stopPropagation()}>
+                {/* Mode Tabs */}
+                <div className="location-popover-tabs">
+                  <button
+                    type="button"
+                    className={`location-tab-btn ${locTab === 'settlement' ? 'active' : ''}`}
+                    onClick={() => setLocTab('settlement')}
+                  >
+                    <MapPinIcon size={14} />
+                    <span>По городам</span>
+                    {selectedSettlements.length > 0 && (
+                      <span className="location-tab-pill">{selectedSettlements.length}</span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className={`location-tab-btn ${locTab === 'radius' ? 'active' : ''}`}
+                    onClick={() => setLocTab('radius')}
+                  >
+                    <NavigationIcon size={14} />
+                    <span>По дистанции</span>
+                    {nearMe && <span className="location-tab-dot" />}
+                  </button>
+                </div>
+
+                {locTab === 'settlement' ? (
+                  /* Tab 1: Населённые пункты */
+                  <div className="location-tab-content">
+                    <div className="popover-search-wrap">
+                      <SearchIcon size={14} className="popover-search-icon" />
+                      <input
+                        type="text"
+                        placeholder="Поиск населённого пункта..."
+                        value={settlementSearch}
+                        onChange={(e) => setSettlementSearch(e.target.value)}
+                        className="popover-search-input"
+                      />
+                      {settlementSearch && (
+                        <button
+                          type="button"
+                          className="popover-search-clear"
+                          onClick={() => setSettlementSearch('')}
+                        >
+                          <CloseIcon size={12} />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="popover-checklist location-settlements-list">
+                      {filteredSettlements.length === 0 ? (
+                        <div className="popover-empty-notice">Населённый пункт не найден</div>
+                      ) : (
+                        filteredSettlements.map((s) => {
+                          const isChecked = selectedSettlements.includes(s.name);
+                          return (
+                            <label
+                              key={s.name}
+                              className={`popover-check-item ${isChecked ? 'selected' : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => onToggleSettlement(s.name)}
+                              />
+                              <span className="check-custom">
+                                {isChecked && <CheckIcon size={12} />}
+                              </span>
+                              <span className="check-label-text">{s.name}</span>
+                              {s.count !== undefined && (
+                                <span className="check-item-count">{s.count}</span>
+                              )}
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {selectedSettlements.length > 0 && (
+                      <div className="location-tab-footer">
+                        <button
+                          type="button"
+                          onClick={onClearSettlements}
+                          className="popover-clear-btn"
+                        >
+                          Сбросить выбор городов ({selectedSettlements.length})
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Tab 2: По дистанции / радиусу */
+                  <div className="location-tab-content location-radius-content">
+                    {/* Точка отсчёта */}
+                    <div className="location-origin-box">
+                      <div className="location-origin-title">Точка отсчёта:</div>
+
+                      <div className="location-origin-choices">
+                        {/* 1. Моя геопозиция */}
+                        <button
+                          type="button"
+                          className={`location-origin-chip ${nearCenter === null ? 'selected' : ''}`}
+                          onClick={() => onNearCenterChange(null)}
+                        >
+                          <NavigationIcon size={13} />
+                          <span>Моя геопозиция</span>
+                        </button>
+
+                        {/* 2. Города как опорные точки */}
+                        {availableSettlements.slice(0, 5).map((s) => (
+                          <button
+                            key={s.name}
+                            type="button"
+                            className={`location-origin-chip ${nearCenter?.name === s.name ? 'selected' : ''}`}
+                            onClick={() => onNearCenterChange({ name: s.name, lat: s.latitude, lng: s.longitude })}
+                          >
+                            <span>{s.name}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Status / prompt */}
+                      {nearCenter === null ? (
+                        userHasCoords ? (
+                          <div className="location-origin-status location-origin-status--ok">
+                            <span>✓ Геопозиция сохранена ({userCoords?.latitude?.toFixed(2)}°, {userCoords?.longitude?.toFixed(2)}°)</span>
+                          </div>
+                        ) : (
+                          <div className="location-origin-status location-origin-status--prompt">
+                            <span>Локация пока не определена.</span>
+                            <button
+                              type="button"
+                              className="location-geo-trigger-btn"
+                              onClick={handleRequestLocation}
+                              disabled={geoLoading}
+                            >
+                              {geoLoading ? 'Определяем...' : '📍 Определить где я'}
+                            </button>
+                            {geoError && <div className="location-geo-error">{geoError}</div>}
+                          </div>
+                        )
+                      ) : (
+                        <div className="location-origin-status location-origin-status--city">
+                          Ищем вокруг: <strong>{nearCenter.name}</strong>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Радиус ползунок */}
+                    <div className="location-radius-slider-wrap">
+                      <div className="location-radius-info">
+                        <span className="location-radius-title">Дистанция:</span>
+                        <span className="location-radius-num">{radius} км</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={5}
+                        max={500}
+                        step={5}
+                        value={radius}
+                        onChange={(e) => onRadiusChange(Number(e.target.value))}
+                        className="location-radius-slider"
+                      />
+                      <div className="radius-presets-row">
+                        {[10, 25, 50, 100, 200].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            className={`radius-preset-chip ${radius === preset ? 'active' : ''}`}
+                            onClick={() => onRadiusChange(preset)}
+                          >
+                            {preset} км
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Toggle activation button */}
+                    <div className="location-radius-action-row">
+                      {nearMe ? (
+                        <button
+                          type="button"
+                          className="btn-danger-outline btn-full-width"
+                          onClick={() => onNearMeChange(false)}
+                        >
+                          ✕ Отключить фильтр дистанции
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn-primary-action btn-full-width"
+                          onClick={() => {
+                            if (nearCenter === null && !userHasCoords) {
+                              handleRequestLocation();
+                            } else {
+                              onNearMeChange(true);
+                            }
+                          }}
+                        >
+                          Искать в радиусе {radius} км
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Reset Filters button */}
           {hasActiveFilters && (
             <button
@@ -399,10 +703,11 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
           )}
         </div>
 
-        {/* Stats count badge */}
-        <div className="books-stats-badge">
-          <BookOpenIcon size={16} />
-          <span>{formatCount(count)}</span>
+        {/* Stats count indicator */}
+        <div className="books-stats-badge" aria-label="Всего книг в списке">
+          <span className="books-stats-label">{hasActiveFilters ? 'Найдено:' : 'Всего:'}</span>
+          <span className="books-stats-count">{count}</span>
+          <span className="books-stats-unit">{getCountNoun(count)}</span>
         </div>
       </div>
 
@@ -464,6 +769,21 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
               </span>
             ))}
 
+            {/* Settlements active tags */}
+            {selectedSettlements.map((city) => (
+              <span key={city} className="active-filter-tag active-settlement-tag">
+                <MapPinIcon size={11} />
+                <span>{city}</span>
+                <button
+                  type="button"
+                  onClick={() => onToggleSettlement(city)}
+                  aria-label={`Удалить ${city}`}
+                >
+                  <CloseIcon size={12} />
+                </button>
+              </span>
+            ))}
+
             {/* Year active tags */}
             {(yearFrom || yearTo) && (
               <span className="active-filter-tag active-year-tag">
@@ -473,6 +793,21 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
                   type="button"
                   onClick={onClearYears}
                   aria-label="Удалить фильтр годов"
+                >
+                  <CloseIcon size={12} />
+                </button>
+              </span>
+            )}
+
+            {/* Near Me active tag */}
+            {nearMe && (
+              <span className="active-filter-tag active-near-me-tag">
+                <NavigationIcon size={11} />
+                <span>{nearCenter ? `${radius} км от ${nearCenter.name}` : `В радиусе ${radius} км`}</span>
+                <button
+                  type="button"
+                  onClick={() => onNearMeChange(false)}
+                  aria-label="Отключить фильтр дистанции"
                 >
                   <CloseIcon size={12} />
                 </button>

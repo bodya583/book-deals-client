@@ -98,6 +98,11 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                 <div className="book-popup-owner-info">
                   <span className="owner-label">Добавил(а):</span>
                   <span className="owner-name">{book.user.username}</span>
+                  {book.user.city && (
+                    <span className="owner-city" style={{ fontSize: '0.78rem', color: '#2d6a4f', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px', fontWeight: 500 }}>
+                      📍 {book.user.city}
+                    </span>
+                  )}
                 </div>
               </div>
             )}

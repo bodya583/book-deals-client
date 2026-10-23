@@ -229,17 +229,35 @@
 }
 
 .books-stats-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: #ffffff;
-  border: 1px solid #e0e0db;
-  padding: 0.65rem 1rem;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #40403c;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  gap: 0.35rem;
+  background: #f1f1eb;
+  border: none;
+  padding: 0.45rem 0.95rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  color: #666660;
+  box-shadow: none;
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.books-stats-label {
+  color: #777770;
+  font-weight: 500;
+}
+
+.books-stats-count {
+  color: #1b4332;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.books-stats-unit {
+  color: #555550;
+  font-weight: 500;
 }
 
 /* Books Grid */
@@ -479,7 +497,21 @@
 }
 
 .book-card-actions.creator-bar {
-  justify-content: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.book-card-city {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #2d6a4f;
+  background: rgba(45, 106, 79, 0.08);
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 .book-card-creator {
@@ -1195,75 +1227,7 @@
   flex-wrap: wrap;
 }
 
-/* Profile Statistics Bar */
-.profile-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.25rem;
-}
 
-.profile-stat-box {
-  background: #ffffff;
-  border: 1px solid #e4e4e0;
-  border-radius: 18px;
-  padding: 1.4rem;
-  display: flex;
-  align-items: center;
-  gap: 1.1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s ease;
-}
-
-.profile-stat-box:hover {
-  transform: translateY(-2px);
-}
-
-.stat-icon-wrapper {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon-emerald {
-  background: rgba(45, 106, 79, 0.1);
-  color: #2d6a4f;
-}
-
-.stat-icon-amber {
-  background: rgba(217, 119, 6, 0.1);
-  color: #d97706;
-}
-
-.stat-icon-blue {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: #777770;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 0.2rem;
-}
-
-.stat-value {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-/* Profile Books Showcase */
-.profile-books-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
 
 .section-header {
   display: flex;
@@ -2672,3 +2636,530 @@
   }
 }
 
+
+
+/* =========================================================
+   LOCATION SECTION — Profile Page (Bookstore Design System)
+   ========================================================= */
+
+.profile-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-width: 440px;
+}
+
+@media (max-width: 900px) {
+  .profile-hero-actions {
+    align-items: flex-start;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e4e4e0;
+  }
+}
+
+.location-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  align-items: flex-end;
+}
+
+@media (max-width: 900px) {
+  .location-section {
+    align-items: flex-start;
+    width: 100%;
+  }
+}
+
+.location-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .location-controls {
+    justify-content: flex-start;
+  }
+}
+
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.location-badge--active {
+  background: #f4f8f5;
+  color: #2d6a4f;
+  border: 1px solid rgba(45, 106, 79, 0.25);
+}
+
+.location-badge--none {
+  background: #f1f1eb;
+  color: #777770;
+  border: 1px solid #e0e0db;
+}
+
+.location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.location-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Кнопка "Поделиться локацией" — в фирменном стиле primary-кнопок сайта */
+.location-btn--set {
+  background: #2d6a4f;
+  color: #ffffff;
+  border-color: #2d6a4f;
+  box-shadow: 0 4px 14px rgba(45, 106, 79, 0.25);
+}
+
+.location-btn--set:hover:not(:disabled) {
+  background: #1b4332;
+  border-color: #1b4332;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(45, 106, 79, 0.35);
+}
+
+.location-btn--set:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Кнопка "Обновить" — аккуратная вторичная кнопка сайта */
+.location-btn--update {
+  background: #ffffff;
+  color: #1a1a1a;
+  border-color: #d8d8d0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.location-btn--update:hover:not(:disabled) {
+  background: #f4f8f5;
+  border-color: #2d6a4f;
+  color: #1b4332;
+  transform: translateY(-1px);
+}
+
+.location-btn--update:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Кнопка "Удалить" — в стиле .btn-danger-outline сайта */
+.location-btn--remove {
+  background: transparent;
+  color: #c0392b;
+  border-color: #fecaca;
+}
+
+.location-btn--remove:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #c0392b;
+  transform: translateY(-1px);
+}
+
+.location-btn--remove:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.location-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: location-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes location-spin {
+  to { transform: rotate(360deg); }
+}
+
+.location-message {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  width: fit-content;
+  margin: 0;
+}
+
+.location-message--success {
+  background: #f4f8f5;
+  color: #1b4332;
+  border: 1px solid rgba(45, 106, 79, 0.25);
+}
+
+.location-message--error {
+  background: #fef2f2;
+  color: #c0392b;
+  border: 1px solid #fecaca;
+}
+
+.location-hint {
+  font-size: 0.78rem;
+  color: #777770;
+  line-height: 1.45;
+  max-width: 400px;
+  margin: 0;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .location-hint {
+    text-align: left;
+  }
+}
+
+/* =========================================================
+   LOCATION & SETTLEMENTS POPOVER (BooksToolbar)
+   ========================================================= */
+
+.filter-popover-location {
+  width: 330px !important;
+  max-width: 92vw;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+/* Tabs switcher: [ По городам ] [ По дистанции ] */
+.location-popover-tabs {
+  display: flex;
+  background: #f7f7f4;
+  border-bottom: 1.5px solid #e0e0db;
+  padding: 0.35rem;
+  gap: 0.35rem;
+}
+
+.location-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.65rem;
+  border: none;
+  background: transparent;
+  color: #666660;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.location-tab-btn:hover {
+  color: #1a1a1a;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.location-tab-btn.active {
+  background: #ffffff;
+  color: #2d6a4f;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.location-tab-pill {
+  background: #2d6a4f;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  line-height: 1;
+}
+
+.location-tab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2d6a4f;
+  display: inline-block;
+}
+
+.location-tab-content {
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.location-settlements-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.location-tab-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f0f0eb;
+}
+
+/* Tab 2: Distance Content */
+.location-radius-content {
+  gap: 0.85rem;
+}
+
+.location-origin-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.location-origin-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888882;
+}
+
+.location-origin-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.location-origin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0db;
+  background: #ffffff;
+  color: #444440;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.location-origin-chip:hover {
+  border-color: #2d6a4f;
+  color: #1b4332;
+  background: #fcfcfb;
+}
+
+.location-origin-chip.selected {
+  background: #f4f8f5;
+  border-color: #2d6a4f;
+  color: #2d6a4f;
+  font-weight: 600;
+}
+
+.location-origin-status {
+  font-size: 0.76rem;
+  line-height: 1.4;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+}
+
+.location-origin-status--ok {
+  background: #f4f8f5;
+  color: #1b4332;
+  border: 1px solid rgba(45, 106, 79, 0.2);
+}
+
+.location-origin-status--prompt {
+  background: #fefce8;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.location-origin-status--city {
+  background: #f4f8f5;
+  color: #1b4332;
+  border: 1px solid rgba(45, 106, 79, 0.2);
+}
+
+.location-geo-trigger-btn {
+  background: #2d6a4f;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.location-geo-trigger-btn:hover:not(:disabled) {
+  background: #1b4332;
+}
+
+.location-geo-error {
+  width: 100%;
+  font-size: 0.72rem;
+  color: #c0392b;
+  margin-top: 0.2rem;
+}
+
+.location-radius-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #fafaf7;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #ebebe4;
+}
+
+.location-radius-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.location-radius-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555550;
+}
+
+.location-radius-num {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #2d6a4f;
+}
+
+.location-radius-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: #d8e5dd;
+  outline: none;
+  cursor: pointer;
+}
+
+.location-radius-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2d6a4f;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px #ffffff, 0 2px 6px rgba(45, 106, 79, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.location-radius-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px #ffffff, 0 3px 8px rgba(45, 106, 79, 0.45);
+}
+
+.radius-presets-row {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.radius-preset-chip {
+  flex: 1;
+  text-align: center;
+  padding: 0.25rem 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 6px;
+  border: 1px solid #e0e0db;
+  background: #ffffff;
+  color: #666660;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.radius-preset-chip:hover {
+  border-color: #2d6a4f;
+  color: #1b4332;
+}
+
+.radius-preset-chip.active {
+  background: #2d6a4f;
+  color: #ffffff;
+  border-color: #2d6a4f;
+}
+
+.location-radius-action-row {
+  padding-top: 0.25rem;
+}
+
+.btn-full-width {
+  width: 100%;
+  justify-content: center;
+  padding: 0.65rem 1rem !important;
+  font-size: 0.88rem !important;
+}
+
+/* Active tags in filter bar */
+.active-settlement-tag {
+  background: #f4f8f5;
+  color: #1b4332;
+  border: 1px solid rgba(45, 106, 79, 0.25);
+}
+
+.active-settlement-tag button {
+  color: #2d6a4f;
+}
+
+.active-settlement-tag button:hover {
+  background: rgba(45, 106, 79, 0.15);
+}
+
+.active-near-me-tag {
+  background: #f4f8f5;
+  color: #1b4332;
+  border: 1px solid rgba(45, 106, 79, 0.25);
+}
+
+.active-near-me-tag button {
+  color: #2d6a4f;
+}
+
+.active-near-me-tag button:hover {
+  background: rgba(45, 106, 79, 0.15);
+}

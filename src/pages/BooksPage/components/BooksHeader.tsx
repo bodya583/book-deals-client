@@ -1,16 +1,14 @@
 import React from 'react';
-import { PlusIcon, GlobeIcon, BookOpenIcon } from '../../../components/icons';
+import { PlusIcon } from '../../../components/icons';
 
 interface BooksHeaderProps {
   scope?: 'my' | 'all';
   onAddBook: () => void;
-  onScopeChange?: (newScope: 'my' | 'all') => void;
 }
 
 export const BooksHeader: React.FC<BooksHeaderProps> = ({
   scope = 'my',
   onAddBook,
-  onScopeChange,
 }) => {
   const isAll = scope === 'all';
 
@@ -28,31 +26,6 @@ export const BooksHeader: React.FC<BooksHeaderProps> = ({
       </div>
 
       <div className="books-hero-actions">
-        {onScopeChange && (
-          <div className="books-scope-switch" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={isAll}
-              className={`scope-switch-btn ${isAll ? 'active' : ''}`}
-              onClick={() => onScopeChange('all')}
-            >
-              <GlobeIcon size={16} />
-              <span>Все книги</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={!isAll}
-              className={`scope-switch-btn ${!isAll ? 'active' : ''}`}
-              onClick={() => onScopeChange('my')}
-            >
-              <BookOpenIcon size={16} />
-              <span>Мои книги</span>
-            </button>
-          </div>
-        )}
-
         <button
           id="add-book-hero-btn"
           type="button"
@@ -68,3 +41,4 @@ export const BooksHeader: React.FC<BooksHeaderProps> = ({
 };
 
 export default BooksHeader;
+

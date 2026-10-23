@@ -1,22 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { User } from '../../../store/authStore';
-import { CalendarIcon, BookOpenIcon, LogOutIcon } from '../../../components/icons';
+import { CalendarIcon } from '../../../components/icons';
+import LocationButton from './LocationButton';
 
 interface ProfileHeroProps {
   user: User | null;
   initials: string;
   formattedDate: string;
-  onNavigateBooks: () => void;
-  onLogout: () => void;
 }
 
 export const ProfileHero: React.FC<ProfileHeroProps> = ({
   user,
   initials,
   formattedDate,
-  onNavigateBooks,
-  onLogout,
 }) => {
+  const [localLat, setLocalLat] = useState<number | null>(user?.latitude ?? null);
+  const [localLng, setLocalLng] = useState<number | null>(user?.longitude ?? null);
+
+  React.useEffect(() => {
+    setLocalLat(user?.latitude ?? null);
+    setLocalLng(user?.longitude ?? null);
+  }, [user?.latitude, user?.longitude]);
+
+  const handleLocationChange = (lat: number | null, lng: number | null) => {
+    setLocalLat(lat);
+    setLocalLng(lng);
+  };
+
   return (
     <section className="profile-hero-card">
       <div className="profile-hero-main">
@@ -36,10 +46,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 
         {/* User Info */}
         <div className="profile-hero-info">
-          <div className="profile-title-row">
-            <h1 className="profile-username">{user?.username || 'Пользователь'}</h1>
-            <span className="profile-badge-active">Активен</span>
-          </div>
+          <h1 className="profile-username">{user?.username || 'Пользователь'}</h1>
 
           <div className="profile-meta-list">
             <div className="profile-meta-item">
@@ -50,25 +57,16 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="profile-hero-buttons">
-        <button
-          type="button"
-          className="btn-secondary-action"
-          onClick={onNavigateBooks}
-        >
-          <BookOpenIcon size={18} />
-          <span>Все мои книги</span>
-        </button>
-        <button
-          type="button"
-          className="btn-danger-outline"
-          onClick={onLogout}
-        >
-          <LogOutIcon size={18} />
-          <span>Выйти</span>
-        </button>
-      </div>
+      {/* Profile Actions — Location controls */}
+      {user && (
+        <div className="profile-hero-actions">
+          <LocationButton
+            latitude={localLat}
+            longitude={localLng}
+            onLocationChange={handleLocationChange}
+          />
+        </div>
+      )}
     </section>
   );
 };

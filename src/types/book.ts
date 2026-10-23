@@ -2,6 +2,14 @@ export interface BookOwner {
   id: string;
   username: string;
   photoURL?: string | null;
+  city?: string | null;
+}
+
+export interface Settlement {
+  name: string;
+  count?: number;
+  latitude: number;
+  longitude: number;
 }
 
 export interface Genre {

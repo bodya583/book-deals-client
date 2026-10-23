@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../../store/authStore';
-import { getBooks, getGenres, createBook, updateBook, deleteBook } from '../../../api/booksApi';
-import type { Book, BookFormData, Genre, BooksPagination } from '../../../types/book';
+import { getBooks, getGenres, getSettlements, createBook, updateBook, deleteBook } from '../../../api/booksApi';
+import type { Book, BookFormData, Genre, Settlement, BooksPagination } from '../../../types/book';
 import type { ToastMessage } from '../../../components/Toast';
 
 export interface UseBooksPageOptions {
@@ -14,6 +14,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
 
   const [books, setBooks] = useState<Book[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
+  const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -35,6 +36,14 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [yearFrom, setYearFrom] = useState('');
   const [yearTo, setYearTo] = useState('');
+  
+  // Settlements filter (по населённым пунктам / городам)
+  const [selectedSettlements, setSelectedSettlements] = useState<string[]>([]);
+
+  // Proximity / Distance filter (по дистанции)
+  const [nearMe, setNearMe] = useState(false);
+  const [radius, setRadius] = useState(50); // km
+  const [nearCenter, setNearCenter] = useState<{ name: string; lat: number; lng: number } | null>(null);
 
   // Modals state
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -79,14 +88,37 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     }
   }, []);
 
+  // Fetch available settlements from backend
+  const fetchSettlements = useCallback(async () => {
+    try {
+      const data = await getSettlements();
+      setSettlements(data || []);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   useEffect(() => {
     fetchGenres();
-  }, [fetchGenres]);
+    fetchSettlements();
+  }, [fetchGenres, fetchSettlements]);
 
   // Reset page to 1 whenever search, scope, or any filter changes
   useEffect(() => {
     setPage(1);
-  }, [scope, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo]);
+  }, [
+    scope,
+    debouncedSearch,
+    selectedGenres,
+    strictGenres,
+    selectedLanguages,
+    selectedSettlements,
+    yearFrom,
+    yearTo,
+    nearMe,
+    radius,
+    nearCenter,
+  ]);
 
   // Fetch books when filters or search change
   useEffect(() => {
@@ -97,16 +129,27 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
     const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
 
+    const effectiveNearLat = nearMe
+      ? (nearCenter ? nearCenter.lat : user?.latitude != null ? user.latitude : undefined)
+      : undefined;
+    const effectiveNearLng = nearMe
+      ? (nearCenter ? nearCenter.lng : user?.longitude != null ? user.longitude : undefined)
+      : undefined;
+
     getBooks({
       userId: scope === 'my' ? userId : undefined,
       search: debouncedSearch.trim() || undefined,
       genres: selectedGenres.length > 0 ? selectedGenres : undefined,
       strictGenres,
       languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
+      cities: selectedSettlements.length > 0 ? selectedSettlements : undefined,
       yearFrom: parsedYearFrom,
       yearTo: parsedYearTo,
       page,
       limit,
+      nearLat: effectiveNearLat,
+      nearLng: effectiveNearLng,
+      radius: nearMe && (effectiveNearLat != null && effectiveNearLng != null) ? radius : undefined,
     })
       .then((data) => {
         if (isMounted) {
@@ -129,7 +172,24 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     return () => {
       isMounted = false;
     };
-  }, [scope, userId, debouncedSearch, selectedGenres, strictGenres, selectedLanguages, yearFrom, yearTo, page, limit]);
+  }, [
+    scope,
+    userId,
+    debouncedSearch,
+    selectedGenres,
+    strictGenres,
+    selectedLanguages,
+    selectedSettlements,
+    yearFrom,
+    yearTo,
+    nearMe,
+    radius,
+    nearCenter,
+    user?.latitude,
+    user?.longitude,
+    page,
+    limit,
+  ]);
 
   const handleManualRefresh = async () => {
     if (scope === 'my' && !userId) return;
@@ -149,6 +209,9 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
           yearTo: parsedYearTo,
           page,
           limit,
+          nearLat: nearMe && user?.latitude != null ? user.latitude : undefined,
+          nearLng: nearMe && user?.longitude != null ? user.longitude : undefined,
+          radius: nearMe ? radius : undefined,
         }),
         fetchGenres(),
       ]);
@@ -175,6 +238,16 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     setSelectedLanguages((prev) =>
       prev.includes(langName) ? prev.filter((l) => l !== langName) : [...prev, langName]
     );
+  };
+
+  const toggleSettlement = (cityName: string) => {
+    setSelectedSettlements((prev) =>
+      prev.includes(cityName) ? prev.filter((c) => c !== cityName) : [...prev, cityName]
+    );
+  };
+
+  const clearSettlements = () => {
+    setSelectedSettlements([]);
   };
 
   const setYearRange = (from: string, to: string) => {
@@ -208,8 +281,11 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     setSelectedGenres([]);
     setStrictGenres(false);
     setSelectedLanguages([]);
+    setSelectedSettlements([]);
     setYearFrom('');
     setYearTo('');
+    setNearMe(false);
+    setNearCenter(null);
     setPage(1);
   };
 
@@ -217,8 +293,10 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     debouncedSearch.trim() ||
     selectedGenres.length > 0 ||
     selectedLanguages.length > 0 ||
+    selectedSettlements.length > 0 ||
     yearFrom.trim() ||
-    yearTo.trim()
+    yearTo.trim() ||
+    nearMe
   );
 
   // Modal open/close helpers
@@ -237,6 +315,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     const newBook = await createBook(formData);
     setBooks((prev) => [newBook, ...prev]);
     fetchGenres();
+    fetchSettlements();
     showToast(`Книга «${newBook.title}» успешно добавлена в библиотеку!`);
   };
 
@@ -248,6 +327,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       setSelectedBook(updated);
     }
     fetchGenres();
+    fetchSettlements();
     showToast(`Книга «${updated.title}» успешно обновлена!`);
   };
 
@@ -258,6 +338,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       setSelectedBook(null);
     }
     fetchGenres();
+    fetchSettlements();
     showToast('Книга успешно удалена из библиотеки', 'info');
   };
 
@@ -268,6 +349,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     userId,
     books,
     genres,
+    settlements,
     loading,
     error,
     // Pagination
@@ -298,6 +380,18 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     yearTo,
     setYearTo,
     setYearRange,
+    // Settlements filter (по населённым пунктам)
+    selectedSettlements,
+    setSelectedSettlements,
+    toggleSettlement,
+    clearSettlements,
+    // Proximity / Distance filter (по дистанции)
+    nearMe,
+    setNearMe,
+    radius,
+    setRadius,
+    nearCenter,
+    setNearCenter,
     // Global filter resets & state
     resetFilters,
     hasActiveFilters,

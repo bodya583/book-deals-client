@@ -130,6 +130,11 @@ export const BookCard: React.FC<BookCardProps> = ({
               <span className="creator-label">от</span>
               <span className="creator-name">@{book.user.username}</span>
             </span>
+            {book.user?.city && (
+              <span className="book-card-city" title={`Населённый пункт: ${book.user.city}`}>
+                📍 {book.user.city}
+              </span>
+            )}
           </div>
         ) : null}
       </div>

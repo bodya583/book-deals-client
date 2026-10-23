@@ -5,6 +5,8 @@ export interface User {
   username: string;
   email: string;
   photoURL: string | null;
+  latitude: number | null;
+  longitude: number | null;
   createdAt: string;
 }
 
