@@ -88,3 +88,8 @@ export const updateBook = async (id: string, data: Partial<BookFormData>): Promi
 export const deleteBook = async (id: string): Promise<void> => {
   await api.delete(`/books/${id}`);
 };
+
+export const setBookTradeStatus = async (id: string, isForTrade: boolean): Promise<Book> => {
+  const response = await api.patch<Book>(`/books/${id}`, { isForTrade });
+  return response.data;
+};

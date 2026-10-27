@@ -2,13 +2,26 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import api from '../api/axiosInstance';
-import { BookOpenIcon, UserIcon, LogOutIcon, GlobeIcon } from './icons';
+import { BookOpenIcon, UserIcon, LogOutIcon, GlobeIcon, TradeIcon } from './icons';
+import { getTradeCounts } from '../api/tradesApi';
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const [incomingCount, setIncomingCount] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    if (!user) return;
+    getTradeCounts()
+      .then((data) => {
+        setIncomingCount(data.incoming || 0);
+      })
+      .catch(() => {
+        // ignore
+      });
+  }, [user, location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -46,12 +59,18 @@ export const Navbar: React.FC = () => {
             <GlobeIcon size={18} />
             <span>Все книги</span>
           </Link>
+
           <Link
-            to="/my-books"
-            className={`navbar-link ${location.pathname === '/my-books' || location.pathname === '/books' || location.pathname === '/' ? 'active' : ''}`}
+            to="/trades"
+            className={`navbar-link ${location.pathname.startsWith('/trades') ? 'active' : ''}`}
           >
-            <BookOpenIcon size={18} />
-            <span>Мои книги</span>
+            <TradeIcon size={18} />
+            <span>Трейды</span>
+            {incomingCount > 0 && (
+              <span className="navbar-badge" title={`${incomingCount} входящих предложений`}>
+                {incomingCount}
+              </span>
+            )}
           </Link>
           <Link
             to="/profile"

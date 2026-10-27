@@ -497,8 +497,13 @@
 }
 
 .book-card-actions.creator-bar {
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
+}
+
+.book-card-location {
+  display: flex;
+  align-items: center;
 }
 
 .book-card-city {

@@ -3,10 +3,11 @@ import api from './axiosInstance';
 export interface UserProfile {
   id: string;
   username: string;
-  email: string;
+  email?: string;
   photoURL: string | null;
   latitude: number | null;
   longitude: number | null;
+  city?: string | null;
   createdAt: string;
 }
 
@@ -15,6 +16,14 @@ export interface UserProfile {
  */
 export const getMyProfile = async (): Promise<UserProfile> => {
   const response = await api.get<UserProfile>('/users/me');
+  return response.data;
+};
+
+/**
+ * GET /api/users/:id — returns public profile of any user
+ */
+export const getUserProfileById = async (userId: string): Promise<UserProfile> => {
+  const response = await api.get<UserProfile>(`/users/${userId}`);
   return response.data;
 };
 
@@ -33,3 +42,4 @@ export const clearLocation = async (): Promise<UserProfile> => {
   const response = await api.delete<UserProfile>('/users/me/location');
   return response.data;
 };
+

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
 import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon } from './icons';
 
@@ -17,6 +18,7 @@ export const BookCard: React.FC<BookCardProps> = ({
   onDelete,
   isOwner = true,
 }) => {
+  const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -80,6 +82,15 @@ export const BookCard: React.FC<BookCardProps> = ({
           {book.title}
         </h3>
 
+        {/* Location */}
+        {book.user?.city && (
+          <div className="book-card-location">
+            <span className="book-card-city" title={`Населённый пункт: ${book.user.city}`}>
+              📍 {book.user.city}
+            </span>
+          </div>
+        )}
+
         {/* Genres row */}
         {book.genres && book.genres.length > 0 && (
           <div className="book-card-genres">
@@ -126,15 +137,19 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
         ) : book.user?.username ? (
           <div className="book-card-actions creator-bar">
-            <span className="book-card-creator" title={`Книга пользователя ${book.user.username}`}>
+            <span
+              className="book-card-creator"
+              title={`Перейти в профиль пользователя @${book.user.username}`}
+              style={{ cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                const uId = book.user?.id || book.userId;
+                if (uId) navigate(`/profile/${uId}`);
+              }}
+            >
               <span className="creator-label">от</span>
               <span className="creator-name">@{book.user.username}</span>
             </span>
-            {book.user?.city && (
-              <span className="book-card-city" title={`Населённый пункт: ${book.user.city}`}>
-                📍 {book.user.city}
-              </span>
-            )}
           </div>
         ) : null}
       </div>

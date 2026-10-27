@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
-import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon, GlobeIcon, TagIcon } from './icons';
+import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon, GlobeIcon, TagIcon, TradeIcon } from './icons';
 
 interface BookDetailsModalProps {
   book: Book | null;
@@ -19,6 +20,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
   onDelete,
   isOwner = true,
 }) => {
+  const navigate = useNavigate();
   const [errorBookId, setErrorBookId] = useState<string | null>(null);
   const imgError = book ? errorBookId === book.id : false;
 
@@ -91,13 +93,26 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
             </div>
             
             {book.user?.username && (
-              <div className="book-popup-owner-card">
+              <div
+                className="book-popup-owner-card"
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  const uId = book.user?.id || book.userId;
+                  if (uId) {
+                    onClose();
+                    navigate(`/profile/${uId}`);
+                  }
+                }}
+                title={`Перейти в профиль пользователя @${book.user.username}`}
+              >
                 <div className="book-popup-owner-avatar">
                   <UserIcon size={14} />
                 </div>
                 <div className="book-popup-owner-info">
                   <span className="owner-label">Добавил(а):</span>
-                  <span className="owner-name">{book.user.username}</span>
+                  <span className="owner-name" style={{ textDecoration: 'underline text-decoration-color: transparent' }}>
+                    @{book.user.username}
+                  </span>
                   {book.user.city && (
                     <span className="owner-city" style={{ fontSize: '0.78rem', color: '#2d6a4f', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px', fontWeight: 500 }}>
                       📍 {book.user.city}
@@ -187,6 +202,28 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                     <span>Удалить</span>
                   </button>
                 </>
+              )}
+              {!isOwner && book.userId && (
+                <button
+                  type="button"
+                  className="modal-btn"
+                  style={{
+                    background: '#2d6a4f',
+                    color: '#ffffff',
+                    border: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    fontWeight: 600,
+                  }}
+                  onClick={() => {
+                    onClose();
+                    navigate(`/trades/new?partnerId=${book.userId}&bookId=${book.id}`);
+                  }}
+                >
+                  <TradeIcon size={16} />
+                  <span>Предложить обмен</span>
+                </button>
               )}
               <button
                 type="button"

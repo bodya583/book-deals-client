@@ -30,6 +30,7 @@ export interface Book {
   year?: number | null;
   genres?: Genre[];
   userId: string | null;
+  isForTrade?: boolean;
   createdAt: string;
   updatedAt?: string;
   user?: BookOwner | null;

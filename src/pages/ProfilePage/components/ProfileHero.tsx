@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
-import type { User } from '../../../store/authStore';
-import { CalendarIcon } from '../../../components/icons';
+import { useNavigate } from 'react-router-dom';
+import { CalendarIcon, TradeIcon, BookOpenIcon } from '../../../components/icons';
 import LocationButton from './LocationButton';
 
+export interface ProfileUser {
+  id: string;
+  username: string;
+  email?: string;
+  photoURL?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
+  createdAt?: string;
+}
+
 interface ProfileHeroProps {
-  user: User | null;
+  user: ProfileUser | null;
   initials: string;
   formattedDate: string;
+  isOtherUser?: boolean;
+  bookCount?: number;
 }
 
 export const ProfileHero: React.FC<ProfileHeroProps> = ({
   user,
   initials,
   formattedDate,
+  isOtherUser = false,
+  bookCount,
 }) => {
+  const navigate = useNavigate();
   const [localLat, setLocalLat] = useState<number | null>(user?.latitude ?? null);
   const [localLng, setLocalLng] = useState<number | null>(user?.longitude ?? null);
 
@@ -46,25 +62,71 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 
         {/* User Info */}
         <div className="profile-hero-info">
-          <h1 className="profile-username">{user?.username || 'Пользователь'}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <h1 className="profile-username">@{user?.username || 'Пользователь'}</h1>
+            {isOtherUser && (
+              <span
+                style={{
+                  background: 'rgba(45, 106, 79, 0.1)',
+                  color: '#2d6a4f',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                }}
+              >
+                Читатель BookShelf
+              </span>
+            )}
+          </div>
 
           <div className="profile-meta-list">
             <div className="profile-meta-item">
               <CalendarIcon size={16} />
               <span>Зарегистрирован: {formattedDate}</span>
             </div>
+            {user?.city && (
+              <div className="profile-meta-item">
+                <span>📍 {user.city}</span>
+              </div>
+            )}
+            {bookCount !== undefined && (
+              <div className="profile-meta-item">
+                <BookOpenIcon size={16} />
+                <span>Книг для обмена: {bookCount}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Profile Actions — Location controls */}
+      {/* Profile Actions */}
       {user && (
         <div className="profile-hero-actions">
-          <LocationButton
-            latitude={localLat}
-            longitude={localLng}
-            onLocationChange={handleLocationChange}
-          />
+          {isOtherUser ? (
+            <button
+              type="button"
+              className="btn-new-trade"
+              style={{
+                background: '#2d6a4f',
+                padding: '0.75rem 1.4rem',
+                fontSize: '1rem',
+                fontWeight: 700,
+                boxShadow: '0 4px 14px rgba(45, 106, 79, 0.25)',
+              }}
+              onClick={() => navigate(`/trades/new?partnerId=${user.id}`)}
+              title={`Предложить обмен книгами с @${user.username}`}
+            >
+              <TradeIcon size={20} />
+              <span>Предложить обмен</span>
+            </button>
+          ) : (
+            <LocationButton
+              latitude={localLat}
+              longitude={localLng}
+              onLocationChange={handleLocationChange}
+            />
+          )}
         </div>
       )}
     </section>
@@ -72,3 +134,4 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 };
 
 export default ProfileHero;
+

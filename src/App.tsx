@@ -5,6 +5,9 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import BooksPage from './pages/BooksPage';
 import ProfilePage from './pages/ProfilePage';
+import TradesPage from './pages/TradesPage/TradesPage';
+import TradeOfferPage from './pages/TradeOfferPage/TradeOfferPage';
+import TradeDetailsPage from './pages/TradeDetailsPage/TradeDetailsPage';
 import PrivateRoute from './components/PrivateRoute';
 import AppLayout from './layouts/AppLayout';
 import { useAuthStore } from './store/authStore';
@@ -65,10 +68,13 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<BooksPage scope="all" />} />
             <Route path="/catalog" element={<BooksPage scope="all" />} />
-            <Route path="/all-books" element={<BooksPage scope="all" />} />
-            <Route path="/my-books" element={<BooksPage scope="my" />} />
-            <Route path="/books" element={<BooksPage scope="my" />} />
+            <Route path="/my-books" element={<Navigate to="/profile" replace />} />
+            <Route path="/books" element={<Navigate to="/profile" replace />} />
+            <Route path="/trades" element={<TradesPage />} />
+            <Route path="/trades/new" element={<TradeOfferPage />} />
+            <Route path="/trades/:id" element={<TradeDetailsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
           </Route>
         </Route>
 

@@ -79,6 +79,22 @@
   font-weight: 600;
 }
 
+.navbar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #e63946;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgba(230, 57, 70, 0.3);
+}
+
 .navbar-actions {
   display: flex;
   align-items: center;
