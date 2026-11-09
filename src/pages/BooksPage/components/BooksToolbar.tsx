@@ -204,7 +204,7 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
           <input
             id="books-search-input"
             type="text"
-            placeholder="Поиск по названию, автору или жанру..."
+            placeholder="Поиск книги или автора..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="books-search-input"

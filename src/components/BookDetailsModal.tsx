@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
+import { formatBookYear } from '../types/book';
 import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon, GlobeIcon, TagIcon, TradeIcon } from './icons';
 
 interface BookDetailsModalProps {
@@ -131,7 +132,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
               {book.year && (
                 <div className="book-popup-meta-item">
                   <CalendarIcon size={15} />
-                  <span>Год издания: <strong>{book.year} г.</strong></span>
+                  <span>Год издания: <strong>{formatBookYear(book.year)}</strong></span>
                 </div>
               )}
               {book.createdAt && (

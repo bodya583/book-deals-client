@@ -178,7 +178,8 @@
 
 .books-search-wrapper {
   position: relative;
-  flex: 1;
+  flex: 1 1 280px;
+  min-width: 240px;
   max-width: 480px;
   display: flex;
   align-items: center;
@@ -186,7 +187,7 @@
 
 .books-search-icon {
   position: absolute;
-  left: 1rem;
+  left: 0.95rem;
   color: #888882;
   pointer-events: none;
 }
@@ -196,13 +197,14 @@
   background: #ffffff;
   border: 1.5px solid #e0e0db;
   border-radius: 12px;
-  padding: 0.75rem 2.5rem 0.75rem 2.75rem;
-  font-size: 0.95rem;
+  padding: 0.72rem 2.2rem 0.72rem 2.45rem;
+  font-size: 0.925rem;
   font-family: inherit;
   color: #1a1a1a;
   outline: none;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  text-overflow: ellipsis;
 }
 
 .books-search-input:focus {
@@ -310,47 +312,45 @@
   width: 100%;
   background: linear-gradient(180deg, #f7f7f3 0%, #ebebe4 100%);
   border-radius: 14px;
-  padding: 1.35rem 1rem 1.6rem;
+  padding: 0.65rem 0.75rem 1.45rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   position: relative;
 }
 
-/* Плавающие теги языка и года на подиуме */
-.book-card-lang-tag {
-  position: absolute;
-  top: 9px;
-  left: 9px;
+/* Верхняя строка тегов подиума (язык и год) над обложкой с идеальной контрастностью */
+.book-card-podium-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  margin-bottom: 0.65rem;
+  z-index: 2;
+}
+
+.book-card-tag-spacer {
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+}
+
+.book-card-lang-tag,
+.book-card-year-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(6px);
+  background: #ffffff;
+  color: #222220;
   font-size: 0.7rem;
-  font-weight: 700;
-  color: #444440;
-  padding: 0.2rem 0.5rem;
+  font-weight: 600;
+  padding: 0.22rem 0.55rem;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  z-index: 2;
+  border: 1px solid #e2e2dc;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   pointer-events: none;
-}
-
-.book-card-year-tag {
-  position: absolute;
-  top: 9px;
-  right: 9px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(6px);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #444440;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  z-index: 2;
-  pointer-events: none;
+  white-space: nowrap;
 }
 
 /* Парящая обложка книги (вертикальный формат 2:3 с мягкой нижней тенью) */
@@ -2417,6 +2417,144 @@
 
 .books-pagination-top {
   margin-bottom: -0.5rem;
+  background: #fcfcfb;
+  border: 1px solid #e5e5df;
+  padding: 0.65rem 1.15rem;
+}
+
+.pagination-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+/* Sorting selector */
+.pagination-sort-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.pagination-sort-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #777770;
+  white-space: nowrap;
+}
+
+.pagination-sort-select-box {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pagination-sort-icon {
+  position: absolute;
+  left: 0.65rem;
+  color: #666660;
+  pointer-events: none;
+}
+
+.pagination-sort-select {
+  appearance: none;
+  background: #ffffff;
+  border: 1.5px solid #deded8;
+  border-radius: 9px;
+  padding: 0.38rem 1.4rem 0.38rem 2rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #222220;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.pagination-sort-select:hover {
+  border-color: #2d6a4f;
+  background: #fdfdfd;
+}
+
+.pagination-sort-select:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
+}
+
+/* Quick mini pager for top bar */
+.pagination-top-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ffffff;
+  border: 1px solid #dfdfd7;
+  border-radius: 9px;
+  padding: 0.2rem 0.35rem;
+}
+
+.pagination-btn-mini {
+  height: 28px;
+  width: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #444440;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.pagination-btn-mini:hover:not(:disabled) {
+  background: #f0f0eb;
+  color: #111111;
+}
+
+.pagination-btn-mini:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-mini-counter {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #333330;
+  padding: 0 0.35rem;
+  white-space: nowrap;
+}
+
+/* Compact limit select */
+.pagination-top-limit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pagination-limit-select {
+  appearance: none;
+  background: #ffffff;
+  border: 1.5px solid #deded8;
+  border-radius: 9px;
+  padding: 0.38rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333330;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.18s ease;
+}
+
+.pagination-limit-select:hover {
+  border-color: #2d6a4f;
+}
+
+.pagination-limit-select:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
 }
 
 .books-pagination-bottom {
@@ -2598,17 +2736,20 @@
 /* Responsive */
 @media (max-width: 900px) {
   .books-pagination {
-    justify-content: center;
+    justify-content: space-between;
     gap: 0.85rem;
   }
 
   .pagination-info {
-    width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
+  }
+
+  .pagination-top-controls {
+    justify-content: flex-end;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 680px) {
   .books-pagination {
     flex-direction: column;
     align-items: stretch;
@@ -2619,6 +2760,16 @@
   .pagination-info {
     justify-content: center;
     text-align: center;
+  }
+
+  .pagination-top-controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .pagination-sort-select {
+    padding: 0.35rem 1.1rem 0.35rem 1.8rem;
+    font-size: 0.8rem;
   }
 
   .pagination-nav-group {

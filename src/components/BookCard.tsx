@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
+import { formatBookYear } from '../types/book';
 import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon } from './icons';
 
 interface BookCardProps {
@@ -25,20 +26,23 @@ export const BookCard: React.FC<BookCardProps> = ({
     <article className="book-card" onClick={() => onView(book)}>
       {/* Light podium with floating book cover */}
       <div className="book-card-podium">
-        {/* Floating Language Badge */}
-        {book.language && (
-          <span className="book-card-lang-tag" title={`Язык издания: ${book.language}`}>
-            <GlobeIcon size={11} />
-            <span>{book.language}</span>
-          </span>
-        )}
+        {/* Podium Top Header: Language & Year Badges (above cover, clean contrast) */}
+        <div className="book-card-podium-header">
+          {book.language ? (
+            <span className="book-card-lang-tag" title={`Язык издания: ${book.language}`}>
+              <GlobeIcon size={11} />
+              <span>{book.language}</span>
+            </span>
+          ) : (
+            <span className="book-card-tag-spacer" />
+          )}
 
-        {/* Floating Year Badge */}
-        {book.year && (
-          <span className="book-card-year-tag" title={`Год издания: ${book.year}`}>
-            {book.year} г.
-          </span>
-        )}
+          {book.year && (
+            <span className="book-card-year-tag" title={`Год издания: ${formatBookYear(book.year)}`}>
+              {formatBookYear(book.year)}
+            </span>
+          )}
+        </div>
 
         {/* Floating Book Cover (Vertical 2:3 with soft drop-shadow) */}
         <div className="book-card-floating-cover">

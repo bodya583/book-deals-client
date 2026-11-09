@@ -48,6 +48,8 @@ export interface BooksResponse {
   pagination: BooksPagination;
 }
 
+export type BookSortOption = 'newest' | 'oldest' | 'title_asc' | 'title_desc' | 'distance' | 'popular';
+
 export interface BookFormData {
   title: string;
   author: string;
@@ -76,3 +78,5 @@ export const BOOK_LANGUAGES = [
   'Italiano',
   'Другой',
 ] as const;
+
+export { formatBookYear } from '../utils/formatters';

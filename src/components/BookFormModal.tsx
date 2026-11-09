@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Book, BookFormData, Genre } from '../types/book';
-import { BOOK_LANGUAGES } from '../types/book';
+import { BOOK_LANGUAGES, formatBookYear } from '../types/book';
 import { getGenres } from '../api/booksApi';
 import { uploadBookCover } from '../api/uploadApi';
 import {
@@ -422,7 +422,7 @@ const FormContent: React.FC<FormContentProps> = ({
                 )}
                 {year && (
                   <span className="preview-year-pill">
-                    <CalendarIcon size={11} /> {year} г.
+                    <CalendarIcon size={11} /> {formatBookYear(year)}
                   </span>
                 )}
                 {selectedGenres.length > 0 && (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../../store/authStore';
 import { getBooks, getGenres, getSettlements, createBook, updateBook, deleteBook } from '../../../api/booksApi';
-import type { Book, BookFormData, Genre, Settlement, BooksPagination } from '../../../types/book';
+import type { Book, BookFormData, Genre, Settlement, BooksPagination, BookSortOption } from '../../../types/book';
 import type { ToastMessage } from '../../../components/Toast';
 
 export interface UseBooksPageOptions {
@@ -44,6 +44,9 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   const [nearMe, setNearMe] = useState(false);
   const [radius, setRadius] = useState(50); // km
   const [nearCenter, setNearCenter] = useState<{ name: string; lat: number; lng: number } | null>(null);
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState<BookSortOption>('newest');
 
   // Modals state
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -118,6 +121,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     nearMe,
     radius,
     nearCenter,
+    sortBy,
   ]);
 
   // Fetch books when filters or search change
@@ -129,10 +133,10 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
     const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
 
-    const effectiveNearLat = nearMe
+    const effectiveNearLat = (nearMe || sortBy === 'distance')
       ? (nearCenter ? nearCenter.lat : user?.latitude != null ? user.latitude : undefined)
       : undefined;
-    const effectiveNearLng = nearMe
+    const effectiveNearLng = (nearMe || sortBy === 'distance')
       ? (nearCenter ? nearCenter.lng : user?.longitude != null ? user.longitude : undefined)
       : undefined;
 
@@ -147,6 +151,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       yearTo: parsedYearTo,
       page,
       limit,
+      sortBy,
       nearLat: effectiveNearLat,
       nearLng: effectiveNearLng,
       radius: nearMe && (effectiveNearLat != null && effectiveNearLng != null) ? radius : undefined,
@@ -189,6 +194,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     user?.longitude,
     page,
     limit,
+    sortBy,
   ]);
 
   const handleManualRefresh = async () => {
@@ -209,6 +215,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
           yearTo: parsedYearTo,
           page,
           limit,
+          sortBy,
           nearLat: nearMe && user?.latitude != null ? user.latitude : undefined,
           nearLng: nearMe && user?.longitude != null ? user.longitude : undefined,
           radius: nearMe ? radius : undefined,
@@ -286,6 +293,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     setYearTo('');
     setNearMe(false);
     setNearCenter(null);
+    setSortBy('newest');
     setPage(1);
   };
 
@@ -296,7 +304,8 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     selectedSettlements.length > 0 ||
     yearFrom.trim() ||
     yearTo.trim() ||
-    nearMe
+    nearMe ||
+    sortBy !== 'newest'
   );
 
   // Modal open/close helpers
@@ -392,6 +401,9 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     setRadius,
     nearCenter,
     setNearCenter,
+    // Sorting
+    sortBy,
+    setSortBy,
     // Global filter resets & state
     resetFilters,
     hasActiveFilters,

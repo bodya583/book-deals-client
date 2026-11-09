@@ -1,10 +1,11 @@
 import React from 'react';
-import type { BooksPagination as BooksPaginationType } from '../../../types/book';
+import type { BooksPagination as BooksPaginationType, BookSortOption } from '../../../types/book';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
+  ArrowUpDownIcon,
 } from '../../../components/icons';
 
 interface BooksPaginationProps {
@@ -14,7 +15,18 @@ interface BooksPaginationProps {
   variant?: 'top' | 'bottom';
   className?: string;
   limitOptions?: number[];
+  sortBy?: BookSortOption;
+  onSortChange?: (sort: BookSortOption) => void;
 }
+
+const SORT_OPTIONS: { value: BookSortOption; label: string }[] = [
+  { value: 'newest', label: '🆕 Сначала новые' },
+  { value: 'popular', label: '🔥 По популярности' },
+  { value: 'distance', label: '📍 По расстоянию (ближе)' },
+  { value: 'title_asc', label: '🔤 По названию (А–Я)' },
+  { value: 'title_desc', label: '🔤 По названию (Я–А)' },
+  { value: 'oldest', label: '⏳ Сначала старые' },
+];
 
 export const BooksPagination: React.FC<BooksPaginationProps> = ({
   pagination,
@@ -23,6 +35,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
   variant = 'bottom',
   className = '',
   limitOptions = [12, 24, 36, 48, 96],
+  sortBy = 'newest',
+  onSortChange,
 }) => {
   const { page, limit, total, totalPages } = pagination;
 
@@ -35,7 +49,104 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
   const fromItem = Math.min(total, (page - 1) * limit + 1);
   const toItem = Math.min(total, page * limit);
 
-  // Generate pagination page numbers with smart ellipsis
+  // Top variant: compact & uncluttered, includes sorting & quick controls without wrapping awkwardly
+  if (variant === 'top') {
+    return (
+      <nav
+        className={`books-pagination books-pagination-top ${className}`}
+        aria-label="Верхняя панель пагинации и сортировки"
+      >
+        {/* Left: Range Info */}
+        <div className="pagination-info">
+          <span className="pagination-info-text">
+            Показано <strong className="pagination-strong">{fromItem}–{toItem}</strong> из{' '}
+            <strong className="pagination-strong">{total}</strong>
+          </span>
+          {totalPages > 1 && (
+            <span className="pagination-page-indicator">
+              (Стр. {page} из {totalPages})
+            </span>
+          )}
+        </div>
+
+        {/* Right: Controls Cluster (Sort + Compact Pager + Compact Limit) */}
+        <div className="pagination-top-controls">
+          {/* Sorting dropdown */}
+          {onSortChange && (
+            <div className="pagination-sort-wrapper">
+              <span className="pagination-sort-label">Сортировка:</span>
+              <div className="pagination-sort-select-box">
+                <ArrowUpDownIcon size={14} className="pagination-sort-icon" />
+                <select
+                  id="books-sort-select"
+                  className="pagination-sort-select"
+                  value={sortBy}
+                  onChange={(e) => onSortChange(e.target.value as BookSortOption)}
+                  aria-label="Сортировка каталога книг"
+                  title="Выбрать порядок сортировки"
+                >
+                  {SORT_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Quick mini-pager if more than 1 page */}
+          {totalPages > 1 && (
+            <div className="pagination-top-nav" aria-label="Быстрый переход по страницам">
+              <button
+                type="button"
+                className="pagination-btn pagination-btn-mini"
+                disabled={page <= 1}
+                onClick={() => onPageChange(page - 1, false)}
+                title="Предыдущая страница"
+                aria-label="Предыдущая страница"
+              >
+                <ChevronLeftIcon size={13} />
+              </button>
+              <span className="pagination-mini-counter">
+                {page} / {totalPages}
+              </span>
+              <button
+                type="button"
+                className="pagination-btn pagination-btn-mini"
+                disabled={page >= totalPages}
+                onClick={() => onPageChange(page + 1, false)}
+                title="Следующая страница"
+                aria-label="Следующая страница"
+              >
+                <ChevronRightIcon size={13} />
+              </button>
+            </div>
+          )}
+
+          {/* Compact limit selector */}
+          <div className="pagination-top-limit">
+            <span className="pagination-limit-caption">По:</span>
+            <select
+              className="pagination-limit-select"
+              value={limit}
+              onChange={(e) => onLimitChange(Number(e.target.value))}
+              aria-label="Книг на странице"
+              title="Количество книг на странице"
+            >
+              {limitOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
+  // Bottom variant: full rich pagination with smart ellipsis
   const getPageNumbers = (): (number | string)[] => {
     const pages: (number | string)[] = [];
     const maxVisible = 7;
@@ -45,25 +156,21 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
         pages.push(i);
       }
     } else {
-      // Always include page 1
       pages.push(1);
 
       if (page <= 4) {
-        // Near beginning: 1 2 3 4 5 ... totalPages
         for (let i = 2; i <= 5; i++) {
           pages.push(i);
         }
         pages.push('ellipsis-right');
         pages.push(totalPages);
       } else if (page >= totalPages - 3) {
-        // Near end: 1 ... (totalPages-4) (totalPages-3) (totalPages-2) (totalPages-1) totalPages
         pages.push('ellipsis-left');
         for (let i = totalPages - 4; i < totalPages; i++) {
           pages.push(i);
         }
         pages.push(totalPages);
       } else {
-        // Middle: 1 ... (page-1) page (page+1) ... totalPages
         pages.push('ellipsis-left');
         pages.push(page - 1);
         pages.push(page);
@@ -80,8 +187,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
 
   return (
     <nav
-      className={`books-pagination books-pagination-${variant} ${className}`}
-      aria-label={`Пагинация (${variant === 'top' ? 'сверху' : 'снизу'})`}
+      className={`books-pagination books-pagination-bottom ${className}`}
+      aria-label="Пагинация снизу"
     >
       {/* 1. Range Info */}
       <div className="pagination-info">

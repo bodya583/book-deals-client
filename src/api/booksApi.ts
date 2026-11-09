@@ -1,5 +1,5 @@
 import api from './axiosInstance';
-import type { Book, BooksResponse, BookFormData, Genre, Settlement } from '../types/book';
+import type { Book, BooksResponse, BookFormData, Genre, Settlement, BookSortOption } from '../types/book';
 
 export interface GetBooksParams {
   userId?: string;
@@ -14,6 +14,7 @@ export interface GetBooksParams {
   yearTo?: number;
   page?: number;
   limit?: number;
+  sortBy?: BookSortOption;
   // Proximity filter
   nearLat?: number;
   nearLng?: number;

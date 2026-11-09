@@ -258,3 +258,12 @@ export const MessageSquareIcon: React.FC<IconProps> = ({ size = 16, className = 
   </svg>
 );
 
+export const ArrowUpDownIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m21 16-4 4-4-4" />
+    <path d="M17 20V4" />
+    <path d="m3 8 4-4 4 4" />
+    <path d="M7 4v16" />
+  </svg>
+);
+

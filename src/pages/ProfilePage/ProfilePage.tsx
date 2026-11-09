@@ -7,6 +7,7 @@ import { getUserProfileById } from '../../api/usersApi';
 import { setBookTradeStatus } from '../../api/booksApi';
 import api from '../../api/axiosInstance';
 import type { Book } from '../../types/book';
+import { formatBookYear } from '../../types/book';
 import {
   TradeIcon,
   BookOpenIcon,
@@ -511,7 +512,7 @@ export const ProfilePage: React.FC = () => {
                       </h4>
                       {book.year && (
                         <span style={{ fontSize: '0.75rem', color: '#888880' }}>
-                          {book.year} г.
+                          {formatBookYear(book.year)}
                         </span>
                       )}
                       {book.genres && book.genres.length > 0 && (
@@ -784,7 +785,7 @@ export const ProfilePage: React.FC = () => {
                             </h4>
                             {book.year && (
                               <span style={{ fontSize: '0.75rem', color: '#888880' }}>
-                                {book.year} г.
+                                {formatBookYear(book.year)}
                               </span>
                             )}
                           </div>

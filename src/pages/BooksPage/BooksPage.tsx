@@ -52,6 +52,8 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
     setRadius,
     nearCenter,
     setNearCenter,
+    sortBy,
+    setSortBy,
     resetFilters,
     hasActiveFilters,
     handleManualRefresh,
@@ -121,6 +123,8 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
           onPageChange={changePage}
           onLimitChange={changeLimit}
           variant="top"
+          sortBy={sortBy}
+          onSortChange={setSortBy}
         />
       )}
 
