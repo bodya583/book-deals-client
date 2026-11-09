@@ -23,9 +23,18 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     onClose();
   };
 
-  // Handle ESC key press
+  // Handle ESC key press & body scroll locking
   useEffect(() => {
     if (!isOpen) return;
+
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !loading) {
@@ -34,7 +43,11 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
+    };
   }, [isOpen, loading, onClose]);
 
   if (!isOpen || !book) return null;

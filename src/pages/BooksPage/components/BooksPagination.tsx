@@ -20,12 +20,12 @@ interface BooksPaginationProps {
 }
 
 const SORT_OPTIONS: { value: BookSortOption; label: string }[] = [
-  { value: 'newest', label: '🆕 Сначала новые' },
-  { value: 'popular', label: '🔥 По популярности' },
-  { value: 'distance', label: '📍 По расстоянию (ближе)' },
-  { value: 'title_asc', label: '🔤 По названию (А–Я)' },
-  { value: 'title_desc', label: '🔤 По названию (Я–А)' },
-  { value: 'oldest', label: '⏳ Сначала старые' },
+  { value: 'newest', label: 'Сначала новые' },
+  { value: 'popular', label: 'По популярности' },
+  { value: 'distance', label: 'По расстоянию' },
+  { value: 'title_asc', label: 'По названию (А–Я)' },
+  { value: 'title_desc', label: 'По названию (Я–А)' },
+  { value: 'oldest', label: 'Сначала старые' },
 ];
 
 export const BooksPagination: React.FC<BooksPaginationProps> = ({
@@ -106,7 +106,7 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
                 title="Предыдущая страница"
                 aria-label="Предыдущая страница"
               >
-                <ChevronLeftIcon size={13} />
+                <ChevronLeftIcon size={15} />
               </button>
               <span className="pagination-mini-counter">
                 {page} / {totalPages}
@@ -119,7 +119,7 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
                 title="Следующая страница"
                 aria-label="Следующая страница"
               >
-                <ChevronRightIcon size={13} />
+                <ChevronRightIcon size={15} />
               </button>
             </div>
           )}

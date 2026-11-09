@@ -103,8 +103,19 @@ const FormContent: React.FC<FormContentProps> = ({
     };
   }, []);
 
-  // Handle ESC key press
+  // Handle ESC key press & body scroll locking
   useEffect(() => {
+    if (!isOpen) return;
+
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !loading) {
         onClose();
@@ -112,8 +123,12 @@ const FormContent: React.FC<FormContentProps> = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [loading, onClose]);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
+    };
+  }, [isOpen, loading, onClose]);
 
   const toggleGenre = (genreName: string) => {
     setSelectedGenres((prev) =>
