@@ -511,10 +511,16 @@ export const TradesPage: React.FC = () => {
             ) : (
               <div className="trades-list">
             {filteredTrades.map((trade) => {
-              if (trade.senderId === trade.receiverId) return null;
+              const isSender = trade.senderId === currentUser?.id || (trade.isSender && trade.receiverId !== currentUser?.id);
+              const rawPartner = isSender ? trade.receiver : trade.sender;
+              const partner = rawPartner?.id === currentUser?.id
+                ? (trade.sender?.id === currentUser?.id ? trade.receiver : trade.sender)
+                : rawPartner;
 
-              const isSender = trade.isSender ?? (trade.senderId === currentUser?.id);
-              const partner = (isSender ? trade.receiver : trade.sender) || trade.sender;
+              if (trade.senderId === trade.receiverId || trade.sender?.id === trade.receiver?.id || partner?.id === currentUser?.id) {
+                return null;
+              }
+
               const isPartnerInitiator = !isSender;
 
               // Perspective: What I give vs What I receive
@@ -593,6 +599,16 @@ export const TradesPage: React.FC = () => {
                   }}
                   title="Нажмите, чтобы открыть подробности сделки и чат согласования"
                 >
+                  {/* Top-Right Notification Counter Badge */}
+                  {unreadBadgeCount > 0 && (
+                    <span
+                      className="trade-card-badge-circle"
+                      title={`${unreadBadgeCount} ${unreadBadgeCount === 1 ? 'новое сообщение или изменение условий' : 'новых сообщений или изменений'}`}
+                    >
+                      {unreadBadgeCount}
+                    </span>
+                  )}
+
                   {/* Card Header: Partner info + status */}
                   <div className="trade-card-header">
                     <Link
@@ -634,14 +650,6 @@ export const TradesPage: React.FC = () => {
                     </Link>
 
                     <div className="trade-card-header-badges">
-                      {unreadBadgeCount > 0 && (
-                        <span
-                          className="trade-card-badge-circle"
-                          title={`${unreadBadgeCount} ${unreadBadgeCount === 1 ? 'новое сообщение или изменение условий' : 'новых сообщений или изменений'}`}
-                        >
-                          {unreadBadgeCount}
-                        </span>
-                      )}
                       {renderRoleBadge()}
                       {renderStatusBadge(trade.status, trade)}
                     </div>

@@ -414,9 +414,13 @@ export const TradeDetailsPage: React.FC = () => {
     );
   }
 
-  const partner = trade.isSender ? trade.receiver : trade.sender;
-  const myBooksToGive = trade.isSender ? trade.offeredBooks : trade.requestedBooks;
-  const myBooksToReceive = trade.isSender ? trade.requestedBooks : trade.offeredBooks;
+  const isSender = trade.senderId === currentUser?.id || (trade.isSender && trade.receiverId !== currentUser?.id);
+  const rawPartner = isSender ? trade.receiver : trade.sender;
+  const partner = rawPartner?.id === currentUser?.id
+    ? (trade.sender?.id === currentUser?.id ? trade.receiver : trade.sender)
+    : rawPartner;
+  const myBooksToGive = isSender ? trade.offeredBooks : trade.requestedBooks;
+  const myBooksToReceive = isSender ? trade.requestedBooks : trade.offeredBooks;
 
   return (
     <div className="trades-page">
