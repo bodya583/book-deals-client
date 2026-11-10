@@ -33,8 +33,8 @@ export const completeTrade = async (id: string) => {
   return data;
 };
 
-export const rejectTrade = async (id: string) => {
-  const { data } = await api.post<Trade>(`/trades/${id}/reject`);
+export const rejectTrade = async (id: string, reason?: string) => {
+  const { data } = await api.post<Trade>(`/trades/${id}/reject`, { reason });
   return data;
 };
 

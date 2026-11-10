@@ -25,6 +25,7 @@ import {
   CloseIcon,
 } from '../../components/icons';
 import Toast, { type ToastMessage } from '../../components/Toast';
+import RejectTradeModal from '../../components/RejectTradeModal';
 import '../trades.css';
 
 type TabType = 'requests' | 'agreed' | 'completed';
@@ -50,6 +51,7 @@ export const TradesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('turn');
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [rejectModalTradeId, setRejectModalTradeId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -120,14 +122,17 @@ export const TradesPage: React.FC = () => {
     }
   };
 
-  const handleReject = async (tradeId: string) => {
-    if (!window.confirm('Отклонить это предложение обмена?')) {
-      return;
-    }
+  const handleReject = (tradeId: string) => {
+    setRejectModalTradeId(tradeId);
+  };
+
+  const handleConfirmReject = async (reason?: string) => {
+    if (!rejectModalTradeId) return;
     try {
-      setActionLoadingId(tradeId);
-      await rejectTrade(tradeId);
+      setActionLoadingId(rejectModalTradeId);
+      await rejectTrade(rejectModalTradeId, reason);
       addToast('Предложение обмена отклонено', 'success');
+      setRejectModalTradeId(null);
       await fetchTradeData();
     } catch (err: any) {
       addToast(err.response?.data?.message || 'Ошибка при отклонении трейда', 'error');
@@ -796,6 +801,13 @@ export const TradesPage: React.FC = () => {
           </main>
         </div>
       </div>
+
+      <RejectTradeModal
+        isOpen={Boolean(rejectModalTradeId)}
+        onClose={() => setRejectModalTradeId(null)}
+        onConfirm={handleConfirmReject}
+        loading={Boolean(actionLoadingId)}
+      />
     </div>
   );
 };

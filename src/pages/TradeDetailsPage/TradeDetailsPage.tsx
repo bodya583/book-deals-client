@@ -29,6 +29,7 @@ import {
   HandoverToolbar,
   renderProposalBubbleContent,
 } from './components/TradeHandoverSection';
+import RejectTradeModal from '../../components/RejectTradeModal';
 import '../trades.css';
 
 export const TradeDetailsPage: React.FC = () => {
@@ -40,6 +41,7 @@ export const TradeDetailsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
 
   // Trade Chat state
   const [messages, setMessages] = useState<TradeMessage[]>([]);
@@ -50,12 +52,34 @@ export const TradeDetailsPage: React.FC = () => {
 
   const handover = useMemo(() => parseHandoverFromMessages(messages), [messages]);
 
+  const lastLocationProposalId = useMemo(() => {
+    return [...messages]
+      .reverse()
+      .find((m) => m.text?.includes('Предложение точки передачи:'))?.id;
+  }, [messages]);
+
+  const lastTimeProposalId = useMemo(() => {
+    return [...messages]
+      .reverse()
+      .find((m) => m.text?.includes('Предложение времени встречи:'))?.id;
+  }, [messages]);
+
   const addToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToasts([{ id: String(Date.now()), text, type }]);
   };
 
   const removeToast = (toastId: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  };
+
+  const computeSimpleHash = (str: string): string => {
+    let hash = 0;
+    const s = str.trim().toLowerCase();
+    for (let i = 0; i < s.length; i++) {
+      hash = (hash << 5) - hash + s.charCodeAt(i);
+      hash |= 0;
+    }
+    return `h_${Math.abs(hash)}`;
   };
 
   const handleSendCustomMessage = async (text: string) => {
@@ -72,11 +96,57 @@ export const TradeDetailsPage: React.FC = () => {
   };
 
   const handleAcceptLocation = async (loc: string) => {
+    const locHash = computeSimpleHash(loc);
+    const alreadyAgreed =
+      trade?.agreedLocationHash === locHash ||
+      handover.agreedLocation?.trim().toLowerCase() === loc.trim().toLowerCase();
+
+    if (alreadyAgreed) {
+      // Хэш не изменился: не засоряем чат, показываем сообщение только для себя
+      const selfNotice: TradeMessage = {
+        id: `self-notice-loc-${Date.now()}`,
+        tradeId: trade?.id || '',
+        senderId: currentUser?.id || '',
+        sender: currentUser as any,
+        text: `Точка передачи уже согласована («${loc}»). Повторное сообщение в чат не отправлено.`,
+        createdAt: new Date().toISOString(),
+        isSelfOnly: true,
+      };
+      setMessages((prev) => [...prev, selfNotice]);
+      addToast(`Точка передачи уже согласована: ${loc}`, 'info');
+      return;
+    }
+
+    // Первый раз или хэш изменился: сохраняем хэш в сделке и подтверждаем в чате
+    setTrade((prev) => (prev ? { ...prev, agreedLocationHash: locHash } : prev));
     await handleSendCustomMessage(`Точка встречи согласована: ${loc}`);
     addToast('Точка встречи согласована!', 'success');
   };
 
   const handleAcceptTime = async (tm: string) => {
+    const timeHash = computeSimpleHash(tm);
+    const alreadyAgreed =
+      trade?.agreedTimeHash === timeHash ||
+      handover.agreedTime?.trim().toLowerCase() === tm.trim().toLowerCase();
+
+    if (alreadyAgreed) {
+      // Хэш не изменился: не засоряем чат, показываем сообщение только для себя
+      const selfNotice: TradeMessage = {
+        id: `self-notice-time-${Date.now()}`,
+        tradeId: trade?.id || '',
+        senderId: currentUser?.id || '',
+        sender: currentUser as any,
+        text: `Время встречи уже согласовано («${tm}»). Повторное сообщение в чат не отправлено.`,
+        createdAt: new Date().toISOString(),
+        isSelfOnly: true,
+      };
+      setMessages((prev) => [...prev, selfNotice]);
+      addToast(`Время встречи уже согласовано: ${tm}`, 'info');
+      return;
+    }
+
+    // Первый раз или хэш изменился: сохраняем хэш в сделке и подтверждаем в чате
+    setTrade((prev) => (prev ? { ...prev, agreedTimeHash: timeHash } : prev));
     await handleSendCustomMessage(`Время встречи согласовано: ${tm}`);
     addToast('Время встречи согласовано!', 'success');
   };
@@ -175,15 +245,19 @@ export const TradeDetailsPage: React.FC = () => {
     }
   };
 
-  const handleReject = async () => {
-    if (!id || !window.confirm('Отклонить это предложение обмена?')) {
-      return;
-    }
+  const handleReject = () => {
+    setRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = async (reason?: string) => {
+    if (!id) return;
     try {
       setActionLoading(true);
-      const updated = await rejectTrade(id);
+      const updated = await rejectTrade(id, reason);
       setTrade(updated);
+      setRejectModalOpen(false);
       addToast('Предложение обмена отклонено', 'success');
+      await fetchMessages();
     } catch (err: any) {
       addToast(err.response?.data?.message || 'Ошибка при отклонении трейда', 'error');
     } finally {
@@ -613,7 +687,21 @@ export const TradeDetailsPage: React.FC = () => {
               </div>
             ) : (
               messages.map((msg) => {
+                if (msg.isSelfOnly) {
+                  return (
+                    <div key={msg.id} className="trade-chat-self-notice-row">
+                      <div className="trade-chat-self-notice-pill">
+                        <span className="self-notice-badge">Только для вас</span>
+                        <span className="self-notice-text">{msg.text}</span>
+                      </div>
+                    </div>
+                  );
+                }
+
                 const isMine = msg.senderId === currentUser?.id;
+                const isLatestLocation = msg.id === lastLocationProposalId;
+                const isLatestTime = msg.id === lastTimeProposalId;
+
                 return (
                   <div
                     key={msg.id}
@@ -637,6 +725,8 @@ export const TradeDetailsPage: React.FC = () => {
                       {renderProposalBubbleContent(
                         msg,
                         isMine,
+                        isLatestLocation,
+                        isLatestTime,
                         handleAcceptLocation,
                         handleAcceptTime
                       )}
@@ -675,6 +765,13 @@ export const TradeDetailsPage: React.FC = () => {
           </form>
         </div>
       </div>
+
+      <RejectTradeModal
+        isOpen={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        onConfirm={handleConfirmReject}
+        loading={actionLoading}
+      />
     </div>
   );
 };

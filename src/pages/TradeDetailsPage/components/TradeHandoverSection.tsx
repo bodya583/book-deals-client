@@ -308,6 +308,8 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
 export const renderProposalBubbleContent = (
   msg: TradeMessage,
   isMine: boolean,
+  isLatestLocation: boolean,
+  isLatestTime: boolean,
   onAcceptLocation: (loc: string) => Promise<void>,
   onAcceptTime: (timeStr: string) => Promise<void>
 ): React.ReactNode => {
@@ -324,18 +326,24 @@ export const renderProposalBubbleContent = (
         </div>
         <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>{loc}</div>
         {!isMine ? (
-          <button
-            type="button"
-            className="btn-accept-proposal"
-            onClick={() => onAcceptLocation(loc)}
-            title="Принять предложенное место встречи"
-          >
-            <CheckIcon size={14} />
-            <span>Согласовать это место</span>
-          </button>
+          isLatestLocation ? (
+            <button
+              type="button"
+              className="btn-accept-proposal"
+              onClick={() => onAcceptLocation(loc)}
+              title="Принять предложенное место встречи"
+            >
+              <CheckIcon size={14} />
+              <span>Согласовать это место</span>
+            </button>
+          ) : (
+            <span className="proposal-superseded-tag" title="Это предложение точки передачи было заменено более поздним запросом">
+              Заменено более новым предложением
+            </span>
+          )
         ) : (
           <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
-            Вы предложили это место. Ожидается ответ партнёра.
+            {isLatestLocation ? 'Вы предложили это место. Ожидается ответ партнёра.' : 'Вы предложили это место (устарело).'}
           </span>
         )}
       </div>
@@ -370,19 +378,25 @@ export const renderProposalBubbleContent = (
         </div>
         <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>{tm}</div>
         {!isMine ? (
-          <button
-            type="button"
-            className="btn-accept-proposal"
-            style={{ background: '#2563eb' }}
-            onClick={() => onAcceptTime(tm)}
-            title="Принять предложенное время встречи"
-          >
-            <CheckIcon size={14} />
-            <span>Согласовать это время</span>
-          </button>
+          isLatestTime ? (
+            <button
+              type="button"
+              className="btn-accept-proposal"
+              style={{ background: '#2563eb' }}
+              onClick={() => onAcceptTime(tm)}
+              title="Принять предложенное время встречи"
+            >
+              <CheckIcon size={14} />
+              <span>Согласовать это время</span>
+            </button>
+          ) : (
+            <span className="proposal-superseded-tag" title="Это предложение времени встречи было заменено более поздним запросом">
+              Заменено более новым предложением
+            </span>
+          )
         ) : (
           <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
-            Вы предложили это время. Ожидается ответ партнёра.
+            {isLatestTime ? 'Вы предложили это время. Ожидается ответ партнёра.' : 'Вы предложили это время (устарело).'}
           </span>
         )}
       </div>

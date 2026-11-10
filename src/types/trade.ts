@@ -34,6 +34,8 @@ export interface Trade {
   isReceiver?: boolean;
   senderCompleted?: boolean;
   receiverCompleted?: boolean;
+  agreedLocationHash?: string;
+  agreedTimeHash?: string;
 }
 
 export interface TradeCounts {
@@ -59,4 +61,5 @@ export interface TradeMessage {
   sender: TradePartner;
   text: string;
   createdAt: string;
+  isSelfOnly?: boolean;
 }
