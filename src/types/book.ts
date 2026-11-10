@@ -3,6 +3,8 @@ export interface BookOwner {
   username: string;
   photoURL?: string | null;
   city?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface Settlement {

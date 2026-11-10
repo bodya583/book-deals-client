@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useBooksPage from './hooks/useBooksPage';
 import BooksHeader from './components/BooksHeader';
 import BooksToolbar from './components/BooksToolbar';
 import BooksPagination from './components/BooksPagination';
 import BooksEmptyState from './components/BooksEmptyState';
 import BookCard from '../../components/BookCard';
+import BooksMap from '../../components/BooksMap/BooksMap';
 import BooksModals from '../../components/BooksModals';
 import '../books.css';
 
@@ -13,6 +14,7 @@ interface BooksPageProps {
 }
 
 export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
   const {
     user,
@@ -117,7 +119,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
         </div>
       )}
 
-      {/* 4. Top Pagination (Pages selector & limit on page) */}
+      {/* 4. Top Pagination (Pages selector & limit on page & view switcher) */}
       {!loading && (books.length > 0 || isFetching) && (
         <BooksPagination
           pagination={pagination}
@@ -126,10 +128,12 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
           variant="top"
           sortBy={sortBy}
           onSortChange={setSortBy}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
       )}
 
-      {/* 5. Content Area (Loading / Empty / Grid) */}
+      {/* 5. Content Area (Loading / Empty / Map / Grid) */}
       {loading ? (
         <div className="books-loading-state">
           <div className="books-spinner" />
@@ -148,6 +152,14 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
           onResetFilters={resetFilters}
           onAddBook={modalsActions.openCreate}
         />
+      ) : viewMode === 'map' ? (
+        <div className="books-map-section" style={{ margin: '1rem 0' }}>
+          <BooksMap
+            books={books}
+            userCoords={{ latitude: user?.latitude ?? null, longitude: user?.longitude ?? null }}
+            onViewBook={modalsActions.openDetails}
+          />
+        </div>
       ) : (
         <div className={`books-grid ${isFetching ? 'is-fetching' : ''}`}>
           {books.map((book) => (

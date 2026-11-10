@@ -17,6 +17,8 @@ interface BooksPaginationProps {
   limitOptions?: number[];
   sortBy?: BookSortOption;
   onSortChange?: (sort: BookSortOption) => void;
+  viewMode?: 'grid' | 'map';
+  onViewModeChange?: (mode: 'grid' | 'map') => void;
 }
 
 const SORT_OPTIONS: { value: BookSortOption; label: string }[] = [
@@ -37,6 +39,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
   limitOptions = [12, 24, 36, 48, 96],
   sortBy = 'newest',
   onSortChange,
+  viewMode = 'grid',
+  onViewModeChange,
 }) => {
   const { page, limit, total, totalPages } = pagination;
 
@@ -69,8 +73,30 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
           )}
         </div>
 
-        {/* Right: Controls Cluster (Sort + Compact Pager + Compact Limit) */}
+        {/* Right: Controls Cluster (Sort + View Switcher + Compact Pager + Compact Limit) */}
         <div className="pagination-top-controls">
+          {/* View switcher (Grid vs Map) */}
+          {onViewModeChange && (
+            <div className="catalog-view-switcher" role="group" aria-label="Режим отображения каталога">
+              <button
+                type="button"
+                className={`catalog-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => onViewModeChange('grid')}
+                title="Отобразить плиткой"
+              >
+                <span>⊞ Сетка</span>
+              </button>
+              <button
+                type="button"
+                className={`catalog-view-btn ${viewMode === 'map' ? 'active' : ''}`}
+                onClick={() => onViewModeChange('map')}
+                title="Отобразить на интерактивной карте с защитой приватности"
+              >
+                <span>🗺️ Карта</span>
+              </button>
+            </div>
+          )}
+
           {/* Sorting dropdown */}
           {onSortChange && (
             <div className="pagination-sort-wrapper">
