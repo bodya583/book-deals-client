@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../../store/authStore';
 import { getBooks, getGenres, getSettlements, createBook, updateBook, deleteBook } from '../../../api/booksApi';
-import type { Book, BookFormData, Genre, Settlement, BooksPagination, BookSortOption } from '../../../types/book';
+import type { Book, BookFormData, Genre, Settlement } from '../../../types/book';
 import type { ToastMessage } from '../../../components/Toast';
+import { useBookFilters } from './useBookFilters';
+import { useBookPagination } from './useBookPagination';
+import { useBookModals } from './useBookModals';
 
 export interface UseBooksPageOptions {
   scope?: 'my' | 'all';
@@ -20,360 +23,176 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   const [error, setError] = useState('');
   const hasLoadedInitial = useRef(false);
 
-  // Pagination state
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(12);
-  const [pagination, setPagination] = useState<BooksPagination>({
-    total: 0,
-    page: 1,
-    limit: 12,
-    totalPages: 1,
-  });
-
-  // Filters state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
-  const [strictGenres, setStrictGenres] = useState(false);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [yearFrom, setYearFrom] = useState('');
-  const [yearTo, setYearTo] = useState('');
-  
-  // Settlements filter (по населённым пунктам / городам)
-  const [selectedSettlements, setSelectedSettlements] = useState<string[]>([]);
-
-  // Proximity / Distance filter (по дистанции)
-  const [nearMe, setNearMe] = useState(false);
-  const [radius, setRadius] = useState(50); // km
-  const [nearCenter, setNearCenter] = useState<{ name: string; lat: number; lng: number } | null>(null);
-
-  // Sorting state
-  const [sortBy, setSortBy] = useState<BookSortOption>('newest');
-
-  // View mode (grid vs map)
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
-
-  // Modals state
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [formModal, setFormModal] = useState<{
-    isOpen: boolean;
-    mode: 'create' | 'edit';
-    book: Book | null;
-  }>({
-    isOpen: false,
-    mode: 'create',
-    book: null,
-  });
-  const [deletingBook, setDeletingBook] = useState<Book | null>(null);
+  // Composed Sub-Hooks
+  const filters = useBookFilters();
+  const paginationHook = useBookPagination(12);
+  const modals = useBookModals();
 
   // Toast notifications
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const showToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
+  const showToast = useCallback((text: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Date.now().toString() + Math.random().toString();
     setToasts((prev) => [...prev, { id, text, type }]);
-  };
+  }, []);
 
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  // Search debounce
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Fetch available genres from backend
-  const fetchGenres = useCallback(async () => {
-    try {
-      const data = await getGenres();
-      setGenres(data || []);
-    } catch {
-      // ignore
-    }
   }, []);
 
-  // Fetch available settlements from backend
-  const fetchSettlements = useCallback(async () => {
+  // Fetch available genres and settlements
+  const fetchMetadata = useCallback(async () => {
     try {
-      const data = await getSettlements();
-      setSettlements(data || []);
+      const [genresData, settlementsData] = await Promise.all([
+        getGenres().catch(() => []),
+        getSettlements().catch(() => []),
+      ]);
+      setGenres(genresData || []);
+      setSettlements(settlementsData || []);
     } catch {
       // ignore
     }
   }, []);
 
   useEffect(() => {
-    fetchGenres();
-    fetchSettlements();
-  }, [fetchGenres, fetchSettlements]);
+    fetchMetadata();
+  }, [fetchMetadata]);
 
-  // Reset page to 1 whenever search, scope, or any filter changes
+  // Reset page to 1 whenever any filter changes
   useEffect(() => {
-    setPage(1);
+    paginationHook.setPage(1);
   }, [
     scope,
-    debouncedSearch,
-    selectedGenres,
-    strictGenres,
-    selectedLanguages,
-    selectedSettlements,
-    yearFrom,
-    yearTo,
-    nearMe,
-    radius,
-    nearCenter,
-    sortBy,
+    filters.debouncedSearch,
+    filters.selectedGenres,
+    filters.strictGenres,
+    filters.selectedLanguages,
+    filters.selectedSettlements,
+    filters.yearFrom,
+    filters.yearTo,
+    filters.nearMe,
+    filters.radius,
+    filters.nearCenter,
+    filters.sortBy,
   ]);
 
-  // Fetch books when filters or search change
-  useEffect(() => {
+  // Fetch books from backend
+  const fetchBooks = useCallback(async () => {
     if (scope === 'my' && !userId) return;
-    let isMounted = true;
 
-    // Use full loading only on initial mount before any books have loaded
     if (!hasLoadedInitial.current) {
       setLoading(true);
     } else {
       setIsFetching(true);
     }
 
-    const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
-    const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
+    const parsedYearFrom = filters.yearFrom.trim() && !isNaN(Number(filters.yearFrom)) ? Number(filters.yearFrom) : undefined;
+    const parsedYearTo = filters.yearTo.trim() && !isNaN(Number(filters.yearTo)) ? Number(filters.yearTo) : undefined;
 
-    const effectiveNearLat = (nearMe || sortBy === 'distance')
-      ? (nearCenter ? nearCenter.lat : user?.latitude != null ? user.latitude : undefined)
+    const effectiveNearLat = (filters.nearMe || filters.sortBy === 'distance')
+      ? (filters.nearCenter ? filters.nearCenter.lat : user?.latitude != null ? user.latitude : undefined)
       : undefined;
-    const effectiveNearLng = (nearMe || sortBy === 'distance')
-      ? (nearCenter ? nearCenter.lng : user?.longitude != null ? user.longitude : undefined)
+    const effectiveNearLng = (filters.nearMe || filters.sortBy === 'distance')
+      ? (filters.nearCenter ? filters.nearCenter.lng : user?.longitude != null ? user.longitude : undefined)
       : undefined;
 
-    const effectiveLimit = viewMode === 'map' ? 100 : limit;
-    const effectivePage = viewMode === 'map' ? 1 : page;
+    const effectiveLimit = filters.viewMode === 'map' ? 100 : paginationHook.limit;
+    const effectivePage = filters.viewMode === 'map' ? 1 : paginationHook.page;
 
-    getBooks({
-      userId: scope === 'my' ? userId : undefined,
-      search: debouncedSearch.trim() || undefined,
-      genres: selectedGenres.length > 0 ? selectedGenres : undefined,
-      strictGenres,
-      languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
-      cities: selectedSettlements.length > 0 ? selectedSettlements : undefined,
-      yearFrom: parsedYearFrom,
-      yearTo: parsedYearTo,
-      page: effectivePage,
-      limit: effectiveLimit,
-      sortBy,
-      nearLat: effectiveNearLat,
-      nearLng: effectiveNearLng,
-      radius: nearMe && (effectiveNearLat != null && effectiveNearLng != null) ? radius : undefined,
-    })
-      .then((data) => {
-        if (isMounted) {
-          setBooks(data.books || []);
-          if (data.pagination) {
-            setPagination(data.pagination);
-          }
-          setError('');
-          setLoading(false);
-          setIsFetching(false);
-          hasLoadedInitial.current = true;
-        }
-      })
-      .catch((err: unknown) => {
-        if (isMounted) {
-          const msg = err instanceof Error ? err.message : 'Не удалось загрузить книги';
-          setError(msg);
-          setLoading(false);
-          setIsFetching(false);
-        }
+    try {
+      setError('');
+      const data = await getBooks({
+        userId: scope === 'my' ? userId : undefined,
+        search: filters.debouncedSearch.trim() || undefined,
+        genres: filters.selectedGenres.length > 0 ? filters.selectedGenres : undefined,
+        strictGenres: filters.strictGenres || undefined,
+        languages: filters.selectedLanguages.length > 0 ? filters.selectedLanguages : undefined,
+        cities: filters.selectedSettlements.length > 0 ? filters.selectedSettlements : undefined,
+        yearFrom: parsedYearFrom,
+        yearTo: parsedYearTo,
+        nearLat: effectiveNearLat,
+        nearLng: effectiveNearLng,
+        radius: (filters.nearMe || filters.nearCenter) ? filters.radius : undefined,
+        sortBy: filters.sortBy,
+        page: effectivePage,
+        limit: effectiveLimit,
       });
 
-    return () => {
-      isMounted = false;
-    };
+      setBooks(data.books || []);
+      if (data.pagination) {
+        paginationHook.setPagination(data.pagination);
+      }
+      hasLoadedInitial.current = true;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Не удалось загрузить книги';
+      setError(message);
+    } finally {
+      setLoading(false);
+      setIsFetching(false);
+    }
   }, [
     scope,
     userId,
-    debouncedSearch,
-    selectedGenres,
-    strictGenres,
-    selectedLanguages,
-    selectedSettlements,
-    yearFrom,
-    yearTo,
-    nearMe,
-    radius,
-    nearCenter,
     user?.latitude,
     user?.longitude,
-    page,
-    limit,
-    sortBy,
-    viewMode,
+    filters.debouncedSearch,
+    filters.selectedGenres,
+    filters.strictGenres,
+    filters.selectedLanguages,
+    filters.selectedSettlements,
+    filters.yearFrom,
+    filters.yearTo,
+    filters.nearMe,
+    filters.radius,
+    filters.nearCenter,
+    filters.sortBy,
+    filters.viewMode,
+    paginationHook.page,
+    paginationHook.limit,
   ]);
 
-  const handleManualRefresh = async () => {
-    if (scope === 'my' && !userId) return;
-    setLoading(true);
+  useEffect(() => {
+    fetchBooks();
+  }, [fetchBooks]);
+
+  // CRUD Operations
+  const submitForm = async (formData: BookFormData): Promise<void> => {
     try {
-      const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
-      const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
-
-      const [booksData] = await Promise.all([
-        getBooks({
-          userId: scope === 'my' ? userId : undefined,
-          search: debouncedSearch.trim() || undefined,
-          genres: selectedGenres.length > 0 ? selectedGenres : undefined,
-          strictGenres,
-          languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
-          yearFrom: parsedYearFrom,
-          yearTo: parsedYearTo,
-          page,
-          limit,
-          sortBy,
-          nearLat: nearMe && user?.latitude != null ? user.latitude : undefined,
-          nearLng: nearMe && user?.longitude != null ? user.longitude : undefined,
-          radius: nearMe ? radius : undefined,
-        }),
-        fetchGenres(),
-      ]);
-      setBooks(booksData.books || []);
-      if (booksData.pagination) {
-        setPagination(booksData.pagination);
+      if (modals.formModal.mode === 'create') {
+        const newBook = await createBook(formData);
+        setBooks((prev) => [newBook, ...prev]);
+        showToast('Книга успешно добавлена!');
+      } else if (modals.formModal.mode === 'edit' && modals.formModal.book) {
+        const updated = await updateBook(modals.formModal.book.id, formData);
+        setBooks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+        showToast('Книга успешно обновлена!');
       }
-      setError('');
+      modals.closeForm();
+      fetchBooks();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Не удалось загрузить книги';
-      setError(msg);
-    } finally {
-      setLoading(false);
+      const message = err instanceof Error ? err.message : 'Ошибка при сохранении книги';
+      showToast(message, 'error');
     }
   };
 
-  const toggleGenre = (genreName: string) => {
-    setSelectedGenres((prev) =>
-      prev.includes(genreName) ? prev.filter((g) => g !== genreName) : [...prev, genreName]
-    );
-  };
-
-  const toggleLanguage = (langName: string) => {
-    setSelectedLanguages((prev) =>
-      prev.includes(langName) ? prev.filter((l) => l !== langName) : [...prev, langName]
-    );
-  };
-
-  const toggleSettlement = (cityName: string) => {
-    setSelectedSettlements((prev) =>
-      prev.includes(cityName) ? prev.filter((c) => c !== cityName) : [...prev, cityName]
-    );
-  };
-
-  const clearSettlements = () => {
-    setSelectedSettlements([]);
-  };
-
-  const setYearRange = (from: string, to: string) => {
-    setYearFrom(from);
-    setYearTo(to);
-  };
-
-  const changePage = (newPage: number, scrollToTop = false) => {
-    const target = Math.max(1, Math.min(pagination.totalPages || 1, newPage));
-    setPage(target);
-    if (scrollToTop && typeof window !== 'undefined') {
-      const targetEl =
-        document.querySelector('.books-toolbar-section') ||
-        document.querySelector('.books-main-container');
-      if (targetEl) {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+  const handleDeleteConfirm = async (): Promise<void> => {
+    if (!modals.deletingBook) return;
+    try {
+      await deleteBook(modals.deletingBook.id);
+      setBooks((prev) => prev.filter((b) => b.id !== modals.deletingBook?.id));
+      showToast('Книга удалена');
+      modals.closeDelete();
+      fetchBooks();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Не удалось удалить книгу';
+      showToast(message, 'error');
     }
   };
-
-  const changeLimit = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
-
-  const resetFilters = () => {
-    setSearchQuery('');
-    setDebouncedSearch('');
-    setSelectedGenres([]);
-    setStrictGenres(false);
-    setSelectedLanguages([]);
-    setSelectedSettlements([]);
-    setYearFrom('');
-    setYearTo('');
-    setNearMe(false);
-    setNearCenter(null);
-    setSortBy('newest');
-    setPage(1);
-  };
-
-  const hasActiveFilters = Boolean(
-    debouncedSearch.trim() ||
-    selectedGenres.length > 0 ||
-    selectedLanguages.length > 0 ||
-    selectedSettlements.length > 0 ||
-    yearFrom.trim() ||
-    yearTo.trim() ||
-    nearMe ||
-    sortBy !== 'newest'
-  );
-
-  // Modal open/close helpers
-  const openDetails = (book: Book) => setSelectedBook(book);
-  const closeDetails = () => setSelectedBook(null);
-
-  const openCreate = () => setFormModal({ isOpen: true, mode: 'create', book: null });
-  const openEdit = (book: Book) => setFormModal({ isOpen: true, mode: 'edit', book });
-  const closeForm = () => setFormModal({ isOpen: false, mode: 'create', book: null });
-
-  const openDelete = (book: Book) => setDeletingBook(book);
-  const closeDelete = () => setDeletingBook(null);
-
-  // CRUD actions
-  const handleCreateSubmit = async (formData: BookFormData) => {
-    const newBook = await createBook(formData);
-    setBooks((prev) => [newBook, ...prev]);
-    fetchGenres();
-    fetchSettlements();
-    showToast(`Книга «${newBook.title}» успешно добавлена в библиотеку!`);
-  };
-
-  const handleUpdateSubmit = async (formData: BookFormData) => {
-    if (!formModal.book) return;
-    const updated = await updateBook(formModal.book.id, formData);
-    setBooks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
-    if (selectedBook?.id === updated.id) {
-      setSelectedBook(updated);
-    }
-    fetchGenres();
-    fetchSettlements();
-    showToast(`Книга «${updated.title}» успешно обновлена!`);
-  };
-
-  const handleDeleteConfirm = async (bookId: string) => {
-    await deleteBook(bookId);
-    setBooks((prev) => prev.filter((b) => b.id !== bookId));
-    if (selectedBook?.id === bookId) {
-      setSelectedBook(null);
-    }
-    fetchGenres();
-    fetchSettlements();
-    showToast('Книга успешно удалена из библиотеки', 'info');
-  };
-
-  const submitForm = formModal.mode === 'create' ? handleCreateSubmit : handleUpdateSubmit;
 
   return {
     user,
     userId,
+    // Data
     books,
     genres,
     settlements,
@@ -381,68 +200,69 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     isFetching,
     error,
     // Pagination
-    page,
-    setPage,
-    limit,
-    setLimit,
-    pagination,
-    changePage,
-    changeLimit,
+    page: paginationHook.page,
+    setPage: paginationHook.setPage,
+    limit: paginationHook.limit,
+    setLimit: paginationHook.setLimit,
+    pagination: paginationHook.pagination,
+    changePage: paginationHook.changePage,
+    changeLimit: paginationHook.changeLimit,
     // Search
-    searchQuery,
-    setSearchQuery,
-    debouncedSearch,
+    searchQuery: filters.searchQuery,
+    setSearchQuery: filters.setSearchQuery,
+    debouncedSearch: filters.debouncedSearch,
     // Genres filter
-    selectedGenres,
-    setSelectedGenres,
-    toggleGenre,
-    strictGenres,
-    setStrictGenres,
+    selectedGenres: filters.selectedGenres,
+    setSelectedGenres: filters.setSelectedGenres,
+    toggleGenre: filters.toggleGenre,
+    clearGenres: filters.clearGenres,
+    strictGenres: filters.strictGenres,
+    setStrictGenres: filters.setStrictGenres,
     // Languages filter
-    selectedLanguages,
-    setSelectedLanguages,
-    toggleLanguage,
+    selectedLanguages: filters.selectedLanguages,
+    setSelectedLanguages: filters.setSelectedLanguages,
+    toggleLanguage: filters.toggleLanguage,
     // Year filter
-    yearFrom,
-    setYearFrom,
-    yearTo,
-    setYearTo,
-    setYearRange,
-    // Settlements filter (по населённым пунктам)
-    selectedSettlements,
-    setSelectedSettlements,
-    toggleSettlement,
-    clearSettlements,
-    // Proximity / Distance filter (по дистанции)
-    nearMe,
-    setNearMe,
-    radius,
-    setRadius,
-    nearCenter,
-    setNearCenter,
-    // Sorting & View
-    sortBy,
-    setSortBy,
-    viewMode,
-    setViewMode,
-    // Global filter resets & state
-    resetFilters,
-    hasActiveFilters,
-    handleManualRefresh,
-    // Modals state & actions
+    yearFrom: filters.yearFrom,
+    setYearFrom: filters.setYearFrom,
+    yearTo: filters.yearTo,
+    setYearTo: filters.setYearTo,
+    setYearRange: filters.setYearRange,
+    // Settlements filter
+    selectedSettlements: filters.selectedSettlements,
+    setSelectedSettlements: filters.setSelectedSettlements,
+    toggleSettlement: filters.toggleSettlement,
+    clearSettlements: filters.clearSettlements,
+    // Distance / Proximity filter
+    nearMe: filters.nearMe,
+    setNearMe: filters.setNearMe,
+    radius: filters.radius,
+    setRadius: filters.setRadius,
+    nearCenter: filters.nearCenter,
+    setNearCenter: filters.setNearCenter,
+    // Sorting & View mode
+    sortBy: filters.sortBy,
+    setSortBy: filters.setSortBy,
+    viewMode: filters.viewMode,
+    setViewMode: filters.setViewMode,
+    // Filter controls
+    resetFilters: filters.resetFilters,
+    hasActiveFilters: filters.hasActiveFilters,
+    handleManualRefresh: fetchBooks,
+    // Modals
     modalsState: {
-      selectedBook,
-      formModal,
-      deletingBook,
+      selectedBook: modals.selectedBook,
+      formModal: modals.formModal,
+      deletingBook: modals.deletingBook,
     },
     modalsActions: {
-      openDetails,
-      closeDetails,
-      openCreate,
-      openEdit,
-      closeForm,
-      openDelete,
-      closeDelete,
+      openDetails: modals.openDetails,
+      closeDetails: modals.closeDetails,
+      openCreate: modals.openCreate,
+      openEdit: modals.openEdit,
+      closeForm: modals.closeForm,
+      openDelete: modals.openDelete,
+      closeDelete: modals.closeDelete,
       submitForm,
       confirmDelete: handleDeleteConfirm,
     },
