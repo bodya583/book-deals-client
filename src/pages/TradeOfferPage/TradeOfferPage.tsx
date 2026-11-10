@@ -20,6 +20,19 @@ import Toast, { type ToastMessage } from '../../components/Toast';
 import { useAuthStore } from '../../store/authStore';
 import '../trades.css';
 
+// Sort book IDs alphabetically and compute a hash so that selection order does not matter
+export const computeBooksHash = (offeredIds: string[], targetIds: string[]): string => {
+  const sortedOffered = [...offeredIds].sort().join(',');
+  const sortedTarget = [...targetIds].sort().join(',');
+  const rawKey = `give:[${sortedOffered}]|get:[${sortedTarget}]`;
+  let hash = 0;
+  for (let i = 0; i < rawKey.length; i++) {
+    hash = (hash << 5) - hash + rawKey.charCodeAt(i);
+    hash |= 0;
+  }
+  return `bh_${Math.abs(hash)}`;
+};
+
 export const TradeOfferPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -40,9 +53,8 @@ export const TradeOfferPage: React.FC = () => {
   const [targetBookIds, setTargetBookIds] = useState<string[]>([]);
   const [message, setMessage] = useState<string>('');
 
-  // Initial books cache (for counter-trades to prevent sending unchanged trades)
-  const [initialOfferedBookIds, setInitialOfferedBookIds] = useState<string[]>([]);
-  const [initialTargetBookIds, setInitialTargetBookIds] = useState<string[]>([]);
+  // Initial books hash cache (pre-sorted before hashing so selection order does not matter)
+  const [initialBooksHash, setInitialBooksHash] = useState<string>('');
 
   // Inventory tab: 'my' or 'partner'
   const [inventoryTab, setInventoryTab] = useState<'my' | 'partner'>('my');
@@ -105,8 +117,9 @@ export const TradeOfferPage: React.FC = () => {
 
             setOfferedBookIds(origOffered);
             setTargetBookIds(origTarget);
-            setInitialOfferedBookIds(origOffered);
-            setInitialTargetBookIds(origTarget);
+
+            // Pre-sort and hash initial trade book composition
+            setInitialBooksHash(computeBooksHash(origOffered, origTarget));
 
             // Requirement 3: Do not pre-fill previous comment in counter-trade
             setMessage('');
@@ -200,19 +213,15 @@ export const TradeOfferPage: React.FC = () => {
     );
   };
 
-  // Check if book composition is unchanged from original trade in counter mode
+  // Pre-sort books and compute hash to verify whether books were modified (order does not matter)
+  const currentBooksHash = useMemo(() => {
+    return computeBooksHash(offeredBookIds, targetBookIds);
+  }, [offeredBookIds, targetBookIds]);
+
   const isTradeUnchanged = useMemo(() => {
-    if (!counterTradeId) return false;
-    if (initialOfferedBookIds.length === 0 && initialTargetBookIds.length === 0) return false;
-
-    if (offeredBookIds.length !== initialOfferedBookIds.length) return false;
-    if (targetBookIds.length !== initialTargetBookIds.length) return false;
-
-    const sameOffered = offeredBookIds.every((id) => initialOfferedBookIds.includes(id));
-    const sameTarget = targetBookIds.every((id) => initialTargetBookIds.includes(id));
-
-    return sameOffered && sameTarget;
-  }, [counterTradeId, offeredBookIds, targetBookIds, initialOfferedBookIds, initialTargetBookIds]);
+    if (!counterTradeId || !initialBooksHash) return false;
+    return currentBooksHash === initialBooksHash;
+  }, [counterTradeId, initialBooksHash, currentBooksHash]);
 
   // Submit Trade Offer
   const handleSubmitTrade = async (e: React.FormEvent) => {
