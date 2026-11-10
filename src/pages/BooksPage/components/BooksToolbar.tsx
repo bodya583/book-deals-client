@@ -665,8 +665,10 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
               </div>
             )}
           </div>
+        </div>
 
-          {/* Reset Filters button */}
+        {/* Right-side cluster: Reset button + Count badge (always stays on one line) */}
+        <div className="books-toolbar-right">
           {hasActiveFilters && (
             <button
               type="button"
@@ -678,13 +680,12 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
               <span>Сбросить всё</span>
             </button>
           )}
-        </div>
 
-        {/* Stats count indicator */}
-        <div className="books-stats-badge" aria-label="Всего книг в списке">
-          <span className="books-stats-label">{hasActiveFilters ? 'Найдено:' : 'Всего:'}</span>
-          <span className="books-stats-count">{count}</span>
-          <span className="books-stats-unit">{getCountNoun(count)}</span>
+          <div className="books-stats-badge" aria-label="Всего книг в списке">
+            <span className="books-stats-label">{hasActiveFilters ? 'Найдено:' : 'Всего:'}</span>
+            <span className="books-stats-count">{count}</span>
+            <span className="books-stats-unit">{getCountNoun(count)}</span>
+          </div>
         </div>
       </div>
 
