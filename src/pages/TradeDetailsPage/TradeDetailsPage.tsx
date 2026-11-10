@@ -186,6 +186,23 @@ export const TradeDetailsPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Mark trade as seen in localStorage to clear unread badge
+  useEffect(() => {
+    if (trade && id) {
+      try {
+        localStorage.setItem(
+          `trade_seen_${id}`,
+          JSON.stringify({
+            seenAt: new Date().toISOString(),
+            messagesCount: messages.length,
+          })
+        );
+      } catch {
+        // ignore localStorage errors
+      }
+    }
+  }, [id, trade?.updatedAt, trade?.createdAt, messages.length]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = messageText.trim();
@@ -442,7 +459,20 @@ export const TradeDetailsPage: React.FC = () => {
               </span>
             </div>
 
-            <div>{renderStatusBadge(trade.status)}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {trade.status === 'PENDING' && (
+                <button
+                  type="button"
+                  className="btn-trade-counter-top"
+                  onClick={() => navigate(`/trades/new?counterTradeId=${trade.id}`)}
+                  title="Изменить состав книг и предложить новые условия обмена"
+                >
+                  <TradeIcon size={16} />
+                  <span>Изменить условия обмена</span>
+                </button>
+              )}
+              {renderStatusBadge(trade.status)}
+            </div>
           </div>
 
           {/* Message quote if any */}

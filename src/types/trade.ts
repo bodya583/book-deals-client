@@ -36,6 +36,7 @@ export interface Trade {
   receiverCompleted?: boolean;
   agreedLocationHash?: string;
   agreedTimeHash?: string;
+  messagesCount?: number;
 }
 
 export interface TradeCounts {

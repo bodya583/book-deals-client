@@ -78,16 +78,27 @@ export const TradeOfferPage: React.FC = () => {
         if (counterTradeId) {
           try {
             const originalTrade = await getTradeById(counterTradeId);
-            // Partner is the original sender
-            setSelectedPartnerId(originalTrade.senderId);
-            if (originalTrade.sender && !finalPartners.some((p) => p.id === originalTrade.senderId)) {
-              finalPartners.unshift(originalTrade.sender);
+            // Partner is ALWAYS the other party, never the current user!
+            const partnerId = originalTrade.senderId === currentUser?.id
+              ? originalTrade.receiverId
+              : originalTrade.senderId;
+            const partnerUser = originalTrade.senderId === currentUser?.id
+              ? originalTrade.receiver
+              : originalTrade.sender;
+
+            setSelectedPartnerId(partnerId);
+            if (partnerUser && !finalPartners.some((p) => p.id === partnerId)) {
+              finalPartners.unshift(partnerUser);
             }
+
             // Items from user's perspective:
-            // what was requested from me => now what I offer
-            setOfferedBookIds((originalTrade.requestedBooks || []).map((b) => b.id));
-            // what was offered to me => now what I target/request
-            setTargetBookIds((originalTrade.offeredBooks || []).map((b) => b.id));
+            if (originalTrade.senderId === currentUser?.id) {
+              setOfferedBookIds((originalTrade.offeredBooks || []).map((b) => b.id));
+              setTargetBookIds((originalTrade.requestedBooks || []).map((b) => b.id));
+            } else {
+              setOfferedBookIds((originalTrade.requestedBooks || []).map((b) => b.id));
+              setTargetBookIds((originalTrade.offeredBooks || []).map((b) => b.id));
+            }
             setMessage(originalTrade.message || '');
           } catch {
             addToast('Не удалось загрузить исходный трейд для изменения', 'error');
@@ -188,6 +199,11 @@ export const TradeOfferPage: React.FC = () => {
       return;
     }
 
+    if (currentUser?.id && selectedPartnerId === currentUser.id) {
+      addToast('Нельзя создать предложение обмена с самим собой', 'error');
+      return;
+    }
+
     if (offeredBookIds.length === 0 && targetBookIds.length === 0) {
       addToast('Выберите хотя бы одну книгу для предложения или запроса', 'error');
       return;
@@ -214,7 +230,7 @@ export const TradeOfferPage: React.FC = () => {
       }
 
       setTimeout(() => {
-        navigate('/trades?tab=outgoing');
+        navigate('/trades?tab=requests');
       }, 800);
     } catch (err: any) {
       addToast(err.response?.data?.message || 'Не удалось отправить предложение обмена', 'error');

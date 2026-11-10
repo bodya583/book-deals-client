@@ -24,6 +24,7 @@ import {
   HandshakeIcon,
   CloseIcon,
 } from '../../components/icons';
+import { useAuthStore } from '../../store/authStore';
 import Toast, { type ToastMessage } from '../../components/Toast';
 import RejectTradeModal from '../../components/RejectTradeModal';
 import '../trades.css';
@@ -34,6 +35,7 @@ type SortOption = 'turn' | 'newest' | 'oldest' | 'updated';
 export const TradesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuthStore();
 
   const rawTab = searchParams.get('tab');
   const currentTab: TabType = (rawTab === 'agreed' || rawTab === 'completed') ? rawTab : 'requests';
@@ -236,6 +238,37 @@ export const TradesPage: React.FC = () => {
       });
     } catch {
       return dateStr;
+    }
+  };
+
+  const getTradeBadgeCount = (trade: Trade): number => {
+    try {
+      const raw = localStorage.getItem(`trade_seen_${trade.id}`);
+      if (!raw) {
+        // Если трейд ещё не открывался: если входящий активный, то 1 (новое предложение), плюс сообщения
+        return trade.status === 'PENDING' && !trade.isSender
+          ? Math.max(1, trade.messagesCount || 0)
+          : (trade.messagesCount || 0);
+      }
+      const seen = JSON.parse(raw);
+      const seenAt = new Date(seen.seenAt || 0).getTime();
+      const tradeUpdated = new Date(trade.updatedAt || trade.createdAt).getTime();
+
+      let count = 0;
+      // Условия или статус изменились после последнего просмотра
+      if (tradeUpdated > seenAt + 1000) {
+        count += 1;
+      }
+      // Пришли новые сообщения
+      if (typeof trade.messagesCount === 'number' && typeof seen.messagesCount === 'number') {
+        const newMessages = trade.messagesCount - seen.messagesCount;
+        if (newMessages > 0) {
+          count += newMessages;
+        }
+      }
+      return count;
+    } catch {
+      return 0;
     }
   };
 
@@ -478,16 +511,21 @@ export const TradesPage: React.FC = () => {
             ) : (
               <div className="trades-list">
             {filteredTrades.map((trade) => {
-              const partner = trade.isSender ? trade.receiver : trade.sender;
-              const isPartnerInitiator = !trade.isSender;
+              if (trade.senderId === trade.receiverId) return null;
+
+              const isSender = trade.isSender ?? (trade.senderId === currentUser?.id);
+              const partner = (isSender ? trade.receiver : trade.sender) || trade.sender;
+              const isPartnerInitiator = !isSender;
 
               // Perspective: What I give vs What I receive
-              const myBooksToGive = trade.isSender ? trade.offeredBooks : trade.requestedBooks;
-              const myBooksToReceive = trade.isSender ? trade.requestedBooks : trade.offeredBooks;
+              const myBooksToGive = isSender ? trade.offeredBooks : trade.requestedBooks;
+              const myBooksToReceive = isSender ? trade.requestedBooks : trade.offeredBooks;
+
+              const unreadBadgeCount = getTradeBadgeCount(trade);
 
               const renderRoleBadge = () => {
                 if (currentTab === 'requests' || trade.status === 'PENDING') {
-                  if (!trade.isSender) {
+                  if (!isSender) {
                     return (
                       <span
                         className="trade-role-badge role-action-needed"
@@ -510,8 +548,8 @@ export const TradesPage: React.FC = () => {
                 }
 
                 if (currentTab === 'agreed' || trade.status === 'AGREED' || trade.status === 'ACCEPTED') {
-                  const iAmConfirmed = trade.isSender ? trade.senderCompleted : trade.receiverCompleted;
-                  const partnerConfirmed = trade.isSender ? trade.receiverCompleted : trade.senderCompleted;
+                  const iAmConfirmed = isSender ? trade.senderCompleted : trade.receiverCompleted;
+                  const partnerConfirmed = isSender ? trade.receiverCompleted : trade.senderCompleted;
 
                   if (partnerConfirmed && !iAmConfirmed) {
                     return (
@@ -541,12 +579,26 @@ export const TradesPage: React.FC = () => {
               };
 
               return (
-                <article key={trade.id} className="trade-card">
+                <article
+                  key={trade.id}
+                  className="trade-card trade-card-clickable"
+                  onClick={() => navigate(`/trades/${trade.id}`)}
+                  tabIndex={0}
+                  role="button"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/trades/${trade.id}`);
+                    }
+                  }}
+                  title="Нажмите, чтобы открыть подробности сделки и чат согласования"
+                >
                   {/* Card Header: Partner info + status */}
                   <div className="trade-card-header">
                     <Link
                       to={partner?.id ? `/profile/${partner.id}` : '#'}
                       className="trade-card-user-info"
+                      onClick={(e) => e.stopPropagation()}
                       style={{ textDecoration: 'none', color: 'inherit' }}
                       title={`Перейти в профиль пользователя @${partner?.username}`}
                     >
@@ -582,6 +634,14 @@ export const TradesPage: React.FC = () => {
                     </Link>
 
                     <div className="trade-card-header-badges">
+                      {unreadBadgeCount > 0 && (
+                        <span
+                          className="trade-card-badge-circle"
+                          title={`${unreadBadgeCount} ${unreadBadgeCount === 1 ? 'новое сообщение или изменение условий' : 'новых сообщений или изменений'}`}
+                        >
+                          {unreadBadgeCount}
+                        </span>
+                      )}
                       {renderRoleBadge()}
                       {renderStatusBadge(trade.status, trade)}
                     </div>
@@ -669,129 +729,108 @@ export const TradesPage: React.FC = () => {
 
                   {/* Card Actions */}
                   <div className="trade-card-actions">
-                    <button
-                      type="button"
-                      className="btn-trade-details"
-                      onClick={() => navigate(`/trades/${trade.id}`)}
-                      title="Открыть детали обмена и чат согласования"
-                    >
-                      <span>Подробнее</span>
-                    </button>
+                    {trade.status === 'PENDING' && trade.isReceiver && !trade.isSender && (
+                      <>
+                        <button
+                          type="button"
+                          className="btn-trade-reject"
+                          disabled={actionLoadingId === trade.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReject(trade.id);
+                          }}
+                        >
+                          <XCircleIcon size={16} />
+                          <span>Отклонить</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-trade-accept"
+                          disabled={actionLoadingId === trade.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAccept(trade.id);
+                          }}
+                        >
+                          <CheckCircleIcon size={16} />
+                          <span>Согласовать обмен</span>
+                        </button>
+                      </>
+                    )}
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginLeft: 'auto', flexWrap: 'wrap' }}>
-                      {trade.status === 'PENDING' && trade.isReceiver && !trade.isSender && (
-                        <>
+                    {(trade.status === 'AGREED' || trade.status === 'ACCEPTED') && (() => {
+                      const iAmConfirmed = trade.isSender ? trade.senderCompleted : trade.receiverCompleted;
+                      const partnerConfirmed = trade.isSender ? trade.receiverCompleted : trade.senderCompleted;
+
+                      if (iAmConfirmed) {
+                        return (
+                          <span style={{ fontSize: '0.825rem', color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <ClockIcon size={14} />
+                            <span>Вы подтвердили. Ожидаем партнёра</span>
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {partnerConfirmed && (
+                            <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <CheckCircleIcon size={14} />
+                              <span>Партнёр подтвердил!</span>
+                            </span>
+                          )}
                           <button
                             type="button"
-                            className="btn-trade-counter"
+                            className="btn-trade-complete"
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '0.4rem',
-                              background: '#eff6ff',
-                              color: '#1d4ed8',
-                              border: '1px solid #bfdbfe',
-                              padding: '0.55rem 0.9rem',
+                              background: '#16a34a',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '0.6rem 1rem',
                               borderRadius: '8px',
                               fontWeight: 600,
-                              fontSize: '0.875rem',
+                              fontSize: '0.9rem',
                               cursor: 'pointer',
                             }}
-                            onClick={() => navigate(`/trades/new?counterTradeId=${trade.id}`)}
-                            title="Изменить состав обмена и отправить встречное предложение"
-                          >
-                            <TradeIcon size={15} />
-                            <span>Изменить</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-trade-reject"
                             disabled={actionLoadingId === trade.id}
-                            onClick={() => handleReject(trade.id)}
-                          >
-                            <XCircleIcon size={16} />
-                            <span>Отклонить</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-trade-accept"
-                            disabled={actionLoadingId === trade.id}
-                            onClick={() => handleAccept(trade.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleComplete(trade.id);
+                            }}
+                            title="Подтвердить получение книг"
                           >
                             <CheckCircleIcon size={16} />
-                            <span>Согласовать обмен</span>
+                            <span>{partnerConfirmed ? 'Подтвердить получение (Завершить)' : 'Книги получены'}</span>
                           </button>
-                        </>
-                      )}
+                        </div>
+                      );
+                    })()}
 
-                      {(trade.status === 'AGREED' || trade.status === 'ACCEPTED') && (() => {
-                        const iAmConfirmed = trade.isSender ? trade.senderCompleted : trade.receiverCompleted;
-                        const partnerConfirmed = trade.isSender ? trade.receiverCompleted : trade.senderCompleted;
+                    {trade.status === 'COMPLETED' && (
+                      <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <CheckCircleIcon size={16} />
+                        <span>Обмен успешно завершён</span>
+                      </span>
+                    )}
 
-                        if (iAmConfirmed) {
-                          return (
-                            <span style={{ fontSize: '0.825rem', color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                              <ClockIcon size={14} />
-                              <span>Вы подтвердили. Ожидаем партнёра</span>
-                            </span>
-                          );
-                        }
-
-                        return (
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                            {partnerConfirmed && (
-                              <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <CheckCircleIcon size={14} />
-                                <span>Партнёр подтвердил!</span>
-                              </span>
-                            )}
-                            <button
-                              type="button"
-                              className="btn-trade-complete"
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.4rem',
-                                background: '#16a34a',
-                                color: '#ffffff',
-                                border: 'none',
-                                padding: '0.6rem 1rem',
-                                borderRadius: '8px',
-                                fontWeight: 600,
-                                fontSize: '0.9rem',
-                                cursor: 'pointer',
-                              }}
-                              disabled={actionLoadingId === trade.id}
-                              onClick={() => handleComplete(trade.id)}
-                              title="Подтвердить получение книг"
-                            >
-                              <CheckCircleIcon size={16} />
-                              <span>{partnerConfirmed ? 'Подтвердить получение (Завершить)' : 'Книги получены'}</span>
-                            </button>
-                          </div>
-                        );
-                      })()}
-
-                      {trade.status === 'COMPLETED' && (
-                        <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <CheckCircleIcon size={16} />
-                          <span>Обмен успешно завершён</span>
-                        </span>
-                      )}
-
-                      {trade.status === 'PENDING' && trade.isSender && (
-                        <button
-                          type="button"
-                          className="btn-trade-cancel"
-                          disabled={actionLoadingId === trade.id}
-                          onClick={() => handleCancel(trade.id)}
-                          title="Отозвать предложение обмена, если передумали"
-                        >
-                          <XCircleIcon size={16} />
-                          <span>Отозвать предложение</span>
-                        </button>
-                      )}
-                    </div>
+                    {trade.status === 'PENDING' && trade.isSender && (
+                      <button
+                        type="button"
+                        className="btn-trade-cancel"
+                        disabled={actionLoadingId === trade.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancel(trade.id);
+                        }}
+                        title="Отозвать предложение обмена, если передумали"
+                      >
+                        <XCircleIcon size={16} />
+                        <span>Отозвать предложение</span>
+                      </button>
+                    )}
                   </div>
                 </article>
               );
