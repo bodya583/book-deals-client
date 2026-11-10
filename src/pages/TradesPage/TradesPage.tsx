@@ -22,6 +22,10 @@ import {
   SearchIcon,
   MessageSquareIcon,
   MapPinIcon,
+  ArchiveIcon,
+  HandshakeIcon,
+  LayersIcon,
+  CloseIcon,
 } from '../../components/icons';
 import Toast, { type ToastMessage } from '../../components/Toast';
 import '../trades.css';
@@ -270,127 +274,168 @@ export const TradesPage: React.FC = () => {
         <div className="trades-header">
           <div className="trades-header-left">
             <h1 className="trades-header-title">
-              <TradeIcon size={30} />
-              <span>Обмен книгами (Трейды)</span>
+              <TradeIcon size={28} />
+              <span>Обмен книгами</span>
             </h1>
             <p className="trades-header-subtitle">
               Steam-like обмен без денег: отдавайте прочитанные книги и получайте взамен желаемые
             </p>
           </div>
+        </div>
 
-          <div className="trades-header-actions">
-            <Link to="/trades/new" className="btn-new-trade">
+        {/* Gmail-style Two-Column Layout */}
+        <div className="trades-workspace-layout">
+          {/* Left Sidebar */}
+          <aside className="trades-sidebar">
+            <Link to="/trades/new" className="btn-sidebar-compose" title="Предложить обмен книгами новому партнёру">
               <PlusIcon size={18} />
               <span>Предложить обмен</span>
             </Link>
-          </div>
-        </div>
 
-        {/* Tabs & Search Navigation */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div className="trades-tabs-nav">
-            <button
-              type="button"
-              className={`trade-tab-btn ${currentTab === 'incoming' ? 'active' : ''}`}
-              onClick={() => handleTabChange('incoming')}
-            >
-              <InboxIcon size={17} />
-              <span>Входящие</span>
-              <span className={`trade-tab-badge ${counts.incoming > 0 ? 'badge-highlight' : ''}`}>
-                {counts.incoming}
-              </span>
-            </button>
+            <nav className="trades-sidebar-nav" aria-label="Категории обменов">
+              <button
+                type="button"
+                className={`trades-sidebar-item ${currentTab === 'incoming' ? 'active' : ''}`}
+                onClick={() => handleTabChange('incoming')}
+              >
+                <div className="sidebar-item-left">
+                  <InboxIcon size={17} />
+                  <span>Входящие</span>
+                </div>
+                <span className={`sidebar-badge ${counts.incoming > 0 ? 'badge-highlight' : ''}`}>
+                  {counts.incoming}
+                </span>
+              </button>
 
-            <button
-              type="button"
-              className={`trade-tab-btn ${currentTab === 'outgoing' ? 'active' : ''}`}
-              onClick={() => handleTabChange('outgoing')}
-            >
-              <SendIcon size={17} />
-              <span>Исходящие</span>
-              <span className="trade-tab-badge">{counts.outgoing}</span>
-            </button>
+              <button
+                type="button"
+                className={`trades-sidebar-item ${currentTab === 'outgoing' ? 'active' : ''}`}
+                onClick={() => handleTabChange('outgoing')}
+              >
+                <div className="sidebar-item-left">
+                  <SendIcon size={17} />
+                  <span>Исходящие</span>
+                </div>
+                <span className="sidebar-badge">{counts.outgoing}</span>
+              </button>
 
-            <button
-              type="button"
-              className={`trade-tab-btn ${currentTab === 'agreed' ? 'active' : ''}`}
-              onClick={() => handleTabChange('agreed')}
-            >
-              <CheckCircleIcon size={17} />
-              <span>Согласованные</span>
-              <span className="trade-tab-badge">{counts.agreed}</span>
-            </button>
+              <button
+                type="button"
+                className={`trades-sidebar-item ${currentTab === 'agreed' ? 'active' : ''}`}
+                onClick={() => handleTabChange('agreed')}
+              >
+                <div className="sidebar-item-left">
+                  <HandshakeIcon size={17} />
+                  <span>Согласованные</span>
+                </div>
+                <span className={`sidebar-badge ${counts.agreed > 0 ? 'badge-agreed' : ''}`}>
+                  {counts.agreed}
+                </span>
+              </button>
 
-            <button
-              type="button"
-              className={`trade-tab-btn ${currentTab === 'completed' ? 'active' : ''}`}
-              onClick={() => handleTabChange('completed')}
-            >
-              <CheckCircleIcon size={17} />
-              <span>Завершённые</span>
-              <span className="trade-tab-badge">{counts.completed}</span>
-            </button>
+              <button
+                type="button"
+                className={`trades-sidebar-item ${currentTab === 'completed' ? 'active' : ''}`}
+                onClick={() => handleTabChange('completed')}
+              >
+                <div className="sidebar-item-left">
+                  <ArchiveIcon size={17} />
+                  <span>Архив</span>
+                </div>
+                <span className="sidebar-badge">{counts.completed}</span>
+              </button>
 
-            <button
-              type="button"
-              className={`trade-tab-btn ${currentTab === 'all' ? 'active' : ''}`}
-              onClick={() => handleTabChange('all')}
-            >
-              <span>Все трейды</span>
-              <span className="trade-tab-badge">{counts.total}</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                className={`trades-sidebar-item ${currentTab === 'all' ? 'active' : ''}`}
+                onClick={() => handleTabChange('all')}
+              >
+                <div className="sidebar-item-left">
+                  <LayersIcon size={17} />
+                  <span>Все сделки</span>
+                </div>
+                <span className="sidebar-badge">{counts.total}</span>
+              </button>
+            </nav>
+          </aside>
 
-          {/* Quick filter input */}
-          <div className="inventory-search-wrap" style={{ minWidth: '240px', flex: '1 1 240px', maxWidth: '360px' }}>
-            <SearchIcon size={16} className="inventory-search-icon" />
-            <input
-              type="text"
-              placeholder="Поиск по книгам или партнеру..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="inventory-search-input"
-            />
-          </div>
-        </div>
-
-        {/* Trade Cards List */}
-        {loading ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#666660' }}>
-            Загрузка предложений обмена...
-          </div>
-        ) : filteredTrades.length === 0 ? (
-          <div className="trades-empty-state">
-            <div className="empty-state-icon">
-              <TradeIcon size={32} />
+          {/* Right Main Content */}
+          <main className="trades-main-area">
+            {/* Search Toolbar */}
+            <div className="trades-search-toolbar">
+              <div className="inventory-search-wrap trades-search-box">
+                <SearchIcon size={16} className="inventory-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Поиск по названию книги, автору или партнеру..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="inventory-search-input"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="books-search-clear"
+                    title="Очистить поиск"
+                  >
+                    <CloseIcon size={13} />
+                  </button>
+                )}
+              </div>
             </div>
-            <h3 className="empty-state-title">
-              {currentTab === 'incoming'
-                ? 'Нет входящих предложений'
-                : currentTab === 'outgoing'
-                ? 'Нет активных исходящих трейдов'
-                : currentTab === 'agreed'
-                ? 'Пока нет согласованных обменов'
-                : currentTab === 'completed'
-                ? 'Пока нет завершённых обменов'
-                : 'Список трейдов пуст'}
-            </h3>
-            <p className="empty-state-text">
-              {currentTab === 'incoming'
-                ? 'Когда другой читатель предложит вам обменяться книгами, предложение появится здесь.'
-                : currentTab === 'agreed'
-                ? 'Здесь находятся сделки, условия которых зафиксированы, в ожидании передачи книг.'
-                : currentTab === 'completed'
-                ? 'Здесь сохраняется архив успешно проведённых сделок, в которых книги получены.'
-                : 'Выберите интересную книгу в каталоге или предложите прямой обмен читателю.'}
-            </p>
-            <Link to="/trades/new" className="btn-new-trade" style={{ marginTop: '0.5rem' }}>
-              <PlusIcon size={18} />
-              <span>Создать предложение обмена</span>
-            </Link>
-          </div>
-        ) : (
-          <div className="trades-list">
+
+            {/* Category Heading */}
+            <div className="trades-section-heading">
+              <h2 className="trades-section-title">
+                {currentTab === 'incoming' && 'Входящие предложения'}
+                {currentTab === 'outgoing' && 'Исходящие предложения'}
+                {currentTab === 'agreed' && 'Согласованные сделки'}
+                {currentTab === 'completed' && 'Архив завершённых обменов'}
+                {currentTab === 'all' && 'Все предложения обмена'}
+              </h2>
+              <span className="trades-section-counter">
+                {filteredTrades.length} {filteredTrades.length === 1 ? 'сделка' : filteredTrades.length > 1 && filteredTrades.length < 5 ? 'сделки' : 'сделок'}
+              </span>
+            </div>
+
+            {/* Trade Cards List */}
+            {loading ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: '#666660' }}>
+                Загрузка предложений обмена...
+              </div>
+            ) : filteredTrades.length === 0 ? (
+              <div className="trades-empty-state">
+                <div className="empty-state-icon">
+                  <TradeIcon size={32} />
+                </div>
+                <h3 className="empty-state-title">
+                  {currentTab === 'incoming'
+                    ? 'Нет входящих предложений'
+                    : currentTab === 'outgoing'
+                    ? 'Нет активных исходящих трейдов'
+                    : currentTab === 'agreed'
+                    ? 'Пока нет согласованных обменов'
+                    : currentTab === 'completed'
+                    ? 'Пока нет завершённых обменов'
+                    : 'Список трейдов пуст'}
+                </h3>
+                <p className="empty-state-text">
+                  {currentTab === 'incoming'
+                    ? 'Когда другой читатель предложит вам обменяться книгами, предложение появится здесь.'
+                    : currentTab === 'agreed'
+                    ? 'Здесь находятся сделки, условия которых зафиксированы, в ожидании передачи книг.'
+                    : currentTab === 'completed'
+                    ? 'Здесь сохраняется архив успешно проведённых сделок, в которых книги получены.'
+                    : 'Выберите интересную книгу в каталоге или предложите прямой обмен читателю.'}
+                </p>
+                <Link to="/trades/new" className="btn-new-trade" style={{ marginTop: '0.5rem' }}>
+                  <PlusIcon size={18} />
+                  <span>Создать предложение обмена</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="trades-list">
             {filteredTrades.map((trade) => {
               const partner = trade.isSender ? trade.receiver : trade.sender;
               const isPartnerInitiator = !trade.isSender;
@@ -656,6 +701,8 @@ export const TradesPage: React.FC = () => {
             })}
           </div>
         )}
+          </main>
+        </div>
       </div>
     </div>
   );

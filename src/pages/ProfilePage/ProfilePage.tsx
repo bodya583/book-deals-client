@@ -470,47 +470,6 @@ export const ProfilePage: React.FC = () => {
         </section>
       )}
 
-      {/* If viewing own profile: show quick links */}
-      {!isOtherUser && (
-        <section style={{ marginTop: '2rem' }}>
-          <Link
-            to="/trades"
-            className="trade-card"
-            style={{
-              textDecoration: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '1.25rem',
-            }}
-          >
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '12px',
-                background: 'rgba(45, 106, 79, 0.1)',
-                color: '#2d6a4f',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <TradeIcon size={24} />
-            </div>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1a1a1a' }}>
-                Центр обменов (Трейды)
-              </h3>
-              <p style={{ margin: '0.2rem 0 0', fontSize: '0.875rem', color: '#666660' }}>
-                Просмотр входящих, исходящих и согласованных предложений
-              </p>
-            </div>
-          </Link>
-        </section>
-      )}
-
       {/* If viewing own profile: show my books with filters and toggle for profile exchange readiness */}
       {!isOtherUser && (
         <section style={{ marginTop: '2.5rem' }}>
