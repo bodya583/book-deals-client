@@ -1563,18 +1563,33 @@
   box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
 }
 
+.filter-trigger-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .filter-count-badge {
   background: #2d6a4f;
   color: #ffffff;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  border-radius: 10px;
-  padding: 0.1rem 0.45rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .filter-chevron {
   color: #888882;
   transition: transform 0.2s ease;
+  display: block;
 }
 
 .filter-chevron.open {

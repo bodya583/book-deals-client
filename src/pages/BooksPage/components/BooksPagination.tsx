@@ -232,20 +232,9 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
   return (
     <nav
       className={`books-pagination books-pagination-bottom ${className}`}
-      aria-label="Пагинация снизу"
+      aria-label="Пагинация страниц каталога"
     >
-      {/* 1. Range Info */}
-      <div className="pagination-info">
-        <span className="pagination-info-text">
-          Показано <strong className="pagination-strong">{fromItem}–{toItem}</strong> из{' '}
-          <strong className="pagination-strong">{total}</strong>
-        </span>
-        <span className="pagination-page-indicator">
-          (Стр. {page} из {totalPages})
-        </span>
-      </div>
-
-      {/* 2. Page Navigation Buttons */}
+      {/* Page Navigation Buttons */}
       <div className="pagination-nav-group">
         <button
           type="button"
@@ -318,29 +307,6 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
         >
           <ChevronsRightIcon size={15} />
         </button>
-      </div>
-
-      {/* 3. Limit per page selector */}
-      <div className="pagination-limit-group">
-        <span className="pagination-limit-caption">На странице:</span>
-        <div className="pagination-limit-options" role="radiogroup" aria-label="Лимит книг на страницу">
-          {limitOptions.map((opt) => {
-            const isSelected = limit === opt;
-            return (
-              <button
-                key={opt}
-                type="button"
-                role="radio"
-                aria-checked={isSelected}
-                className={`pagination-limit-chip ${isSelected ? 'active' : ''}`}
-                onClick={() => onLimitChange(opt)}
-                title={`Показывать по ${opt} книг на странице`}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
       </div>
     </nav>
   );

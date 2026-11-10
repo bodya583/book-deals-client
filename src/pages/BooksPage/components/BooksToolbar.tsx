@@ -197,10 +197,13 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
             >
               <TagIcon size={15} />
               <span className="filter-trigger-text">{getGenreButtonLabel()}</span>
-              {selectedGenres.length > 0 && (
-                <span className="filter-count-badge">{selectedGenres.length}</span>
-              )}
-              <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'genres' ? 'open' : ''}`} />
+              <span className="filter-trigger-slot">
+                {selectedGenres.length > 0 ? (
+                  <span className="filter-count-badge">{selectedGenres.length}</span>
+                ) : (
+                  <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'genres' ? 'open' : ''}`} />
+                )}
+              </span>
             </button>
 
             {openDropdown === 'genres' && (
@@ -298,10 +301,13 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
             >
               <GlobeIcon size={15} />
               <span className="filter-trigger-text">{getLanguageButtonLabel()}</span>
-              {selectedLanguages.length > 0 && (
-                <span className="filter-count-badge">{selectedLanguages.length}</span>
-              )}
-              <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'languages' ? 'open' : ''}`} />
+              <span className="filter-trigger-slot">
+                {selectedLanguages.length > 0 ? (
+                  <span className="filter-count-badge">{selectedLanguages.length}</span>
+                ) : (
+                  <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'languages' ? 'open' : ''}`} />
+                )}
+              </span>
             </button>
 
             {openDropdown === 'languages' && (
@@ -358,10 +364,13 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
             >
               <CalendarIcon size={15} />
               <span className="filter-trigger-text">{getYearButtonLabel()}</span>
-              {(yearFrom || yearTo) && (
-                <span className="filter-count-badge">1</span>
-              )}
-              <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'year' ? 'open' : ''}`} />
+              <span className="filter-trigger-slot">
+                {yearFrom || yearTo ? (
+                  <span className="filter-count-badge">1</span>
+                ) : (
+                  <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'year' ? 'open' : ''}`} />
+                )}
+              </span>
             </button>
 
             {openDropdown === 'year' && (
@@ -440,10 +449,13 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
             >
               <MapPinIcon size={15} />
               <span className="filter-trigger-text">{getLocationButtonLabel()}</span>
-              {locationActiveCount > 0 && (
-                <span className="filter-count-badge">{locationActiveCount}</span>
-              )}
-              <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'location' ? 'open' : ''}`} />
+              <span className="filter-trigger-slot">
+                {locationActiveCount > 0 ? (
+                  <span className="filter-count-badge">{locationActiveCount}</span>
+                ) : (
+                  <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'location' ? 'open' : ''}`} />
+                )}
+              </span>
             </button>
 
             {openDropdown === 'location' && (
