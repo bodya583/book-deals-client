@@ -3,7 +3,7 @@ import L from 'leaflet';
 import type { Book } from '../../types/book';
 import {
   resolveBookBaseCoordinates,
-  cloakCoordinates,
+  disperseAndCloakCoordinates,
   calculateDistanceKm,
   getDiscreteDistanceLabel,
 } from '../../utils/geoPrivacy';
@@ -73,79 +73,121 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
       featureGroup.addLayer(userMarker);
     }
 
-    // 2. Render each book with Spatial Cloaking & Fuzzy Radius Zone
+    // 2. Group books by base coordinates to avoid overlapping markers
+    const locationGroups = new Map<string, Book[]>();
     books.forEach((book) => {
       const baseCoords = resolveBookBaseCoordinates(book.user);
       if (!baseCoords) return;
+      const key = `${baseCoords[0].toFixed(3)}_${baseCoords[1].toFixed(3)}`;
+      const arr = locationGroups.get(key) || [];
+      arr.push(book);
+      locationGroups.set(key, arr);
+    });
 
-      // Spatial Cloaking (~500–800m deterministic pseudo-random offset)
-      const [cloakedLat, cloakedLng] = cloakCoordinates(baseCoords[0], baseCoords[1], book.id);
+    // 3. Render each book with Spatial Cloaking & Golden Angle Neighborhood Dispersion
+    locationGroups.forEach((groupBooks) => {
+      groupBooks.forEach((book, indexInGroup) => {
+        const baseCoords = resolveBookBaseCoordinates(book.user);
+        if (!baseCoords) return;
 
-      // Distance calculation (bucketed into discrete privacy ranges)
-      let distKm: number | null = null;
-      if (userCoords?.latitude && userCoords?.longitude) {
-        distKm = calculateDistanceKm(
-          userCoords.latitude,
-          userCoords.longitude,
+        // Apply golden angle dispersal if multiple books share the same location
+        const [cloakedLat, cloakedLng] = disperseAndCloakCoordinates(
           baseCoords[0],
-          baseCoords[1]
+          baseCoords[1],
+          book.id,
+          indexInGroup,
+          groupBooks.length
         );
-      }
-      const distanceLabel = getDiscreteDistanceLabel(distKm);
 
-      // A. Fuzzy Radius Circle (Zone of book presence)
-      const circle = L.circle([cloakedLat, cloakedLng], {
-        radius: 750,
-        color: '#2d6a4f',
-        weight: 2,
-        opacity: 0.5,
-        dashArray: '5, 5',
-        fillColor: '#2d6a4f',
-        fillOpacity: 0.16,
-      });
+        // Distance calculation (bucketed into discrete privacy ranges)
+        let distKm: number | null = null;
+        if (userCoords?.latitude && userCoords?.longitude) {
+          distKm = calculateDistanceKm(
+            userCoords.latitude,
+            userCoords.longitude,
+            baseCoords[0],
+            baseCoords[1]
+          );
+        }
+        const distanceLabel = getDiscreteDistanceLabel(distKm);
 
-      // B. Center Book Marker
-      const marker = L.marker([cloakedLat, cloakedLng], {
-        icon: L.divIcon({
-          className: 'book-div-icon',
-          html: `<div class="book-map-marker" title="${book.title} — ${book.author}">📖</div>`,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
-        }),
-      });
+        // A. Fuzzy Radius Circle (Zone of book presence)
+        const circle = L.circle([cloakedLat, cloakedLng], {
+          radius: 750,
+          color: '#2d6a4f',
+          weight: 1.5,
+          opacity: 0.45,
+          dashArray: '5, 5',
+          fillColor: '#2d6a4f',
+          fillOpacity: 0.12,
+        });
 
-      // C. Popup content with discrete distance
-      const popupDiv = document.createElement('div');
-      popupDiv.className = 'book-popup-card';
-      popupDiv.innerHTML = `
-        <div class="book-popup-header">
-          ${
-            book.coverURL
-              ? `<img src="${book.coverURL}" class="book-popup-cover" alt="${book.title}" />`
-              : `<div class="book-popup-cover" style="display:flex;align-items:center;justify-content:center;color:#64748b;font-size:1.5rem;">📖</div>`
-          }
-          <div class="book-popup-meta">
-            <h4 class="book-popup-title" title="${book.title}">${book.title}</h4>
-            <span class="book-popup-author" title="${book.author}">${book.author}</span>
-            <span class="book-popup-distance-badge" title="Дискретный диапазон расстояния для защиты от трилатерации">
-              📍 ${distanceLabel}
-            </span>
+        // B. Center Book Marker
+        const marker = L.marker([cloakedLat, cloakedLng], {
+          riseOnHover: true,
+          icon: L.divIcon({
+            className: 'book-div-icon',
+            html: `<div class="book-map-marker" title="${book.title} — ${book.author}">📖</div>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+          }),
+        });
+
+        // Click to center and zoom in
+        marker.on('click', () => {
+          map.setView([cloakedLat, cloakedLng], Math.max(map.getZoom(), 12), { animate: true });
+        });
+        circle.on('click', () => {
+          map.setView([cloakedLat, cloakedLng], Math.max(map.getZoom(), 12), { animate: true });
+        });
+
+        // Circle hover interactions
+        marker.on('mouseover', () => {
+          circle.setStyle({ weight: 2.5, fillOpacity: 0.25 });
+        });
+        marker.on('mouseout', () => {
+          circle.setStyle({ weight: 1.5, fillOpacity: 0.12 });
+        });
+        circle.on('mouseover', () => {
+          circle.setStyle({ weight: 2.5, fillOpacity: 0.25 });
+        });
+        circle.on('mouseout', () => {
+          circle.setStyle({ weight: 1.5, fillOpacity: 0.12 });
+        });
+
+        // C. Popup content with discrete distance
+        const popupDiv = document.createElement('div');
+        popupDiv.className = 'book-popup-card';
+        popupDiv.innerHTML = `
+          <div class="book-popup-header">
+            ${
+              book.coverURL
+                ? `<img src="${book.coverURL}" class="book-popup-cover" alt="${book.title}" />`
+                : `<div class="book-popup-cover" style="display:flex;align-items:center;justify-content:center;color:#64748b;font-size:1.5rem;">📖</div>`
+            }
+            <div class="book-popup-meta">
+              <h4 class="book-popup-title" title="${book.title}">${book.title}</h4>
+              <span class="book-popup-author" title="${book.author}">${book.author}</span>
+              <span class="book-popup-distance-badge" title="Дискретный диапазон расстояния для защиты от трилатерации">
+                📍 ${distanceLabel}
+              </span>
+            </div>
           </div>
-        </div>
-      `;
+        `;
 
-      const viewBtn = document.createElement('button');
-      viewBtn.className = 'book-popup-btn';
-      viewBtn.textContent = 'Подробнее о книге';
-      viewBtn.onclick = () => onViewBook(book);
-      popupDiv.appendChild(viewBtn);
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'book-popup-btn';
+        viewBtn.textContent = 'Подробнее о книге';
+        viewBtn.onclick = () => onViewBook(book);
+        popupDiv.appendChild(viewBtn);
 
-      const popup = L.popup({ minWidth: 260, autoPan: true, autoPanPadding: [20, 85] }).setContent(popupDiv);
-      marker.bindPopup(popup);
-      circle.bindPopup(popup);
+        const popup = L.popup({ minWidth: 260, autoPan: true, autoPanPadding: [20, 85] }).setContent(popupDiv);
+        marker.bindPopup(popup);
+        circle.bindPopup(popup);
 
-      featureGroup.addLayer(circle);
-      featureGroup.addLayer(marker);
+        featureGroup.addLayer(circle);
+        featureGroup.addLayer(marker);
+      });
     });
 
     // Auto-fit bounds if we have elements

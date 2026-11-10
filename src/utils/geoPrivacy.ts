@@ -48,6 +48,36 @@ export function cloakCoordinates(
 }
 
 /**
+ * Disperses coordinates deterministically so that multiple books in the same
+ * vicinity (e.g. same city or owner) do not stack directly on top of each other.
+ * Each book receives a unique radial-angular offset based on the golden angle (~137.5°).
+ */
+export function disperseAndCloakCoordinates(
+  lat: number,
+  lng: number,
+  bookId: string,
+  indexInGroup: number,
+  totalInGroup: number
+): [number, number] {
+  if (totalInGroup <= 1) {
+    return cloakCoordinates(lat, lng, bookId);
+  }
+
+  // Golden angle (approx 137.508 degrees in radians) gives optimal non-overlapping distribution
+  const goldenAngle = 2.39996323;
+  const angle = indexInGroup * goldenAngle + hashToNormalizedFloat(bookId, 42) * 0.25;
+
+  // Radial dispersion from ~800m up to ~2.2km spread across neighborhoods
+  const radiusDegLat = 0.008 + (Math.sqrt(indexInGroup + 1) - 1) * 0.0045;
+  const radiusDegLng = radiusDegLat / Math.cos((lat * Math.PI) / 180);
+
+  const dLat = Math.sin(angle) * radiusDegLat;
+  const dLng = Math.cos(angle) * radiusDegLng;
+
+  return [Number((lat + dLat).toFixed(5)), Number((lng + dLng).toFixed(5))];
+}
+
+/**
  * Resolves base coordinates for a book from its owner or city fallback.
  */
 export function resolveBookBaseCoordinates(
