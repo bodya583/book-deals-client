@@ -15,6 +15,7 @@ import {
   SearchIcon,
 } from '../../components/icons';
 import BookDetailsModal from '../../components/BookDetailsModal';
+import BookCard from '../../components/BookCard';
 import '../books.css';
 import '../trades.css';
 
@@ -435,142 +436,28 @@ export const ProfilePage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                    gap: '1.25rem',
-                  }}
-                >
-                  {filteredBooks.map((book) => (
-                    <div
-                  key={book.id}
-                  style={{
-                    background: '#ffffff',
-                    border: '1px solid #e4e4e0',
-                    borderRadius: '14px',
-                    padding: '1.2rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '1rem',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    {book.coverURL ? (
-                      <img
-                        src={book.coverURL}
-                        alt={book.title}
-                        style={{
-                          width: '64px',
-                          height: '92px',
-                          borderRadius: '6px',
-                          objectFit: 'cover',
-                          flexShrink: 0,
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                        }}
+                <div className="books-grid">
+                  {filteredBooks.map((book) => {
+                    const enrichedBook: Book = {
+                      ...book,
+                      user: book.user || (activeUser ? {
+                        id: activeUser.id,
+                        username: activeUser.username,
+                        city: activeUser.city,
+                        photoURL: activeUser.photoURL,
+                      } : null),
+                    };
+
+                    return (
+                      <BookCard
+                        key={book.id}
+                        book={enrichedBook}
+                        isOwner={!isOtherUser}
+                        onView={(b) => setSelectedBook(b)}
+                        onTrade={isOtherUser ? (b) => navigate(`/trades/new?partnerId=${activeUser?.id}&bookId=${b.id}`) : undefined}
                       />
-                    ) : (
-                      <div
-                        style={{
-                          width: '64px',
-                          height: '92px',
-                          borderRadius: '6px',
-                          background: '#f0f0eb',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#888880',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <BookOpenIcon size={24} />
-                      </div>
-                    )}
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', overflow: 'hidden' }}>
-                      <span style={{ fontSize: '0.78rem', color: '#777770', fontWeight: 500 }}>
-                        {book.author}
-                      </span>
-                      <h4
-                        style={{
-                          fontSize: '0.95rem',
-                          fontWeight: 700,
-                          margin: 0,
-                          color: '#1a1a1a',
-                          lineHeight: 1.3,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                        }}
-                      >
-                        {book.title}
-                      </h4>
-                      {book.year && (
-                        <span style={{ fontSize: '0.75rem', color: '#888880' }}>
-                          {formatBookYear(book.year)}
-                        </span>
-                      )}
-                      {book.genres && book.genres.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                          <span
-                            style={{
-                              background: '#f0f0eb',
-                              color: '#555550',
-                              fontSize: '0.7rem',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                            }}
-                          >
-                            {book.genres[0].name}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      borderTop: '1px solid #f0f0eb',
-                      paddingTop: '0.85rem',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="btn-trade-details"
-                      style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
-                      onClick={() => setSelectedBook(book)}
-                    >
-                      Подробнее
-                    </button>
-
-                    <button
-                      type="button"
-                      className="btn-new-trade"
-                      style={{
-                        padding: '0.45rem 0.95rem',
-                        fontSize: '0.85rem',
-                        background: '#2d6a4f',
-                      }}
-                      onClick={() =>
-                        navigate(`/trades/new?partnerId=${activeUser?.id}&bookId=${book.id}`)
-                      }
-                      title="Предложить обмен на эту книгу"
-                    >
-                      <TradeIcon size={14} />
-                      <span>Обмен</span>
-                    </button>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
                 </div>
               )}
             </>

@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
 import { formatBookYear } from '../types/book';
-import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon } from './icons';
+import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon, TradeIcon } from './icons';
 
 interface BookCardProps {
   book: Book;
   onView: (book: Book) => void;
-  onEdit: (book: Book) => void;
-  onDelete: (book: Book) => void;
+  onEdit?: (book: Book) => void;
+  onDelete?: (book: Book) => void;
+  onTrade?: (book: Book) => void;
   isOwner?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const BookCard: React.FC<BookCardProps> = ({
   onView,
   onEdit,
   onDelete,
+  onTrade,
   isOwner = true,
 }) => {
   const navigate = useNavigate();
@@ -115,29 +117,53 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
 
-        {/* Action bar with owner controls OR subtle creator tag */}
+        {/* Action bar with owner controls OR guest trade bar OR subtle creator tag */}
         {isOwner ? (
           <div className="book-card-actions" onClick={(e) => e.stopPropagation()}>
             <div className="book-card-owner-actions">
-              <button
-                type="button"
-                className="book-action-btn edit-btn"
-                onClick={() => onEdit(book)}
-                title="Редактировать книгу"
-                aria-label="Редактировать книгу"
-              >
-                <EditIcon size={15} />
-              </button>
-              <button
-                type="button"
-                className="book-action-btn delete-btn"
-                onClick={() => onDelete(book)}
-                title="Удалить книгу"
-                aria-label="Удалить книгу"
-              >
-                <TrashIcon size={15} />
-              </button>
+              {onEdit && (
+                <button
+                  type="button"
+                  className="book-action-btn edit-btn"
+                  onClick={() => onEdit(book)}
+                  title="Редактировать книгу"
+                  aria-label="Редактировать книгу"
+                >
+                  <EditIcon size={15} />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  type="button"
+                  className="book-action-btn delete-btn"
+                  onClick={() => onDelete(book)}
+                  title="Удалить книгу"
+                  aria-label="Удалить книгу"
+                >
+                  <TrashIcon size={15} />
+                </button>
+              )}
             </div>
+          </div>
+        ) : onTrade ? (
+          <div className="book-card-actions profile-trade-bar" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="btn-card-profile-details"
+              onClick={() => onView(book)}
+              title="Подробнее о книге"
+            >
+              Подробнее
+            </button>
+            <button
+              type="button"
+              className="btn-card-profile-trade"
+              onClick={() => onTrade(book)}
+              title="Предложить обмен на эту книгу"
+            >
+              <TradeIcon size={14} />
+              <span>Обмен</span>
+            </button>
           </div>
         ) : book.user?.username ? (
           <div className="book-card-actions creator-bar">

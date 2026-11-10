@@ -7,6 +7,7 @@ export interface User {
   photoURL: string | null;
   latitude: number | null;
   longitude: number | null;
+  city?: string | null;
   createdAt: string;
 }
 

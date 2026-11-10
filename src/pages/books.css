@@ -507,6 +507,52 @@
   width: 100%;
 }
 
+.book-card-actions.profile-trade-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.btn-card-profile-details {
+  background: #f1f1ec;
+  color: #333330;
+  border: 1px solid #e0e0da;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-card-profile-details:hover {
+  background: #e4e4de;
+  color: #1a1a1a;
+}
+
+.btn-card-profile-trade {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #2d6a4f;
+  color: #ffffff;
+  border: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(45, 106, 79, 0.2);
+}
+
+.btn-card-profile-trade:hover {
+  background: #1b4332;
+  box-shadow: 0 4px 10px rgba(45, 106, 79, 0.3);
+}
+
 .book-card-location {
   display: flex;
   align-items: center;
