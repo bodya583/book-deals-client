@@ -178,22 +178,6 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
   const [locationInput, setLocationInput] = useState('');
   const [timeInput, setTimeInput] = useState('');
 
-  const quickLocations = [
-    'Центральный вход в ТРЦ',
-    'Парк Шевченко (у главного фонтана)',
-    'Центральный книжный магазин',
-    'Возле станции метро',
-    'Кофейня в центре города',
-  ];
-
-  const quickTimes = [
-    'Сегодня в 18:30',
-    'Завтра в 12:00',
-    'Завтра в 18:00',
-    'В эту субботу в 14:00',
-    'В это воскресенье в 15:00',
-  ];
-
   const handleSendLocation = async () => {
     const val = locationInput.trim();
     if (!val || disabled) return;
@@ -224,6 +208,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
               type="button"
               onClick={() => setActiveTab('none')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              title="Закрыть"
             >
               <CloseIcon size={16} />
             </button>
@@ -233,7 +218,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
             <input
               type="text"
               className="trade-chat-input"
-              placeholder="Введите точный адрес, парк или ориентир..."
+              placeholder="Введите точный адрес, парк или ориентир (напр. Парк Шевченко у фонтана)..."
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSendLocation())}
@@ -250,20 +235,6 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
               <span>Предложить</span>
             </button>
           </div>
-
-          <div className="handover-chips-row">
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Быстрый выбор:</span>
-            {quickLocations.map((loc) => (
-              <button
-                key={loc}
-                type="button"
-                className="handover-chip"
-                onClick={() => setLocationInput(loc)}
-              >
-                {loc}
-              </button>
-            ))}
-          </div>
         </div>
       )}
 
@@ -278,6 +249,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
               type="button"
               onClick={() => setActiveTab('none')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              title="Закрыть"
             >
               <CloseIcon size={16} />
             </button>
@@ -287,7 +259,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
             <input
               type="text"
               className="trade-chat-input"
-              placeholder="Например: Завтра в 18:00, или выберите ниже..."
+              placeholder="Введите удобное время (напр. Завтра в 18:30)..."
               value={timeInput}
               onChange={(e) => setTimeInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSendTime())}
@@ -303,20 +275,6 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
               <SendIcon size={14} />
               <span>Предложить</span>
             </button>
-          </div>
-
-          <div className="handover-chips-row">
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Быстрый выбор:</span>
-            {quickTimes.map((tm) => (
-              <button
-                key={tm}
-                type="button"
-                className="handover-chip"
-                onClick={() => setTimeInput(tm)}
-              >
-                {tm}
-              </button>
-            ))}
           </div>
         </div>
       )}
