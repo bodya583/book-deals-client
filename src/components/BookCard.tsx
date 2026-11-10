@@ -98,6 +98,11 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
 
+        {/* Short description with 2-line ellipsis */}
+        <p className="book-card-description" title={book.description || undefined}>
+          {book.description ? book.description : <span className="book-card-description-empty">Описание пока не добавлено</span>}
+        </p>
+
         {/* Genres row */}
         {book.genres && book.genres.length > 0 && (
           <div className="book-card-genres">
