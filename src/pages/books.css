@@ -542,6 +542,27 @@
   box-shadow: 0 4px 10px rgba(45, 106, 79, 0.3);
 }
 
+.btn-card-profile-untrade {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-card-profile-untrade:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #94a3b8;
+}
+
 .book-card-location {
   display: flex;
   align-items: center;

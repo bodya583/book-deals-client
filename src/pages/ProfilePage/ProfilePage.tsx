@@ -672,8 +672,7 @@ export const ProfilePage: React.FC = () => {
                           {inTrade ? (
                             <button
                               type="button"
-                              className="btn-trade-reject"
-                              style={{ padding: '0.45rem 0.85rem', fontSize: '0.825rem' }}
+                              className="btn-card-profile-untrade"
                               disabled={togglingBookId === book.id}
                               onClick={() => handleToggleTradeStatus(book)}
                               title="Снять книгу с обмена и убрать из публичного профиля"
