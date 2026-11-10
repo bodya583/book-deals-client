@@ -13,41 +13,42 @@ import {
   TradeIcon,
   ArrowLeftRightIcon,
   InboxIcon,
-  SendIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
   BookOpenIcon,
-  PlusIcon,
   SearchIcon,
   MessageSquareIcon,
   MapPinIcon,
   ArchiveIcon,
   HandshakeIcon,
-  LayersIcon,
   CloseIcon,
 } from '../../components/icons';
 import Toast, { type ToastMessage } from '../../components/Toast';
 import '../trades.css';
 
-type TabType = 'incoming' | 'outgoing' | 'agreed' | 'completed' | 'all';
+type TabType = 'requests' | 'agreed' | 'completed';
+type SortOption = 'turn' | 'newest' | 'oldest' | 'updated';
 
 export const TradesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const currentTab = (searchParams.get('tab') as TabType) || 'incoming';
+  const rawTab = searchParams.get('tab');
+  const currentTab: TabType = (rawTab === 'agreed' || rawTab === 'completed') ? rawTab : 'requests';
 
   const [trades, setTrades] = useState<Trade[]>([]);
   const [counts, setCounts] = useState<TradeCounts>({
     incoming: 0,
     outgoing: 0,
+    requests: 0,
     agreed: 0,
     completed: 0,
     total: 0,
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<SortOption>('turn');
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -151,25 +152,72 @@ export const TradesPage: React.FC = () => {
     }
   };
 
-  // Filter trades by search query
+  // Filter trades by search query and sort by selected criteria
   const filteredTrades = useMemo(() => {
-    if (!searchQuery.trim()) return trades;
-    const q = searchQuery.toLowerCase().trim();
-    return trades.filter((trade) => {
-      const partner = trade.isSender ? trade.receiver : trade.sender;
-      const partnerMatch = partner?.username?.toLowerCase().includes(q);
-      const messageMatch = trade.message?.toLowerCase().includes(q);
-      const bookMatch = [
-        ...(trade.offeredBooks || []),
-        ...(trade.requestedBooks || []),
-      ].some(
-        (b) =>
-          b.title?.toLowerCase().includes(q) ||
-          b.author?.toLowerCase().includes(q)
-      );
-      return partnerMatch || messageMatch || bookMatch;
+    let list = trades;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((trade) => {
+        const partner = trade.isSender ? trade.receiver : trade.sender;
+        const partnerMatch = partner?.username?.toLowerCase().includes(q);
+        const messageMatch = trade.message?.toLowerCase().includes(q);
+        const bookMatch = [
+          ...(trade.offeredBooks || []),
+          ...(trade.requestedBooks || []),
+        ].some(
+          (b) =>
+            b.title?.toLowerCase().includes(q) ||
+            b.author?.toLowerCase().includes(q)
+        );
+        return partnerMatch || messageMatch || bookMatch;
+      });
+    }
+
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      if (sortBy === 'turn') {
+        // 1. В разделе "Запросы": трейды, требующие ответа пользователя (!isSender), идут первыми
+        if (currentTab === 'requests') {
+          const aNeedsUser = !a.isSender ? 0 : 1;
+          const bNeedsUser = !b.isSender ? 0 : 1;
+          if (aNeedsUser !== bNeedsUser) {
+            return aNeedsUser - bNeedsUser;
+          }
+        }
+
+        // 2. В разделе "Согласованные": трейды, где партнёр уже подтвердил передачу книг, а пользователь нет
+        if (currentTab === 'agreed') {
+          const aMyTurn = (a.isSender ? a.receiverCompleted : a.senderCompleted) && !(a.isSender ? a.senderCompleted : a.receiverCompleted) ? 0 : 1;
+          const bMyTurn = (b.isSender ? b.receiverCompleted : b.senderCompleted) && !(b.isSender ? b.senderCompleted : b.receiverCompleted) ? 0 : 1;
+          if (aMyTurn !== bMyTurn) {
+            return aMyTurn - bMyTurn;
+          }
+        }
+
+        // Вторично: по дате создания (сначала новые)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      if (sortBy === 'newest') {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      if (sortBy === 'oldest') {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+
+      if (sortBy === 'updated') {
+        const aTime = new Date(a.updatedAt || a.createdAt).getTime();
+        const bTime = new Date(b.updatedAt || b.createdAt).getTime();
+        return bTime - aTime;
+      }
+
+      return 0;
     });
-  }, [trades, searchQuery]);
+
+    return sorted;
+  }, [trades, searchQuery, sortBy, currentTab]);
 
   const formatDate = (dateStr: string) => {
     try {
@@ -287,36 +335,26 @@ export const TradesPage: React.FC = () => {
         <div className="trades-workspace-layout">
           {/* Left Sidebar */}
           <aside className="trades-sidebar">
-            <Link to="/trades/new" className="btn-sidebar-compose" title="Предложить обмен книгами новому партнёру">
-              <PlusIcon size={18} />
-              <span>Предложить обмен</span>
-            </Link>
-
             <nav className="trades-sidebar-nav" aria-label="Категории обменов">
               <button
                 type="button"
-                className={`trades-sidebar-item ${currentTab === 'incoming' ? 'active' : ''}`}
-                onClick={() => handleTabChange('incoming')}
+                className={`trades-sidebar-item ${currentTab === 'requests' ? 'active' : ''}`}
+                onClick={() => handleTabChange('requests')}
               >
                 <div className="sidebar-item-left">
                   <InboxIcon size={17} />
-                  <span>Входящие</span>
+                  <span>Запросы</span>
                 </div>
-                <span className={`sidebar-badge ${counts.incoming > 0 ? 'badge-highlight' : ''}`}>
-                  {counts.incoming}
+                <span
+                  className={`sidebar-badge ${counts.incoming > 0 ? 'badge-highlight' : ''}`}
+                  title={
+                    counts.incoming > 0
+                      ? `${counts.incoming} требуют вашего ответа (всего: ${counts.requests ?? (counts.incoming + counts.outgoing)})`
+                      : `Всего запросов: ${counts.requests ?? (counts.incoming + counts.outgoing)}`
+                  }
+                >
+                  {counts.requests ?? (counts.incoming + counts.outgoing)}
                 </span>
-              </button>
-
-              <button
-                type="button"
-                className={`trades-sidebar-item ${currentTab === 'outgoing' ? 'active' : ''}`}
-                onClick={() => handleTabChange('outgoing')}
-              >
-                <div className="sidebar-item-left">
-                  <SendIcon size={17} />
-                  <span>Исходящие</span>
-                </div>
-                <span className="sidebar-badge">{counts.outgoing}</span>
               </button>
 
               <button
@@ -344,24 +382,12 @@ export const TradesPage: React.FC = () => {
                 </div>
                 <span className="sidebar-badge">{counts.completed}</span>
               </button>
-
-              <button
-                type="button"
-                className={`trades-sidebar-item ${currentTab === 'all' ? 'active' : ''}`}
-                onClick={() => handleTabChange('all')}
-              >
-                <div className="sidebar-item-left">
-                  <LayersIcon size={17} />
-                  <span>Все сделки</span>
-                </div>
-                <span className="sidebar-badge">{counts.total}</span>
-              </button>
             </nav>
           </aside>
 
           {/* Right Main Content */}
           <main className="trades-main-area">
-            {/* Search Toolbar */}
+            {/* Search and Sort Toolbar */}
             <div className="trades-search-toolbar">
               <div className="inventory-search-wrap trades-search-box">
                 <SearchIcon size={16} className="inventory-search-icon" />
@@ -383,16 +409,32 @@ export const TradesPage: React.FC = () => {
                   </button>
                 )}
               </div>
+
+              <div className="trades-sort-wrap">
+                <label htmlFor="trades-sort-select" className="trades-sort-label">
+                  Сортировка:
+                </label>
+                <select
+                  id="trades-sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="trades-sort-select"
+                  aria-label="Сортировка предложений обмена"
+                >
+                  <option value="turn">По ходу действия</option>
+                  <option value="newest">Сначала новые</option>
+                  <option value="updated">По последнему изменению</option>
+                  <option value="oldest">Сначала старые</option>
+                </select>
+              </div>
             </div>
 
             {/* Category Heading */}
             <div className="trades-section-heading">
               <h2 className="trades-section-title">
-                {currentTab === 'incoming' && 'Входящие предложения'}
-                {currentTab === 'outgoing' && 'Исходящие предложения'}
+                {currentTab === 'requests' && 'Запросы на обмен'}
                 {currentTab === 'agreed' && 'Согласованные сделки'}
                 {currentTab === 'completed' && 'Архив завершённых обменов'}
-                {currentTab === 'all' && 'Все предложения обмена'}
               </h2>
               <span className="trades-section-counter">
                 {filteredTrades.length} {filteredTrades.length === 1 ? 'сделка' : filteredTrades.length > 1 && filteredTrades.length < 5 ? 'сделки' : 'сделок'}
@@ -410,28 +452,22 @@ export const TradesPage: React.FC = () => {
                   <TradeIcon size={32} />
                 </div>
                 <h3 className="empty-state-title">
-                  {currentTab === 'incoming'
-                    ? 'Нет входящих предложений'
-                    : currentTab === 'outgoing'
-                    ? 'Нет активных исходящих трейдов'
+                  {currentTab === 'requests'
+                    ? 'Нет активных запросов на обмен'
                     : currentTab === 'agreed'
                     ? 'Пока нет согласованных обменов'
-                    : currentTab === 'completed'
-                    ? 'Пока нет завершённых обменов'
-                    : 'Список трейдов пуст'}
+                    : 'Пока нет завершённых обменов'}
                 </h3>
                 <p className="empty-state-text">
-                  {currentTab === 'incoming'
-                    ? 'Когда другой читатель предложит вам обменяться книгами, предложение появится здесь.'
+                  {currentTab === 'requests'
+                    ? 'Здесь будут отображаться входящие и исходящие предложения обмена на стадии переговоров.'
                     : currentTab === 'agreed'
                     ? 'Здесь находятся сделки, условия которых зафиксированы, в ожидании передачи книг.'
-                    : currentTab === 'completed'
-                    ? 'Здесь сохраняется архив успешно проведённых сделок, в которых книги получены.'
-                    : 'Выберите интересную книгу в каталоге или предложите прямой обмен читателю.'}
+                    : 'Здесь сохраняется архив успешно проведённых сделок, в которых книги получены.'}
                 </p>
-                <Link to="/trades/new" className="btn-new-trade" style={{ marginTop: '0.5rem' }}>
-                  <PlusIcon size={18} />
-                  <span>Создать предложение обмена</span>
+                <Link to="/books" className="btn-new-trade" style={{ marginTop: '0.5rem' }}>
+                  <BookOpenIcon size={18} />
+                  <span>Выбрать книги в каталоге</span>
                 </Link>
               </div>
             ) : (
@@ -443,6 +479,61 @@ export const TradesPage: React.FC = () => {
               // Perspective: What I give vs What I receive
               const myBooksToGive = trade.isSender ? trade.offeredBooks : trade.requestedBooks;
               const myBooksToReceive = trade.isSender ? trade.requestedBooks : trade.offeredBooks;
+
+              const renderRoleBadge = () => {
+                if (currentTab === 'requests' || trade.status === 'PENDING') {
+                  if (!trade.isSender) {
+                    return (
+                      <span
+                        className="trade-role-badge role-action-needed"
+                        title="Вам поступило предложение — требуется ваш ответ или согласование"
+                      >
+                        <span className="role-dot role-dot-needed" />
+                        <span>Требует вашего ответа</span>
+                      </span>
+                    );
+                  }
+                  return (
+                    <span
+                      className="trade-role-badge role-waiting"
+                      title="Вы отправили предложение — ожидается ответ партнёра"
+                    >
+                      <span className="role-dot role-dot-waiting" />
+                      <span>Ожидание партнёра</span>
+                    </span>
+                  );
+                }
+
+                if (currentTab === 'agreed' || trade.status === 'AGREED' || trade.status === 'ACCEPTED') {
+                  const iAmConfirmed = trade.isSender ? trade.senderCompleted : trade.receiverCompleted;
+                  const partnerConfirmed = trade.isSender ? trade.receiverCompleted : trade.senderCompleted;
+
+                  if (partnerConfirmed && !iAmConfirmed) {
+                    return (
+                      <span
+                        className="trade-role-badge role-action-needed"
+                        title="Партнёр уже подтвердил передачу книг. Подтвердите получение своих!"
+                      >
+                        <span className="role-dot role-dot-needed" />
+                        <span>Подтвердите получение</span>
+                      </span>
+                    );
+                  }
+                  if (iAmConfirmed && !partnerConfirmed) {
+                    return (
+                      <span
+                        className="trade-role-badge role-waiting"
+                        title="Вы подтвердили передачу. Ожидается подтверждение от партнёра."
+                      >
+                        <span className="role-dot role-dot-waiting" />
+                        <span>Ожидание партнёра</span>
+                      </span>
+                    );
+                  }
+                }
+
+                return null;
+              };
 
               return (
                 <article key={trade.id} className="trade-card">
@@ -476,8 +567,8 @@ export const TradesPage: React.FC = () => {
                         <div className="trade-date-meta">
                           <span>
                             {isPartnerInitiator
-                              ? 'Предложил(а) вам обмен'
-                              : 'Вы предложили обмен'}
+                              ? 'Входящее предложение'
+                              : 'Исходящее предложение'}
                           </span>
                           <span>•</span>
                           <span>{formatDate(trade.createdAt)}</span>
@@ -485,7 +576,8 @@ export const TradesPage: React.FC = () => {
                       </div>
                     </Link>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div className="trade-card-header-badges">
+                      {renderRoleBadge()}
                       {renderStatusBadge(trade.status, trade)}
                     </div>
                   </div>

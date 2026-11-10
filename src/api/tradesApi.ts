@@ -1,7 +1,7 @@
 import api from './axiosInstance';
 import type { Trade, TradeCounts, CreateTradePayload, TradePartner, TradeMessage } from '../types/trade';
 
-export const getTrades = async (tab?: 'incoming' | 'outgoing' | 'agreed' | 'completed' | 'all') => {
+export const getTrades = async (tab?: 'requests' | 'incoming' | 'outgoing' | 'agreed' | 'completed' | 'all') => {
   const { data } = await api.get<Trade[]>('/trades', {
     params: tab && tab !== 'all' ? { tab } : undefined,
   });

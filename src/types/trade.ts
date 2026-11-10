@@ -39,6 +39,7 @@ export interface Trade {
 export interface TradeCounts {
   incoming: number;
   outgoing: number;
+  requests?: number;
   agreed: number;
   completed: number;
   total: number;
