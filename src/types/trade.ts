@@ -32,6 +32,8 @@ export interface Trade {
   items?: TradeItem[];
   isSender?: boolean;
   isReceiver?: boolean;
+  senderCompleted?: boolean;
+  receiverCompleted?: boolean;
 }
 
 export interface TradeCounts {

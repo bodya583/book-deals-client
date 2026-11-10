@@ -47,7 +47,7 @@ export const TradesPage: React.FC = () => {
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const addToast = (text: string, type: 'success' | 'error' = 'success') => {
+  const addToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToasts([{ id: String(Date.now()), text, type }]);
   };
 
@@ -96,13 +96,17 @@ export const TradesPage: React.FC = () => {
   };
 
   const handleComplete = async (tradeId: string) => {
-    if (!window.confirm('Подтвердить получение книг? Сделка будет завершена, а книги перейдут новым владельцам.')) {
+    if (!window.confirm('Подтвердить получение книг? Сделка перейдёт в статус завершённой, когда обе стороны подтвердят получение.')) {
       return;
     }
     try {
       setActionLoadingId(tradeId);
-      await completeTrade(tradeId);
-      addToast('Обмен успешно завершён! Книги получены.', 'success');
+      const updated = await completeTrade(tradeId);
+      if (updated.status === 'COMPLETED') {
+        addToast('Обмен успешно завершён обеими сторонами! Книги получены.', 'success');
+      } else {
+        addToast('Вы подтвердили получение книг! Ожидается подтверждение партнёра.', 'info');
+      }
       await fetchTradeData();
     } catch (err: any) {
       addToast(err.response?.data?.message || 'Ошибка при завершении трейда', 'error');
@@ -178,7 +182,7 @@ export const TradesPage: React.FC = () => {
     }
   };
 
-  const renderStatusBadge = (status: TradeStatus) => {
+  const renderStatusBadge = (status: TradeStatus, trade?: Trade) => {
     switch (status) {
       case 'PENDING':
         return (
@@ -188,7 +192,34 @@ export const TradesPage: React.FC = () => {
           </span>
         );
       case 'AGREED':
-      case 'ACCEPTED':
+      case 'ACCEPTED': {
+        const iAmConfirmed = trade?.isSender ? trade.senderCompleted : trade?.receiverCompleted;
+        const partnerConfirmed = trade?.isSender ? trade?.receiverCompleted : trade?.senderCompleted;
+
+        if (iAmConfirmed && !partnerConfirmed) {
+          return (
+            <span
+              className="trade-status-pill status-partial"
+              style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}
+              title="Вы подтвердили получение книг, ожидается подтверждение от партнёра"
+            >
+              <ClockIcon size={14} />
+              <span>Ожидается подтверждение партнёра</span>
+            </span>
+          );
+        }
+        if (!iAmConfirmed && partnerConfirmed) {
+          return (
+            <span
+              className="trade-status-pill status-partner-ready"
+              style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}
+              title="Партнёр уже подтвердил получение ваших книг. Подтвердите получение своих!"
+            >
+              <CheckCircleIcon size={14} />
+              <span>Партнёр подтвердил получение!</span>
+            </span>
+          );
+        }
         return (
           <span
             className="trade-status-pill status-accepted"
@@ -199,6 +230,7 @@ export const TradesPage: React.FC = () => {
             <span>Согласован (Зафиксирован)</span>
           </span>
         );
+      }
       case 'COMPLETED':
         return (
           <span
@@ -409,7 +441,7 @@ export const TradesPage: React.FC = () => {
                     </Link>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      {renderStatusBadge(trade.status)}
+                      {renderStatusBadge(trade.status, trade)}
                     </div>
                   </div>
 
@@ -550,31 +582,53 @@ export const TradesPage: React.FC = () => {
                         </>
                       )}
 
-                      {(trade.status === 'AGREED' || trade.status === 'ACCEPTED') && (
-                        <button
-                          type="button"
-                          className="btn-trade-complete"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.4rem',
-                            background: '#16a34a',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '0.6rem 1rem',
-                            borderRadius: '8px',
-                            fontWeight: 600,
-                            fontSize: '0.9rem',
-                            cursor: 'pointer',
-                          }}
-                          disabled={actionLoadingId === trade.id}
-                          onClick={() => handleComplete(trade.id)}
-                          title="Подтвердить получение книг и завершить сделку"
-                        >
-                          <CheckCircleIcon size={16} />
-                          <span>Книги получены (Завершить)</span>
-                        </button>
-                      )}
+                      {(trade.status === 'AGREED' || trade.status === 'ACCEPTED') && (() => {
+                        const iAmConfirmed = trade.isSender ? trade.senderCompleted : trade.receiverCompleted;
+                        const partnerConfirmed = trade.isSender ? trade.receiverCompleted : trade.senderCompleted;
+
+                        if (iAmConfirmed) {
+                          return (
+                            <span style={{ fontSize: '0.825rem', color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <ClockIcon size={14} />
+                              <span>Вы подтвердили. Ожидаем партнёра</span>
+                            </span>
+                          );
+                        }
+
+                        return (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                            {partnerConfirmed && (
+                              <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <CheckCircleIcon size={14} />
+                                <span>Партнёр подтвердил!</span>
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              className="btn-trade-complete"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                background: '#16a34a',
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '0.6rem 1rem',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                              }}
+                              disabled={actionLoadingId === trade.id}
+                              onClick={() => handleComplete(trade.id)}
+                              title="Подтвердить получение книг"
+                            >
+                              <CheckCircleIcon size={16} />
+                              <span>{partnerConfirmed ? 'Подтвердить получение (Завершить)' : 'Книги получены'}</span>
+                            </button>
+                          </div>
+                        );
+                      })()}
 
                       {trade.status === 'COMPLETED' && (
                         <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
