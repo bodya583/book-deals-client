@@ -134,36 +134,10 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
     s.name.toLowerCase().includes(settlementSearch.toLowerCase().trim())
   );
 
-  const getGenreButtonLabel = () => {
-    if (selectedGenres.length === 0) return 'Все жанры';
-    if (selectedGenres.length === 1) return selectedGenres[0];
-    return `${selectedGenres.length} ${strictGenres ? 'жанра (И)' : 'жанра (ИЛИ)'}`;
-  };
-
-  const getLanguageButtonLabel = () => {
-    if (selectedLanguages.length === 0) return 'Все языки';
-    if (selectedLanguages.length === 1) return selectedLanguages[0];
-    return `${selectedLanguages.length} языков`;
-  };
-
-  const getYearButtonLabel = () => {
-    if (yearFrom && yearTo) return `${yearFrom} – ${yearTo} гг.`;
-    if (yearFrom) return `От ${yearFrom} г.`;
-    if (yearTo) return `До ${yearTo} г.`;
-    return 'Год издания';
-  };
-
-  const getLocationButtonLabel = () => {
-    if (selectedSettlements.length > 0) {
-      if (selectedSettlements.length === 1) return selectedSettlements[0];
-      return `${selectedSettlements.length} гор.`;
-    }
-    if (nearMe) {
-      if (nearCenter) return `${radius} км от ${nearCenter.name}`;
-      return `В радиусе ${radius} км`;
-    }
-    return 'Локация / Рядом';
-  };
+  const getGenreButtonLabel = () => 'Жанры';
+  const getLanguageButtonLabel = () => 'Языки';
+  const getYearButtonLabel = () => 'Год издания';
+  const getLocationButtonLabel = () => 'Локация';
 
   const isLocationActive = selectedSettlements.length > 0 || nearMe;
   const locationActiveCount = selectedSettlements.length + (nearMe ? 1 : 0);
@@ -395,6 +369,9 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
             >
               <CalendarIcon size={15} />
               <span className="filter-trigger-text">{getYearButtonLabel()}</span>
+              {(yearFrom || yearTo) && (
+                <span className="filter-count-badge">1</span>
+              )}
               <ChevronDownIcon size={14} className={`filter-chevron ${openDropdown === 'year' ? 'open' : ''}`} />
             </button>
 
