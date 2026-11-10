@@ -20,6 +20,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
     books,
     genres,
     loading,
+    isFetching,
     error,
     // Pagination
     pagination,
@@ -117,7 +118,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
       )}
 
       {/* 4. Top Pagination (Pages selector & limit on page) */}
-      {!loading && books.length > 0 && (
+      {!loading && (books.length > 0 || isFetching) && (
         <BooksPagination
           pagination={pagination}
           onPageChange={changePage}
@@ -148,7 +149,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
           onAddBook={modalsActions.openCreate}
         />
       ) : (
-        <div className="books-grid">
+        <div className={`books-grid ${isFetching ? 'is-fetching' : ''}`}>
           {books.map((book) => (
             <BookCard
               key={book.id}
@@ -163,7 +164,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
       )}
 
       {/* 6. Bottom Pagination (Pages selector & limit on page) */}
-      {!loading && books.length > 0 && (
+      {!loading && (books.length > 0 || isFetching) && (
         <BooksPagination
           pagination={pagination}
           onPageChange={changePage}

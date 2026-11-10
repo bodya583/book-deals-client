@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../../../store/authStore';
 import { getBooks, getGenres, getSettlements, createBook, updateBook, deleteBook } from '../../../api/booksApi';
 import type { Book, BookFormData, Genre, Settlement, BooksPagination, BookSortOption } from '../../../types/book';
@@ -16,7 +16,9 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
+  const hasLoadedInitial = useRef(false);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -128,7 +130,13 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   useEffect(() => {
     if (scope === 'my' && !userId) return;
     let isMounted = true;
-    setLoading(true);
+
+    // Use full loading only on initial mount before any books have loaded
+    if (!hasLoadedInitial.current) {
+      setLoading(true);
+    } else {
+      setIsFetching(true);
+    }
 
     const parsedYearFrom = yearFrom.trim() && !isNaN(Number(yearFrom)) ? Number(yearFrom) : undefined;
     const parsedYearTo = yearTo.trim() && !isNaN(Number(yearTo)) ? Number(yearTo) : undefined;
@@ -164,6 +172,8 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
           }
           setError('');
           setLoading(false);
+          setIsFetching(false);
+          hasLoadedInitial.current = true;
         }
       })
       .catch((err: unknown) => {
@@ -171,6 +181,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
           const msg = err instanceof Error ? err.message : 'Не удалось загрузить книги';
           setError(msg);
           setLoading(false);
+          setIsFetching(false);
         }
       });
 
@@ -360,6 +371,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     genres,
     settlements,
     loading,
+    isFetching,
     error,
     // Pagination
     page,
