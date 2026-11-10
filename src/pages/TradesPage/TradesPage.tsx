@@ -309,7 +309,7 @@ export const TradesPage: React.FC = () => {
           </div>
 
           {/* Quick filter input */}
-          <div className="inventory-search-wrap" style={{ maxWidth: '300px' }}>
+          <div className="inventory-search-wrap" style={{ minWidth: '240px', flex: '1 1 240px', maxWidth: '360px' }}>
             <SearchIcon size={16} className="inventory-search-icon" />
             <input
               type="text"
@@ -497,99 +497,103 @@ export const TradesPage: React.FC = () => {
                       type="button"
                       className="btn-trade-details"
                       onClick={() => navigate(`/trades/${trade.id}`)}
+                      title="Открыть детали обмена и чат согласования"
                     >
                       <span>Подробнее</span>
                     </button>
 
-                    {trade.status === 'PENDING' && trade.isReceiver && (
-                      <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginLeft: 'auto', flexWrap: 'wrap' }}>
+                      {trade.status === 'PENDING' && trade.isReceiver && !trade.isSender && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn-trade-counter"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.4rem',
+                              background: '#eff6ff',
+                              color: '#1d4ed8',
+                              border: '1px solid #bfdbfe',
+                              padding: '0.55rem 0.9rem',
+                              borderRadius: '8px',
+                              fontWeight: 600,
+                              fontSize: '0.875rem',
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => navigate(`/trades/new?counterTradeId=${trade.id}`)}
+                            title="Изменить состав обмена и отправить встречное предложение"
+                          >
+                            <TradeIcon size={15} />
+                            <span>Изменить</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-trade-reject"
+                            disabled={actionLoadingId === trade.id}
+                            onClick={() => handleReject(trade.id)}
+                          >
+                            <XCircleIcon size={16} />
+                            <span>Отклонить</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-trade-accept"
+                            disabled={actionLoadingId === trade.id}
+                            onClick={() => handleAccept(trade.id)}
+                          >
+                            <CheckCircleIcon size={16} />
+                            <span>Согласовать обмен</span>
+                          </button>
+                        </>
+                      )}
+
+                      {(trade.status === 'AGREED' || trade.status === 'ACCEPTED') && (
                         <button
                           type="button"
-                          className="btn-trade-counter"
+                          className="btn-trade-complete"
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '0.4rem',
-                            background: '#eff6ff',
-                            color: '#1d4ed8',
-                            border: '1px solid #bfdbfe',
-                            padding: '0.6rem 0.95rem',
+                            background: '#16a34a',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '0.6rem 1rem',
                             borderRadius: '8px',
                             fontWeight: 600,
                             fontSize: '0.9rem',
                             cursor: 'pointer',
                           }}
-                          onClick={() => navigate(`/trades/new?counterTradeId=${trade.id}`)}
-                          title="Изменить состав обмена и отправить встречное предложение"
-                        >
-                          <TradeIcon size={15} />
-                          <span>Изменить</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-trade-reject"
                           disabled={actionLoadingId === trade.id}
-                          onClick={() => handleReject(trade.id)}
-                        >
-                          <XCircleIcon size={16} />
-                          <span>Отклонить</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-trade-accept"
-                          disabled={actionLoadingId === trade.id}
-                          onClick={() => handleAccept(trade.id)}
+                          onClick={() => handleComplete(trade.id)}
+                          title="Подтвердить получение книг и завершить сделку"
                         >
                           <CheckCircleIcon size={16} />
-                          <span>Согласовать обмен</span>
+                          <span>Книги получены (Завершить)</span>
                         </button>
-                      </>
-                    )}
+                      )}
 
-                    {(trade.status === 'AGREED' || trade.status === 'ACCEPTED') && (
-                      <button
-                        type="button"
-                        className="btn-trade-complete"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.4rem',
-                          background: '#16a34a',
-                          color: '#ffffff',
-                          border: 'none',
-                          padding: '0.6rem 1rem',
-                          borderRadius: '8px',
-                          fontWeight: 600,
-                          fontSize: '0.9rem',
-                          cursor: 'pointer',
-                        }}
-                        disabled={actionLoadingId === trade.id}
-                        onClick={() => handleComplete(trade.id)}
-                        title="Подтвердить получение книг и завершить сделку"
-                      >
-                        <CheckCircleIcon size={16} />
-                        <span>Книги получены (Завершить)</span>
-                      </button>
-                    )}
+                      {trade.status === 'COMPLETED' && (
+                        <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <CheckCircleIcon size={16} />
+                          <span>Обмен успешно завершён</span>
+                        </span>
+                      )}
 
-                    {trade.status === 'COMPLETED' && (
-                      <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <CheckCircleIcon size={16} />
-                        <span>Обмен успешно завершён</span>
-                      </span>
-                    )}
-
-                    {trade.status === 'PENDING' && trade.isSender && (
-                      <button
-                        type="button"
-                        className="btn-trade-cancel"
-                        disabled={actionLoadingId === trade.id}
-                        onClick={() => handleCancel(trade.id)}
-                      >
-                        <XCircleIcon size={16} />
-                        <span>Отозвать предложение</span>
-                      </button>
-                    )}
+                      {trade.status === 'PENDING' && trade.isSender && (
+                        <button
+                          type="button"
+                          className="btn-trade-cancel"
+                          disabled={actionLoadingId === trade.id}
+                          onClick={() => handleCancel(trade.id)}
+                          title="Отозвать предложение обмена, если передумали"
+                        >
+                          <XCircleIcon size={16} />
+                          <span>Отозвать предложение</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </article>
               );

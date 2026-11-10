@@ -425,19 +425,19 @@
   align-items: center;
   gap: 0.4rem;
   background: #ffffff;
-  color: #666660;
-  border: 1px solid #d4d4d0;
-  padding: 0.6rem 1rem;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  padding: 0.55rem 0.95rem;
   border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-trade-cancel:hover {
-  background: #f4f4f0;
-  color: #1a1a1a;
+  background: #fef2f2;
+  border-color: #ef4444;
 }
 
 .btn-trade-details {
