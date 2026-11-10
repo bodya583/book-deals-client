@@ -13,6 +13,9 @@ import {
   BookOpenIcon,
   ChevronLeftIcon,
   SearchIcon,
+  LockIcon,
+  CheckIcon,
+  CloseIcon,
 } from '../../components/icons';
 import BookDetailsModal from '../../components/BookDetailsModal';
 import BookCard from '../../components/BookCard';
@@ -224,7 +227,7 @@ export const ProfilePage: React.FC = () => {
               }}
               title="Очистить поиск"
             >
-              ✕
+              <CloseIcon size={14} />
             </button>
           )}
         </div>
@@ -294,17 +297,19 @@ export const ProfilePage: React.FC = () => {
             type="button"
             onClick={() => setTradeFilter('for_trade')}
             className={`trade-tab-btn ${tradeFilter === 'for_trade' ? 'active' : ''}`}
-            style={{ padding: '0.35rem 0.85rem', fontSize: '0.825rem' }}
+            style={{ padding: '0.35rem 0.85rem', fontSize: '0.825rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
           >
-            🟢 В профиле (для обмена) ({myBooks.filter((b) => b.isForTrade !== false).length})
+            <CheckIcon size={13} />
+            <span>В профиле (для обмена) ({myBooks.filter((b) => b.isForTrade !== false).length})</span>
           </button>
           <button
             type="button"
             onClick={() => setTradeFilter('hidden')}
             className={`trade-tab-btn ${tradeFilter === 'hidden' ? 'active' : ''}`}
-            style={{ padding: '0.35rem 0.85rem', fontSize: '0.825rem' }}
+            style={{ padding: '0.35rem 0.85rem', fontSize: '0.825rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
           >
-            🔒 Только для вас ({myBooks.filter((b) => b.isForTrade === false).length})
+            <LockIcon size={13} />
+            <span>Только для вас ({myBooks.filter((b) => b.isForTrade === false).length})</span>
           </button>
         </div>
       )}
@@ -630,9 +635,13 @@ export const ProfilePage: React.FC = () => {
                                     padding: '2px 7px',
                                     borderRadius: '4px',
                                     fontWeight: 600,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
                                   }}
                                 >
-                                  🟢 В профиле (для обмена)
+                                  <CheckIcon size={11} />
+                                  <span>В профиле (для обмена)</span>
                                 </span>
                               ) : (
                                 <span
@@ -644,9 +653,13 @@ export const ProfilePage: React.FC = () => {
                                     padding: '2px 7px',
                                     borderRadius: '4px',
                                     fontWeight: 600,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
                                   }}
                                 >
-                                  🔒 Только для вас (не в профиле)
+                                  <LockIcon size={11} />
+                                  <span>Только для вас (не в профиле)</span>
                                 </span>
                               )}
                             </div>

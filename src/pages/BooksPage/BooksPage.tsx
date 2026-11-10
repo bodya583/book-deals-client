@@ -106,7 +106,6 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
         userCoords={{ latitude: user?.latitude ?? null, longitude: user?.longitude ?? null }}
         onResetFilters={resetFilters}
         hasActiveFilters={hasActiveFilters}
-        count={pagination.total}
       />
 
       {/* 3. Error Banner */}

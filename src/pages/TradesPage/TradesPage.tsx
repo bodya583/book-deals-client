@@ -21,6 +21,7 @@ import {
   PlusIcon,
   SearchIcon,
   MessageSquareIcon,
+  MapPinIcon,
 } from '../../components/icons';
 import Toast, { type ToastMessage } from '../../components/Toast';
 import '../trades.css';
@@ -389,8 +390,9 @@ export const TradesPage: React.FC = () => {
                             @{partner?.username || 'Читатель'}
                           </span>
                           {partner?.city && (
-                            <span style={{ fontSize: '0.8rem', color: '#666660' }}>
-                              📍 {partner.city}
+                            <span style={{ fontSize: '0.8rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                              <MapPinIcon size={12} />
+                              <span>{partner.city}</span>
                             </span>
                           )}
                         </div>

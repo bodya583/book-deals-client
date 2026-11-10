@@ -20,6 +20,7 @@ import {
   BookOpenIcon,
   ChevronLeftIcon,
   MessageSquareIcon,
+  MapPinIcon,
 } from '../../components/icons';
 import Toast, { type ToastMessage } from '../../components/Toast';
 import {
@@ -71,12 +72,12 @@ export const TradeDetailsPage: React.FC = () => {
   };
 
   const handleAcceptLocation = async (loc: string) => {
-    await handleSendCustomMessage(`✅ Точка встречи согласована: ${loc}`);
+    await handleSendCustomMessage(`Точка встречи согласована: ${loc}`);
     addToast('Точка встречи согласована!', 'success');
   };
 
   const handleAcceptTime = async (tm: string) => {
-    await handleSendCustomMessage(`✅ Время встречи согласовано: ${tm}`);
+    await handleSendCustomMessage(`Время встречи согласовано: ${tm}`);
     addToast('Время встречи согласовано!', 'success');
   };
 
@@ -325,8 +326,9 @@ export const TradeDetailsPage: React.FC = () => {
                   </Link>
                 </h1>
                 {partner?.city && (
-                  <span style={{ fontSize: '0.9rem', color: '#666660' }}>
-                    📍 {partner.city}
+                  <span style={{ fontSize: '0.9rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <MapPinIcon size={14} />
+                    <span>{partner.city}</span>
                   </span>
                 )}
               </div>

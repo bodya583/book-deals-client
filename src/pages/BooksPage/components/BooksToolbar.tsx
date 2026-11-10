@@ -51,7 +51,6 @@ interface BooksToolbarProps {
   // Global actions
   onResetFilters: () => void;
   hasActiveFilters: boolean;
-  count: number;
 }
 
 const YEAR_PRESETS = [
@@ -93,7 +92,6 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
   userCoords,
   onResetFilters,
   hasActiveFilters,
-  count,
 }) => {
   // Popover open states
   const [openDropdown, setOpenDropdown] = useState<'none' | 'genres' | 'languages' | 'year' | 'location'>('none');
@@ -116,15 +114,6 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
-
-  const getCountNoun = (n: number) => {
-    const abs = Math.abs(n) % 100;
-    const num = abs % 10;
-    if (abs > 10 && abs < 20) return 'книг';
-    if (num > 1 && num < 5) return 'книги';
-    if (num === 1) return 'книга';
-    return 'книг';
-  };
 
   const filteredGenres = availableGenres.filter((g) =>
     g.name.toLowerCase().includes(genreSearch.toLowerCase().trim())
@@ -582,7 +571,8 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
                       {nearCenter === null ? (
                         userHasCoords ? (
                           <div className="location-origin-status location-origin-status--ok">
-                            <span>✓ Геопозиция сохранена ({userCoords?.latitude?.toFixed(2)}°, {userCoords?.longitude?.toFixed(2)}°)</span>
+                            <CheckIcon size={13} />
+                            <span>Геопозиция сохранена ({userCoords?.latitude?.toFixed(2)}°, {userCoords?.longitude?.toFixed(2)}°)</span>
                           </div>
                         ) : (
                           <div className="location-origin-status location-origin-status--prompt">
@@ -593,7 +583,8 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
                               onClick={handleRequestLocation}
                               disabled={geoLoading}
                             >
-                              {geoLoading ? 'Определяем...' : '📍 Определить где я'}
+                              <NavigationIcon size={13} />
+                              <span>{geoLoading ? 'Определяем...' : 'Определить где я'}</span>
                             </button>
                             {geoError && <div className="location-geo-error">{geoError}</div>}
                           </div>
@@ -642,7 +633,8 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
                           className="btn-danger-outline btn-full-width"
                           onClick={() => onNearMeChange(false)}
                         >
-                          ✕ Отключить фильтр дистанции
+                          <CloseIcon size={13} />
+                          <span>Отключить фильтр дистанции</span>
                         </button>
                       ) : (
                         <button
@@ -667,9 +659,9 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
           </div>
         </div>
 
-        {/* Right-side cluster: Reset button + Count badge (always stays on one line) */}
-        <div className="books-toolbar-right">
-          {hasActiveFilters && (
+        {/* Right-side cluster: Reset button (counter moved to pagination bar) */}
+        {hasActiveFilters && (
+          <div className="books-toolbar-right">
             <button
               type="button"
               onClick={onResetFilters}
@@ -679,14 +671,8 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
               <CloseIcon size={14} />
               <span>Сбросить всё</span>
             </button>
-          )}
-
-          <div className="books-stats-badge" aria-label="Всего книг в списке">
-            <span className="books-stats-label">{hasActiveFilters ? 'Найдено:' : 'Всего:'}</span>
-            <span className="books-stats-count">{count}</span>
-            <span className="books-stats-unit">{getCountNoun(count)}</span>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Active filters summary bar when filters applied */}
@@ -728,7 +714,8 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
 
             {selectedGenres.length > 1 && (
               <span className={`active-mode-badge ${strictGenres ? 'strict-mode' : 'lenient-mode'}`}>
-                {strictGenres ? '✓ Режим: И (все)' : '✓ Режим: ИЛИ (любой)'}
+                <CheckIcon size={11} />
+                <span>{strictGenres ? 'Режим: И (все)' : 'Режим: ИЛИ (любой)'}</span>
               </span>
             )}
 

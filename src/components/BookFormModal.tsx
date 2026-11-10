@@ -11,6 +11,8 @@ import {
   CalendarIcon,
   UploadIcon,
   ImageIcon,
+  CheckIcon,
+  PlusIcon,
 } from './icons';
 
 interface BookFormModalProps {
@@ -379,9 +381,10 @@ const FormContent: React.FC<FormContentProps> = ({
                         type="button"
                         onClick={() => toggleGenre(genreName)}
                         className={`genre-quick-chip ${isSelected ? 'selected' : ''}`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       >
-                        {isSelected ? '✓ ' : '+ '}
-                        {genreName}
+                        {isSelected ? <CheckIcon size={12} /> : <PlusIcon size={12} />}
+                        <span>{genreName}</span>
                       </button>
                     );
                   })}

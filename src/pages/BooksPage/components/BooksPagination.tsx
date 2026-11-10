@@ -6,6 +6,8 @@ import {
   ChevronsLeftIcon,
   ChevronsRightIcon,
   ArrowUpDownIcon,
+  GridIcon,
+  MapIcon,
 } from '../../../components/icons';
 
 interface BooksPaginationProps {
@@ -84,7 +86,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
                 onClick={() => onViewModeChange('grid')}
                 title="Отобразить плиткой"
               >
-                <span>⊞ Сетка</span>
+                <GridIcon size={14} />
+                <span>Сетка</span>
               </button>
               <button
                 type="button"
@@ -92,7 +95,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
                 onClick={() => onViewModeChange('map')}
                 title="Отобразить на интерактивной карте с защитой приватности"
               >
-                <span>🗺️ Карта</span>
+                <MapIcon size={14} />
+                <span>Карта</span>
               </button>
             </div>
           )}

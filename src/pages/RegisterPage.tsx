@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import api from '../api/axiosInstance';
 import { useAuthStore } from '../store/authStore';
+import { BookOpenIcon } from '../components/icons';
 import './auth.css';
 
 const RegisterPage = () => {
@@ -37,7 +38,9 @@ const RegisterPage = () => {
   return (
     <div className="auth-bg">
       <div className="auth-card">
-        <div className="auth-logo">📚</div>
+        <div className="auth-logo">
+          <BookOpenIcon size={28} />
+        </div>
         <h1 className="auth-title">Create account</h1>
         <p className="auth-subtitle">Join the community</p>
         <form onSubmit={handleSubmit} className="auth-form">

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
 import { formatBookYear } from '../types/book';
-import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon, GlobeIcon, TagIcon, TradeIcon } from './icons';
+import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon, GlobeIcon, TagIcon, TradeIcon, MapPinIcon } from './icons';
 
 interface BookDetailsModalProps {
   book: Book | null;
@@ -130,7 +130,8 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                   </span>
                   {book.user.city && (
                     <span className="owner-city" style={{ fontSize: '0.78rem', color: '#2d6a4f', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px', fontWeight: 500 }}>
-                      📍 {book.user.city}
+                      <MapPinIcon size={12} />
+                      <span>{book.user.city}</span>
                     </span>
                   )}
                 </div>

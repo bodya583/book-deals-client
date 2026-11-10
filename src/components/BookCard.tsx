@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
 import { formatBookYear } from '../types/book';
-import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon, TradeIcon } from './icons';
+import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon, TradeIcon, MapPinIcon } from './icons';
 
 interface BookCardProps {
   book: Book;
@@ -92,7 +92,8 @@ export const BookCard: React.FC<BookCardProps> = ({
         {book.user?.city && (
           <div className="book-card-location">
             <span className="book-card-city" title={`Населённый пункт: ${book.user.city}`}>
-              📍 {book.user.city}
+              <MapPinIcon size={12} className="inline-location-icon" />
+              <span>{book.user.city}</span>
             </span>
           </div>
         )}

@@ -14,6 +14,7 @@ import {
   UserIcon,
   ChevronLeftIcon,
   MessageSquareIcon,
+  MapPinIcon,
 } from '../../components/icons';
 import Toast, { type ToastMessage } from '../../components/Toast';
 import { useAuthStore } from '../../store/authStore';
@@ -262,8 +263,9 @@ export const TradeOfferPage: React.FC = () => {
                   Обмен с {selectedPartner?.username ? `@${selectedPartner.username}` : 'читателем'}
                 </span>
                 {selectedPartner?.city && (
-                  <span style={{ fontSize: '0.85rem', color: '#666660' }}>
-                    📍 {selectedPartner.city}
+                  <span style={{ fontSize: '0.85rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <MapPinIcon size={13} />
+                    <span>{selectedPartner.city}</span>
                   </span>
                 )}
               </div>

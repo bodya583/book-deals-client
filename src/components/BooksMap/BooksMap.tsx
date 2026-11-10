@@ -127,7 +127,7 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
           riseOnHover: true,
           icon: L.divIcon({
             className: 'book-div-icon',
-            html: `<div class="book-map-marker" title="${book.title} — ${book.author}">📖</div>`,
+            html: `<div class="book-map-marker" title="${book.title} — ${book.author}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`,
             iconSize: [36, 36],
             iconAnchor: [18, 18],
           }),
@@ -163,13 +163,13 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
             ${
               book.coverURL
                 ? `<img src="${book.coverURL}" class="book-popup-cover" alt="${book.title}" />`
-                : `<div class="book-popup-cover" style="display:flex;align-items:center;justify-content:center;color:#64748b;font-size:1.5rem;">📖</div>`
+                : `<div class="book-popup-cover" style="display:flex;align-items:center;justify-content:center;color:#64748b;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`
             }
             <div class="book-popup-meta">
               <h4 class="book-popup-title" title="${book.title}">${book.title}</h4>
               <span class="book-popup-author" title="${book.author}">${book.author}</span>
               <span class="book-popup-distance-badge" title="Дискретный диапазон расстояния для защиты от трилатерации">
-                📍 ${distanceLabel}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:3px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
               </span>
             </div>
           </div>

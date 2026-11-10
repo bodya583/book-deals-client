@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarIcon, TradeIcon, BookOpenIcon } from '../../../components/icons';
+import { CalendarIcon, TradeIcon, BookOpenIcon, MapPinIcon } from '../../../components/icons';
 import LocationButton from './LocationButton';
 
 export interface ProfileUser {
@@ -87,7 +87,8 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
             </div>
             {user?.city && (
               <div className="profile-meta-item">
-                <span>📍 {user.city}</span>
+                <MapPinIcon size={16} />
+                <span>{user.city}</span>
               </div>
             )}
             {bookCount !== undefined && (

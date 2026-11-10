@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPinIcon, MapPinOffIcon } from '../../../components/icons';
+import { MapPinIcon, MapPinOffIcon, ShieldCheckIcon } from '../../../components/icons';
 import { setLocation, clearLocation } from '../../../api/usersApi';
 import { useAuthStore } from '../../../store/authStore';
 
@@ -138,8 +138,9 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
         </p>
       )}
 
-      <p className="location-hint">
-        🔒 Ваши координаты приватны — они используются только для поиска ближайших книг и не видны другим пользователям.
+      <p className="location-hint" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <ShieldCheckIcon size={14} />
+        <span>Ваши координаты приватны — они используются только для поиска ближайших книг и не видны другим пользователям.</span>
       </p>
     </div>
   );

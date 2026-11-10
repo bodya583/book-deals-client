@@ -27,11 +27,11 @@ export function parseHandoverFromMessages(messages: TradeMessage[]): HandoverAgr
     const text = msg.text || '';
 
     // Check location confirmation
-    if (text.startsWith('✅ Точка встречи согласована:')) {
-      agreedLocation = text.replace('✅ Точка встречи согласована:', '').trim();
+    if (text.includes('Точка встречи согласована:')) {
+      agreedLocation = text.replace(/.*Точка встречи согласована:\s*/, '').trim();
       pendingLocation = null;
-    } else if (text.startsWith('📍 Предложение точки передачи:')) {
-      const loc = text.replace('📍 Предложение точки передачи:', '').trim();
+    } else if (text.includes('Предложение точки передачи:')) {
+      const loc = text.replace(/.*Предложение точки передачи:\s*/, '').trim();
       pendingLocation = {
         text: loc,
         senderId: msg.senderId,
@@ -41,11 +41,11 @@ export function parseHandoverFromMessages(messages: TradeMessage[]): HandoverAgr
     }
 
     // Check time confirmation
-    if (text.startsWith('✅ Время встречи согласовано:')) {
-      agreedTime = text.replace('✅ Время встречи согласовано:', '').trim();
+    if (text.includes('Время встречи согласовано:')) {
+      agreedTime = text.replace(/.*Время встречи согласовано:\s*/, '').trim();
       pendingTime = null;
-    } else if (text.startsWith('🕒 Предложение времени встречи:')) {
-      const t = text.replace('🕒 Предложение времени встречи:', '').trim();
+    } else if (text.includes('Предложение времени встречи:')) {
+      const t = text.replace(/.*Предложение времени встречи:\s*/, '').trim();
       pendingTime = {
         text: t,
         senderId: msg.senderId,
@@ -159,7 +159,7 @@ export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partne
         <div className="handover-celebration-banner">
           <CheckCircleIcon size={18} />
           <span>
-            🎉 Точка и время встречи согласованы с @{partner?.username}! Возьмите с собой книги к
+            Точка и время встречи успешно согласованы с @{partner?.username}! Возьмите с собой книги к
             указанному времени.
           </span>
         </div>
@@ -181,7 +181,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
   const handleSendLocation = async () => {
     const val = locationInput.trim();
     if (!val || disabled) return;
-    await onSendProposal(`📍 Предложение точки передачи: ${val}`);
+    await onSendProposal(`Предложение точки передачи: ${val}`);
     setLocationInput('');
     setActiveTab('none');
   };
@@ -189,7 +189,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
   const handleSendTime = async () => {
     const val = timeInput.trim();
     if (!val || disabled) return;
-    await onSendProposal(`🕒 Предложение времени встречи: ${val}`);
+    await onSendProposal(`Предложение времени встречи: ${val}`);
     setTimeInput('');
     setActiveTab('none');
   };
@@ -288,7 +288,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
           disabled={disabled}
         >
           <MapPinIcon size={15} />
-          <span>📍 Предложить место встречи</span>
+          <span>Предложить место встречи</span>
         </button>
 
         <button
@@ -298,7 +298,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
           disabled={disabled}
         >
           <ClockIcon size={15} />
-          <span>🕒 Предложить время встречи</span>
+          <span>Предложить время встречи</span>
         </button>
       </div>
     </div>
@@ -314,8 +314,8 @@ export const renderProposalBubbleContent = (
   const text = msg.text || '';
 
   // Location proposal
-  if (text.startsWith('📍 Предложение точки передачи:')) {
-    const loc = text.replace('📍 Предложение точки передачи:', '').trim();
+  if (text.includes('Предложение точки передачи:')) {
+    const loc = text.replace(/.*Предложение точки передачи:\s*/, '').trim();
     return (
       <div className="chat-proposal-card loc-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
@@ -343,22 +343,25 @@ export const renderProposalBubbleContent = (
   }
 
   // Location confirmed
-  if (text.startsWith('✅ Точка встречи согласована:')) {
-    const loc = text.replace('✅ Точка встречи согласована:', '').trim();
+  if (text.includes('Точка встречи согласована:')) {
+    const loc = text.replace(/.*Точка встречи согласована:\s*/, '').trim();
     return (
       <div className="chat-proposal-card confirm-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
           <CheckCircleIcon size={16} />
           <span>Точка встречи согласована!</span>
         </div>
-        <div style={{ fontSize: '0.925rem', fontWeight: 600 }}>📍 {loc}</div>
+        <div style={{ fontSize: '0.925rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <MapPinIcon size={14} />
+          <span>{loc}</span>
+        </div>
       </div>
     );
   }
 
   // Time proposal
-  if (text.startsWith('🕒 Предложение времени встречи:')) {
-    const tm = text.replace('🕒 Предложение времени встречи:', '').trim();
+  if (text.includes('Предложение времени встречи:')) {
+    const tm = text.replace(/.*Предложение времени встречи:\s*/, '').trim();
     return (
       <div className="chat-proposal-card time-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
@@ -387,15 +390,18 @@ export const renderProposalBubbleContent = (
   }
 
   // Time confirmed
-  if (text.startsWith('✅ Время встречи согласовано:')) {
-    const tm = text.replace('✅ Время встречи согласовано:', '').trim();
+  if (text.includes('Время встречи согласовано:')) {
+    const tm = text.replace(/.*Время встречи согласовано:\s*/, '').trim();
     return (
       <div className="chat-proposal-card confirm-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
           <CheckCircleIcon size={16} />
           <span>Время встречи согласовано!</span>
         </div>
-        <div style={{ fontSize: '0.925rem', fontWeight: 600 }}>🕒 {tm}</div>
+        <div style={{ fontSize: '0.925rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <ClockIcon size={14} />
+          <span>{tm}</span>
+        </div>
       </div>
     );
   }
