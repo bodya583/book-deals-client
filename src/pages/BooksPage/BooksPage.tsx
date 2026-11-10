@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import useBooksPage from './hooks/useBooksPage';
 import BooksHeader from './components/BooksHeader';
 import BooksToolbar from './components/BooksToolbar';
@@ -14,8 +14,6 @@ interface BooksPageProps {
 }
 
 export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
-
   const {
     user,
     userId,
@@ -57,6 +55,8 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
     setNearCenter,
     sortBy,
     setSortBy,
+    viewMode,
+    setViewMode,
     resetFilters,
     hasActiveFilters,
     handleManualRefresh,
@@ -175,12 +175,13 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
       )}
 
       {/* 6. Bottom Pagination (Pages selector & limit on page) */}
-      {!loading && (books.length > 0 || isFetching) && (
+      {viewMode === 'grid' && !loading && (books.length > 0 || isFetching) && (
         <BooksPagination
           pagination={pagination}
           onPageChange={changePage}
           onLimitChange={changeLimit}
           variant="bottom"
+          viewMode={viewMode}
         />
       )}
 

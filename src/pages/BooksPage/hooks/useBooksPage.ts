@@ -50,6 +50,9 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   // Sorting state
   const [sortBy, setSortBy] = useState<BookSortOption>('newest');
 
+  // View mode (grid vs map)
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+
   // Modals state
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [formModal, setFormModal] = useState<{
@@ -148,6 +151,9 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       ? (nearCenter ? nearCenter.lng : user?.longitude != null ? user.longitude : undefined)
       : undefined;
 
+    const effectiveLimit = viewMode === 'map' ? 100 : limit;
+    const effectivePage = viewMode === 'map' ? 1 : page;
+
     getBooks({
       userId: scope === 'my' ? userId : undefined,
       search: debouncedSearch.trim() || undefined,
@@ -157,8 +163,8 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       cities: selectedSettlements.length > 0 ? selectedSettlements : undefined,
       yearFrom: parsedYearFrom,
       yearTo: parsedYearTo,
-      page,
-      limit,
+      page: effectivePage,
+      limit: effectiveLimit,
       sortBy,
       nearLat: effectiveNearLat,
       nearLng: effectiveNearLng,
@@ -206,6 +212,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     page,
     limit,
     sortBy,
+    viewMode,
   ]);
 
   const handleManualRefresh = async () => {
@@ -413,9 +420,11 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     setRadius,
     nearCenter,
     setNearCenter,
-    // Sorting
+    // Sorting & View
     sortBy,
     setSortBy,
+    viewMode,
+    setViewMode,
     // Global filter resets & state
     resetFilters,
     hasActiveFilters,

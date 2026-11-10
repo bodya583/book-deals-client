@@ -46,12 +46,16 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
 }) => {
   const { page, limit, total, totalPages } = pagination;
 
-  // Don't render pagination if there are no items
+  // Don't render pagination if there are no items, or if bottom variant has <= 1 page or map mode
   if (total <= 0) {
     return null;
   }
 
   const isBottom = variant === 'bottom';
+  if (isBottom && (viewMode === 'map' || totalPages <= 1)) {
+    return null;
+  }
+
   const fromItem = Math.min(total, (page - 1) * limit + 1);
   const toItem = Math.min(total, page * limit);
 
@@ -64,14 +68,22 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
       >
         {/* Left: Range Info */}
         <div className="pagination-info">
-          <span className="pagination-info-text">
-            Показано <strong className="pagination-strong">{fromItem}–{toItem}</strong> из{' '}
-            <strong className="pagination-strong">{total}</strong>
-          </span>
-          {totalPages > 1 && (
-            <span className="pagination-page-indicator">
-              (Стр. {page} из {totalPages})
+          {viewMode === 'map' ? (
+            <span className="pagination-info-text">
+              На карте: <strong className="pagination-strong">{total}</strong> {total === 1 ? 'книга' : total > 1 && total < 5 ? 'книги' : 'книг'}
             </span>
+          ) : (
+            <>
+              <span className="pagination-info-text">
+                Показано <strong className="pagination-strong">{fromItem}–{toItem}</strong> из{' '}
+                <strong className="pagination-strong">{total}</strong>
+              </span>
+              {totalPages > 1 && (
+                <span className="pagination-page-indicator">
+                  (Стр. {page} из {totalPages})
+                </span>
+              )}
+            </>
           )}
         </div>
 
@@ -125,8 +137,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
             </div>
           )}
 
-          {/* Quick mini-pager if more than 1 page */}
-          {totalPages > 1 && (
+          {/* Quick mini-pager if more than 1 page (grid mode only) */}
+          {viewMode === 'grid' && totalPages > 1 && (
             <div className="pagination-top-nav" aria-label="Быстрый переход по страницам">
               <button
                 type="button"
@@ -154,23 +166,25 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
             </div>
           )}
 
-          {/* Compact limit selector */}
-          <div className="pagination-top-limit">
-            <span className="pagination-limit-caption">По:</span>
-            <select
-              className="pagination-limit-select"
-              value={limit}
-              onChange={(e) => onLimitChange(Number(e.target.value))}
-              aria-label="Книг на странице"
-              title="Количество книг на странице"
-            >
-              {limitOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Compact limit selector (grid mode only) */}
+          {viewMode === 'grid' && (
+            <div className="pagination-top-limit">
+              <span className="pagination-limit-caption">По:</span>
+              <select
+                className="pagination-limit-select"
+                value={limit}
+                onChange={(e) => onLimitChange(Number(e.target.value))}
+                aria-label="Книг на странице"
+                title="Количество книг на странице"
+              >
+                {limitOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </nav>
     );
