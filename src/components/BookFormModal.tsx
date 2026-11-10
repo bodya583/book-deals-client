@@ -105,8 +105,6 @@ const FormContent: React.FC<FormContentProps> = ({
 
   // Handle ESC key press & body scroll locking
   useEffect(() => {
-    if (!isOpen) return;
-
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     const prevOverflow = document.body.style.overflow;
     const prevPaddingRight = document.body.style.paddingRight;
@@ -128,7 +126,7 @@ const FormContent: React.FC<FormContentProps> = ({
       document.body.style.overflow = prevOverflow;
       document.body.style.paddingRight = prevPaddingRight;
     };
-  }, [isOpen, loading, onClose]);
+  }, [loading, onClose]);
 
   const toggleGenre = (genreName: string) => {
     setSelectedGenres((prev) =>

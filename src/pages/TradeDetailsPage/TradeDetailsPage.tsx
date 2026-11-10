@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   getTradeById,
@@ -22,6 +22,12 @@ import {
   MessageSquareIcon,
 } from '../../components/icons';
 import Toast, { type ToastMessage } from '../../components/Toast';
+import {
+  parseHandoverFromMessages,
+  HandoverBanner,
+  HandoverToolbar,
+  renderProposalBubbleContent,
+} from './components/TradeHandoverSection';
 import '../trades.css';
 
 export const TradeDetailsPage: React.FC = () => {
@@ -41,12 +47,37 @@ export const TradeDetailsPage: React.FC = () => {
   const [sendingMessage, setSendingMessage] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const handover = useMemo(() => parseHandoverFromMessages(messages), [messages]);
+
   const addToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToasts([{ id: String(Date.now()), text, type }]);
   };
 
   const removeToast = (toastId: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  };
+
+  const handleSendCustomMessage = async (text: string) => {
+    if (!id || sendingMessage) return;
+    try {
+      setSendingMessage(true);
+      const newMsg = await sendTradeMessage(id, text);
+      setMessages((prev) => [...prev, newMsg]);
+    } catch (err: any) {
+      addToast(err.response?.data?.message || 'Не удалось отправить сообщение', 'error');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const handleAcceptLocation = async (loc: string) => {
+    await handleSendCustomMessage(`✅ Точка встречи согласована: ${loc}`);
+    addToast('Точка встречи согласована!', 'success');
+  };
+
+  const handleAcceptTime = async (tm: string) => {
+    await handleSendCustomMessage(`✅ Время встречи согласовано: ${tm}`);
+    addToast('Время встречи согласовано!', 'success');
   };
 
   const fetchTrade = async () => {
@@ -510,6 +541,9 @@ export const TradeDetailsPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Handover Agreement Status Banner */}
+          <HandoverBanner handover={handover} partner={partner} />
+
           <div className="trade-chat-messages">
             {messagesLoading ? (
               <div style={{ textAlign: 'center', padding: '2rem', color: '#888880' }}>
@@ -520,7 +554,7 @@ export const TradeDetailsPage: React.FC = () => {
                 <MessageSquareIcon size={28} />
                 <span>Пока нет сообщений в этом трейде</span>
                 <span style={{ fontSize: '0.8rem', color: '#999990' }}>
-                  Напишите сообщение, чтобы обсудить передачу книг или условия сделки
+                  Напишите сообщение или предложите время и точку передачи книг
                 </span>
               </div>
             ) : (
@@ -546,7 +580,12 @@ export const TradeDetailsPage: React.FC = () => {
                           {isMine ? 'Вы' : `@${msg.sender?.username}`}
                         </span>
                       </div>
-                      <div>{msg.text}</div>
+                      {renderProposalBubbleContent(
+                        msg,
+                        isMine,
+                        handleAcceptLocation,
+                        handleAcceptTime
+                      )}
                       <span className="trade-chat-time">{formatMessageTime(msg.createdAt)}</span>
                     </div>
                   </div>
@@ -555,6 +594,12 @@ export const TradeDetailsPage: React.FC = () => {
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Handover Toolbar (Propose location/time) */}
+          <HandoverToolbar
+            onSendProposal={handleSendCustomMessage}
+            disabled={sendingMessage}
+          />
 
           <form onSubmit={handleSendMessage} className="trade-chat-form">
             <input
