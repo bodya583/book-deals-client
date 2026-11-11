@@ -11,7 +11,7 @@ import './auth.css';
 const RegisterPage = () => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
-  const { t } = useTranslation();
+  const { t, tApiError } = useTranslation();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -29,7 +29,7 @@ const RegisterPage = () => {
       navigate('/');
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || t('auth.registerError'));
+        setError(tApiError(err.response?.data?.message || t('auth.registerError')));
       } else {
         setError(t('auth.registerError'));
       }

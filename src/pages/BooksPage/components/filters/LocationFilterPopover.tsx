@@ -41,7 +41,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
   onNearCenterChange,
   userCoords,
 }) => {
-  const { t } = useTranslation();
+  const { t, tCity } = useTranslation();
   const [settlementSearch, setSettlementSearch] = useState('');
   const [locTab, setLocTab] = useState<'settlement' | 'radius'>('settlement');
   const [geoLoading, setGeoLoading] = useState(false);
@@ -66,7 +66,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
       (pos) => {
         setGeoLoading(false);
         onNearCenterChange({
-          name: t('filters.location.myGpsLocation'),
+          name: '__GPS__',
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         });
@@ -172,7 +172,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                         <span className="check-custom">
                           {isChecked && <CheckIcon size={12} />}
                         </span>
-                        <span className="check-label-text">{s.name}</span>
+                        <span className="check-label-text">{tCity(s.name)}</span>
                         {s.count !== undefined && (
                           <span className="check-item-count">{s.count}</span>
                         )}
@@ -217,7 +217,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                       className={`location-origin-chip ${nearCenter?.name === s.name ? 'selected' : ''}`}
                       onClick={() => onNearCenterChange({ name: s.name, lat: s.latitude, lng: s.longitude })}
                     >
-                      <span>{s.name}</span>
+                      <span>{tCity(s.name)}</span>
                     </button>
                   ))}
                 </div>
@@ -250,7 +250,12 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                   )
                 ) : (
                   <div className="location-origin-status location-origin-status--city">
-                    {t('filters.location.searchingAround')} <strong>{nearCenter.name}</strong>
+                    {t('filters.location.searchingAround')}{' '}
+                    <strong>
+                      {nearCenter.name === '__GPS__'
+                        ? t('filters.location.myGpsLocation')
+                        : tCity(nearCenter.name)}
+                    </strong>
                   </div>
                 )}
               </div>

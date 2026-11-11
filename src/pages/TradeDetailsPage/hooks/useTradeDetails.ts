@@ -34,7 +34,7 @@ export const computeSimpleHash = (str: string): string => {
 export const useTradeDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuthStore();
-  const { t, language } = useTranslation();
+  const { t, language, tApiError } = useTranslation();
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
@@ -58,7 +58,7 @@ export const useTradeDetails = () => {
     (signal) => (id ? getTradeById(id, { signal }) : Promise.resolve(null)),
     {
       staleTime: 10_000,
-      onError: (err) => addToast(err.message || t('common.error'), 'error'),
+      onError: (err) => addToast(tApiError(err.message || t('common.error')), 'error'),
     }
   );
 
@@ -123,7 +123,7 @@ export const useTradeDetails = () => {
       setMessages((prev = []) => [...prev, newMsg]);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setSendingMessage(false);
     }
@@ -193,7 +193,7 @@ export const useTradeDetails = () => {
       setMessageText('');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setSendingMessage(false);
     }
@@ -211,7 +211,7 @@ export const useTradeDetails = () => {
       addToast(t('tradeDetails.toasts.acceptSuccess'), 'success');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -233,7 +233,7 @@ export const useTradeDetails = () => {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -255,7 +255,7 @@ export const useTradeDetails = () => {
       await refetchMessages();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -273,7 +273,7 @@ export const useTradeDetails = () => {
       addToast(t('tradeDetails.toasts.cancelSuccess'), 'success');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoading(false);
     }

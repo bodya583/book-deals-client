@@ -23,7 +23,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
   isOwner = true,
 }) => {
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
+  const { t, language, tGenre, tBookLanguage, tCity } = useTranslation();
   const [errorBookId, setErrorBookId] = useState<string | null>(null);
   const imgError = book ? errorBookId === book.id : false;
 
@@ -133,7 +133,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                   {book.user.city && (
                     <span className="owner-city" style={{ fontSize: '0.78rem', color: '#2d6a4f', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px', fontWeight: 500 }}>
                       <MapPinIcon size={12} />
-                      <span>{book.user.city}</span>
+                      <span>{tCity(book.user.city)}</span>
                     </span>
                   )}
                 </div>
@@ -161,7 +161,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
               {book.language && (
                 <div className="book-popup-meta-item">
                   <GlobeIcon size={15} />
-                  <span>{t('bookDetails.langLabel')} <strong>{book.language}</strong></span>
+                  <span>{t('bookDetails.langLabel')} <strong>{tBookLanguage(book.language)}</strong></span>
                 </div>
               )}
             </div>
@@ -175,7 +175,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                 <div className="book-popup-genres-list">
                   {book.genres.map((g) => (
                     <span key={g.id || g.name} className="book-popup-genre-pill">
-                      {g.name}
+                      {tGenre(g.name)}
                     </span>
                   ))}
                 </div>

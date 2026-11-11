@@ -31,7 +31,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   bookCount,
 }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, tCity } = useTranslation();
   const [localLat, setLocalLat] = useState<number | null>(user?.latitude ?? null);
   const [localLng, setLocalLng] = useState<number | null>(user?.longitude ?? null);
 
@@ -90,7 +90,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
             {user?.city && (
               <div className="profile-meta-item">
                 <MapPinIcon size={16} />
-                <span>{user.city}</span>
+                <span>{tCity(user.city)}</span>
               </div>
             )}
             {bookCount !== undefined && (

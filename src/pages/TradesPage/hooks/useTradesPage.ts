@@ -22,7 +22,7 @@ export const useTradesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
-  const { t, language } = useTranslation();
+  const { t, language, tApiError } = useTranslation();
 
   const rawTab = searchParams.get('tab');
   const currentTab: TabType = (rawTab === 'agreed' || rawTab === 'completed') ? rawTab : 'requests';
@@ -46,7 +46,7 @@ export const useTradesPage = () => {
     (signal) => getTrades(currentTab, { signal }),
     {
       staleTime: 15_000,
-      onError: (err) => addToast(err.message || t('trades.toasts.loadError'), 'error'),
+      onError: (err) => addToast(tApiError(err.message || t('trades.toasts.loadError')), 'error'),
     }
   );
 
@@ -89,7 +89,7 @@ export const useTradesPage = () => {
       queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('trades.toasts.acceptError');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -110,7 +110,7 @@ export const useTradesPage = () => {
       queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('trades.toasts.completeError');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -130,7 +130,7 @@ export const useTradesPage = () => {
       queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('trades.toasts.rejectError');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -147,7 +147,7 @@ export const useTradesPage = () => {
       queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('trades.toasts.cancelError');
-      addToast(message, 'error');
+      addToast(tApiError(message), 'error');
     } finally {
       setActionLoadingId(null);
     }

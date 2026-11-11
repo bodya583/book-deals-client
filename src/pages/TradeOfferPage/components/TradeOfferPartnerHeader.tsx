@@ -13,7 +13,7 @@ export const TradeOfferPartnerHeader: React.FC<TradeOfferPartnerHeaderProps> = (
   selectedPartner,
   partnerBooksCount,
 }) => {
-  const { t } = useTranslation();
+  const { t, tCity } = useTranslation();
 
   return (
     <div className="trade-partner-card">
@@ -39,7 +39,7 @@ export const TradeOfferPartnerHeader: React.FC<TradeOfferPartnerHeaderProps> = (
                 }}
               >
                 <MapPinIcon size={13} />
-                <span>{selectedPartner.city}</span>
+                <span>{tCity(selectedPartner.city)}</span>
               </span>
             )}
           </div>

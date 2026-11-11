@@ -13,7 +13,7 @@ export interface UseBooksPageOptions {
 }
 
 export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
-  const { t } = useTranslation();
+  const { t, tApiError } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const userId = user?.id;
 
@@ -127,7 +127,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       hasLoadedInitial.current = true;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('catalog.errLoadBooks');
-      setError(message);
+      setError(tApiError(message));
     } finally {
       setLoading(false);
       setIsFetching(false);
@@ -174,7 +174,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       fetchBooks();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('catalog.errSaveBook');
-      showToast(message, 'error');
+      showToast(tApiError(message), 'error');
     }
   };
 
@@ -188,7 +188,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       fetchBooks();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('catalog.errDeleteBook');
-      showToast(message, 'error');
+      showToast(tApiError(message), 'error');
     }
   };
 

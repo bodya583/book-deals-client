@@ -457,6 +457,8 @@ export interface TranslationDictionary {
     youProposedLocOld: string;
     youProposedTimeWaiting: string;
     youProposedTimeOld: string;
+    systemDeclinedReason: string;
+    systemCounterUpdated: string;
   };
   offer: {
     title: string;
@@ -586,5 +588,11 @@ export interface TranslationDictionary {
     deleteBookConfirm: string;
     deleteBookWarning: string;
     deleteBookWarningFull: string;
+  };
+  data: {
+    genres: Record<string, string>;
+    languages: Record<string, string>;
+    cities: Record<string, string>;
+    serverErrors: Record<string, string>;
   };
 }

@@ -27,7 +27,7 @@ export const ProfilePage: React.FC = () => {
   const { userId: routeUserId } = useParams<{ userId?: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
-  const { t, language } = useTranslation();
+  const { t, language, tGenre } = useTranslation();
 
   const {
     user: myUser,
@@ -253,7 +253,7 @@ export const ProfilePage: React.FC = () => {
             <option value="all">{t('profile.allGenres', { count: availableGenres.length })}</option>
             {availableGenres.map((g) => (
               <option key={g} value={g}>
-                {g}
+                {tGenre(g)}
               </option>
             ))}
           </select>

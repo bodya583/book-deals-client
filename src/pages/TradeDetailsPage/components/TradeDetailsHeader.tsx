@@ -22,7 +22,7 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
   formatDate,
 }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, tCity } = useTranslation();
 
   return (
     <>
@@ -50,7 +50,7 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
               {partner?.city && (
                 <span style={{ fontSize: '0.9rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <MapPinIcon size={14} />
-                  <span>{partner.city}</span>
+                  <span>{tCity(partner.city)}</span>
                 </span>
               )}
             </div>

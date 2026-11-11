@@ -11,7 +11,7 @@ import './auth.css';
 const LoginPage = () => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
-  const { t } = useTranslation();
+  const { t, tApiError } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +28,7 @@ const LoginPage = () => {
       navigate('/');
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || t('auth.loginError'));
+        setError(tApiError(err.response?.data?.message || t('auth.loginError')));
       } else {
         setError(t('auth.loginError'));
       }

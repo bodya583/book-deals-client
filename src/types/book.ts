@@ -70,13 +70,13 @@ export type ModalType =
   | { type: 'DELETE'; book: Book };
 
 export const BOOK_LANGUAGES = [
-  'Українська',
+  'Ukrainian',
   'English',
-  'Deutsch',
-  'Français',
-  'Español',
-  'Polski',
-  'Italiano',
+  'German',
+  'French',
+  'Spanish',
+  'Polish',
+  'Italian',
   'Other',
 ] as const;
 

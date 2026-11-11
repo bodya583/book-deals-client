@@ -26,7 +26,7 @@ export const useTradeOffer = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
-  const { t } = useTranslation();
+  const { t, tApiError } = useTranslation();
 
   const preselectedPartnerId = searchParams.get('partnerId') || '';
   const preselectedBookId = searchParams.get('bookId') || '';
@@ -149,7 +149,7 @@ export const useTradeOffer = () => {
           err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message
             ? (err as any).response.data.message
             : t('offer.errLoadData');
-        addToast(errorMsg, 'error');
+        addToast(tApiError(errorMsg), 'error');
       } finally {
         setLoading(false);
       }
@@ -264,7 +264,7 @@ export const useTradeOffer = () => {
         err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message
           ? (err as any).response.data.message
           : t('offer.errSubmit');
-      addToast(errorMsg, 'error');
+      addToast(tApiError(errorMsg), 'error');
       setSubmitting(false);
     }
   };

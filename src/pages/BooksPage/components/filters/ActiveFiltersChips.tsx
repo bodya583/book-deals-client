@@ -48,7 +48,7 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
   nearCenter,
   onNearMeChange,
 }) => {
-  const { t } = useTranslation();
+  const { t, tGenre, tBookLanguage, tCity } = useTranslation();
 
   return (
     <div className="books-active-filters-bar">
@@ -75,11 +75,11 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
         {selectedGenres.map((genre) => (
           <span key={genre} className="active-filter-tag active-genre-tag">
             <TagIcon size={11} />
-            <span>{genre}</span>
+            <span>{tGenre(genre)}</span>
             <button
               type="button"
               onClick={() => onToggleGenre(genre)}
-              aria-label={t('filters.chips.removeItem', { item: genre })}
+              aria-label={t('filters.chips.removeItem', { item: tGenre(genre) })}
             >
               <CloseIcon size={12} />
             </button>
@@ -97,12 +97,12 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
         {selectedLanguages.map((lang) => (
           <span key={lang} className="active-filter-tag active-lang-tag">
             <GlobeIcon size={11} />
-            <span>{lang === 'Other' ? t('filters.languages.otherLabel') : lang}</span>
+            <span>{tBookLanguage(lang)}</span>
             <button
               type="button"
               onClick={() => onToggleLanguage(lang)}
               aria-label={t('filters.chips.removeItem', {
-                item: lang === 'Other' ? t('filters.languages.otherLabel') : lang,
+                item: tBookLanguage(lang),
               })}
             >
               <CloseIcon size={12} />
@@ -114,11 +114,11 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
         {selectedSettlements.map((city) => (
           <span key={city} className="active-filter-tag active-settlement-tag">
             <MapPinIcon size={11} />
-            <span>{city}</span>
+            <span>{tCity(city)}</span>
             <button
               type="button"
               onClick={() => onToggleSettlement(city)}
-              aria-label={t('filters.chips.removeItem', { item: city })}
+              aria-label={t('filters.chips.removeItem', { item: tCity(city) })}
             >
               <CloseIcon size={12} />
             </button>
@@ -146,7 +146,13 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
             <NavigationIcon size={11} />
             <span>
               {nearCenter
-                ? t('filters.location.radiusKmFrom', { radius, name: nearCenter.name })
+                ? t('filters.location.radiusKmFrom', {
+                    radius,
+                    name:
+                      nearCenter.name === '__GPS__'
+                        ? t('filters.location.myGpsLocation')
+                        : tCity(nearCenter.name),
+                  })
                 : t('filters.location.radiusKm', { radius })}
             </span>
             <button

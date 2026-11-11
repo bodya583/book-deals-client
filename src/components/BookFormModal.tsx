@@ -14,7 +14,7 @@ import {
   CheckIcon,
   PlusIcon,
 } from './icons';
-import { useTranslation } from '../i18n';
+import { useTranslation, dictionaries } from '../i18n';
 
 interface BookFormModalProps {
   isOpen: boolean;
@@ -37,8 +37,8 @@ const FormContent: React.FC<FormContentProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const { t, language: currentLang, dict } = useTranslation();
-  const defaultPopular = dict.bookForm.popularGenres;
+  const { t, language: currentLang, tGenre, tBookLanguage, tApiError } = useTranslation();
+  const defaultPopular = dictionaries.en.bookForm.popularGenres;
 
   const [title, setTitle] = useState(mode === 'edit' && initialBook ? initialBook.title || '' : '');
   const [author, setAuthor] = useState(mode === 'edit' && initialBook ? initialBook.author || '' : '');
@@ -181,7 +181,7 @@ const FormContent: React.FC<FormContentProps> = ({
             uploadErr?.response?.data?.message ||
             uploadErr?.message ||
             t('bookForm.errUploadFailed');
-          setError(uploadMsg);
+          setError(tApiError(uploadMsg));
           setLoading(false);
           setLoadingStatus('');
           return;
@@ -204,7 +204,7 @@ const FormContent: React.FC<FormContentProps> = ({
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t('bookForm.errSaveFailed');
-      setError(msg);
+      setError(tApiError(msg));
     } finally {
       setLoading(false);
       setLoadingStatus('');
@@ -297,7 +297,7 @@ const FormContent: React.FC<FormContentProps> = ({
                   <option value="">{t('bookForm.languageNotSet')}</option>
                   {BOOK_LANGUAGES.map((lang) => (
                     <option key={lang} value={lang}>
-                      {lang === 'Other' ? t('filters.languages.otherLabel') : lang}
+                      {tBookLanguage(lang)}
                     </option>
                   ))}
                 </select>
@@ -339,12 +339,12 @@ const FormContent: React.FC<FormContentProps> = ({
                 <div className="form-selected-genres">
                   {selectedGenres.map((genre) => (
                     <span key={genre} className="selected-genre-chip">
-                      {genre}
+                      {tGenre(genre)}
                       <button
                         type="button"
                         onClick={() => handleRemoveGenre(genre)}
                         className="remove-genre-btn"
-                        title={t('bookForm.removeGenre', { genre })}
+                        title={t('bookForm.removeGenre', { genre: tGenre(genre) })}
                       >
                         <CloseIcon size={13} />
                       </button>
@@ -367,7 +367,7 @@ const FormContent: React.FC<FormContentProps> = ({
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       >
                         {isSelected ? <CheckIcon size={12} /> : <PlusIcon size={12} />}
-                        <span>{genreName}</span>
+                        <span>{tGenre(genreName)}</span>
                       </button>
                     );
                   })}
@@ -418,7 +418,7 @@ const FormContent: React.FC<FormContentProps> = ({
               <div className="preview-meta-badges">
                 {language && (
                   <span className="preview-lang-pill">
-                    <GlobeIcon size={11} /> {language}
+                    <GlobeIcon size={11} /> {tBookLanguage(language)}
                   </span>
                 )}
                 {year && (
@@ -428,7 +428,7 @@ const FormContent: React.FC<FormContentProps> = ({
                 )}
                 {selectedGenres.length > 0 && (
                   <span className="preview-genre-pill">
-                    <TagIcon size={11} /> {selectedGenres[0]}
+                    <TagIcon size={11} /> {tGenre(selectedGenres[0])}
                     {selectedGenres.length > 1 ? ` +${selectedGenres.length - 1}` : ''}
                   </span>
                 )}

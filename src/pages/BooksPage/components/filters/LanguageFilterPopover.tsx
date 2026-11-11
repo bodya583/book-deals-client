@@ -18,7 +18,7 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
   onToggleLanguage,
   onClearLanguages,
 }) => {
-  const { t } = useTranslation();
+  const { t, tBookLanguage } = useTranslation();
 
   return (
     <div className="filter-popover-anchor">
@@ -75,7 +75,7 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
                     {isChecked && <CheckIcon size={12} />}
                   </span>
                   <span className="check-label-text">
-                    {lang === 'Other' ? t('filters.languages.otherLabel') : lang}
+                    {tBookLanguage(lang)}
                   </span>
                 </label>
               );

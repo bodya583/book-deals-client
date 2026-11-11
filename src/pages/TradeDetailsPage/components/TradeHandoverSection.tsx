@@ -18,10 +18,10 @@ export interface HandoverAgreement {
   pendingTime: { text: string; senderId: string; senderName: string } | null;
 }
 
-export const LOC_AGREE_REGEX = /(?:Точка зустрічі узгоджена|Точка встречи согласована|Meeting location agreed):\s*(.*)/i;
-export const LOC_PROP_REGEX = /(?:Пропозиція місця(?: зустрічі| передачі)?|Предложение точки передачи|Meeting location proposal):\s*(.*)/i;
-export const TIME_AGREE_REGEX = /(?:Час зустрічі узгоджено|Время встречи согласовано|Meeting time agreed):\s*(.*)/i;
-export const TIME_PROP_REGEX = /(?:Пропозиція часу зустрічі|Предложение времени встречи|Meeting time proposal):\s*(.*)/i;
+export const LOC_AGREE_REGEX = /Meeting location agreed:\s*(.*)/i;
+export const LOC_PROP_REGEX = /Meeting location proposal:\s*(.*)/i;
+export const TIME_AGREE_REGEX = /Meeting time agreed:\s*(.*)/i;
+export const TIME_PROP_REGEX = /Meeting time proposal:\s*(.*)/i;
 
 export function parseHandoverFromMessages(messages: TradeMessage[]): HandoverAgreement {
   let agreedLocation: string | null = null;
@@ -443,6 +443,16 @@ export const ProposalBubbleContent: React.FC<{
         </div>
       </div>
     );
+  }
+
+  // Backend system notices
+  const declinedMatch = text.match(/^🚫 Trade offer declined\.\s*Reason:\s*(.*)/i);
+  if (declinedMatch) {
+    return <div>{t('handover.systemDeclinedReason', { reason: declinedMatch[1].trim() })}</div>;
+  }
+
+  if (/^🔄 Counter-offer proposed:\s*book selection updated/i.test(text)) {
+    return <div>{t('handover.systemCounterUpdated')}</div>;
   }
 
   // Regular plain message

@@ -17,7 +17,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const { t } = useTranslation();
+  const { t, tApiError } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -37,7 +37,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t('catalog.errDeleteBook');
-      setError(msg);
+      setError(tApiError(msg));
     } finally {
       setLoading(false);
     }

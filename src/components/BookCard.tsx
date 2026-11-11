@@ -23,7 +23,7 @@ export const BookCard: React.FC<BookCardProps> = ({
   isOwner = true,
 }) => {
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
+  const { t, language, tGenre, tBookLanguage, tCity } = useTranslation();
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -33,9 +33,9 @@ export const BookCard: React.FC<BookCardProps> = ({
         {/* Podium Top Header: Language & Year Badges (above cover, clean contrast) */}
         <div className="book-card-podium-header">
           {book.language ? (
-            <span className="book-card-lang-tag" title={t('bookCard.langTitle', { lang: book.language })}>
+            <span className="book-card-lang-tag" title={t('bookCard.langTitle', { lang: tBookLanguage(book.language) })}>
               <GlobeIcon size={11} />
-              <span>{book.language}</span>
+              <span>{tBookLanguage(book.language)}</span>
             </span>
           ) : (
             <span className="book-card-tag-spacer" />
@@ -93,9 +93,9 @@ export const BookCard: React.FC<BookCardProps> = ({
         {/* Location */}
         {book.user?.city && (
           <div className="book-card-location">
-            <span className="book-card-city" title={t('bookCard.cityTitle', { city: book.user.city })}>
+            <span className="book-card-city" title={t('bookCard.cityTitle', { city: tCity(book.user.city) })}>
               <MapPinIcon size={12} className="inline-location-icon" />
-              <span>{book.user.city}</span>
+              <span>{tCity(book.user.city)}</span>
             </span>
           </div>
         )}
@@ -111,13 +111,13 @@ export const BookCard: React.FC<BookCardProps> = ({
             {book.genres.slice(0, 2).map((genre) => (
               <span key={genre.id || genre.name} className="book-card-genre-pill">
                 <TagIcon size={10} />
-                <span>{genre.name}</span>
+                <span>{tGenre(genre.name)}</span>
               </span>
             ))}
             {book.genres.length > 2 && (
               <span
                 className="book-card-genre-more"
-                title={book.genres.slice(2).map((g) => g.name).join(', ')}
+                title={book.genres.slice(2).map((g) => tGenre(g.name)).join(', ')}
               >
                 +{book.genres.length - 2}
               </span>

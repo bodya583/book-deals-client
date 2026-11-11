@@ -24,12 +24,16 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
   onStrictGenresChange,
   availableGenres,
 }) => {
-  const { t } = useTranslation();
+  const { t, tGenre } = useTranslation();
   const [genreSearch, setGenreSearch] = useState('');
 
-  const filteredGenres = availableGenres.filter((g) =>
-    g.name.toLowerCase().includes(genreSearch.toLowerCase().trim())
-  );
+  const filteredGenres = availableGenres.filter((g) => {
+    const query = genreSearch.toLowerCase().trim();
+    return (
+      g.name.toLowerCase().includes(query) ||
+      tGenre(g.name).toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="filter-popover-anchor">
@@ -122,7 +126,7 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
                     <span className="check-custom">
                       {isChecked && <CheckIcon size={12} />}
                     </span>
-                    <span className="check-label-text">{g.name}</span>
+                    <span className="check-label-text">{tGenre(g.name)}</span>
                     {g._count?.books !== undefined && g._count.books > 0 && (
                       <span className="check-item-count">{g._count.books}</span>
                     )}

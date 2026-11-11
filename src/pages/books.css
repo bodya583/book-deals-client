@@ -302,7 +302,7 @@
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.08);
 }
 
-/* Светлый подиум для парящей книги */
+/* Light podium for floating book cover */
 .book-card-podium {
   width: 100%;
   background: linear-gradient(180deg, #f7f7f3 0%, #ebebe4 100%);
@@ -314,7 +314,7 @@
   position: relative;
 }
 
-/* Верхняя строка тегов подиума (язык и год) над обложкой с идеальной контрастностью */
+/* Top tag bar of podium (language and year) above cover with crisp contrast */
 .book-card-podium-header {
   width: 100%;
   display: flex;
@@ -348,7 +348,7 @@
   white-space: nowrap;
 }
 
-/* Парящая обложка книги (вертикальный формат 2:3 с мягкой нижней тенью) */
+/* Floating book cover (vertical 2:3 aspect ratio with soft drop-shadow) */
 .book-card-floating-cover {
   width: 72%;
   aspect-ratio: 2 / 3;
@@ -374,7 +374,7 @@
   transition: transform 0.28s ease;
 }
 
-/* Плейсхолдер при отсутствии или ошибке картинки */
+/* Placeholder when image is missing or fails to load */
 .book-card-cover-placeholder {
   width: 100%;
   height: 100%;
@@ -581,7 +581,7 @@
   white-space: nowrap;
 }
 
-/* Короткое описание книги (2 строки с многоточием) */
+/* Short book description (2 lines with ellipsis) */
 .book-card-description {
   font-size: 0.8rem;
   line-height: 1.4;
@@ -1690,7 +1690,7 @@
   background: #fee2e2;
 }
 
-/* Strict match toggle: 1 и 2 и 3 VS 1 или 2 или 3 */
+/* Strict match toggle: 1 AND 2 AND 3 vs 1 OR 2 OR 3 */
 .strict-toggle-box {
   background: #f4f8f5;
   border: 1.5px solid #cfe2d7;
@@ -3043,7 +3043,7 @@
   transform: none !important;
 }
 
-/* Кнопка "Поделиться локацией" — в фирменном стиле primary-кнопок сайта */
+/* "Share location" button — primary site button styling */
 .location-btn--set {
   background: #2d6a4f;
   color: #ffffff;
@@ -3062,7 +3062,7 @@
   transform: translateY(0);
 }
 
-/* Кнопка "Обновить" — аккуратная вторичная кнопка сайта */
+/* "Update" button — clean secondary button styling */
 .location-btn--update {
   background: #ffffff;
   color: #1a1a1a;
@@ -3081,7 +3081,7 @@
   transform: translateY(0);
 }
 
-/* Кнопка "Удалить" — в стиле .btn-danger-outline сайта */
+/* "Delete" button — danger-outline button styling */
 .location-btn--remove {
   background: transparent;
   color: #c0392b;
@@ -3159,7 +3159,7 @@
   overflow: hidden;
 }
 
-/* Tabs switcher: [ По городам ] [ По дистанции ] */
+/* Tabs switcher: [ By Cities ] [ By Distance ] */
 .location-popover-tabs {
   display: flex;
   background: #f7f7f4;

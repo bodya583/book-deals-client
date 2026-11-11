@@ -38,7 +38,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
   onCancel,
 }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, tCity } = useTranslation();
 
   const isSender = trade.senderId === currentUser?.id || (trade.isSender && trade.receiverId !== currentUser?.id);
   const rawPartner = isSender ? trade.receiver : trade.sender;
@@ -104,7 +104,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               {partner?.city && (
                 <span style={{ fontSize: '0.8rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                   <MapPinIcon size={12} />
-                  <span>{partner.city}</span>
+                  <span>{tCity(partner.city)}</span>
                 </span>
               )}
             </div>
