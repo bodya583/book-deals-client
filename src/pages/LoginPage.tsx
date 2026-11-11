@@ -6,7 +6,6 @@ import { useAuthStore } from '../store/authStore';
 import { BookOpenIcon } from '../components/icons';
 import { APP_CONFIG } from '../config/app';
 import { useTranslation } from '../i18n';
-import { LanguageSwitcher } from '../components/LanguageSwitcher/LanguageSwitcher';
 import './auth.css';
 
 const LoginPage = () => {
@@ -41,9 +40,6 @@ const LoginPage = () => {
   return (
     <div className="auth-bg">
       <div className="auth-card">
-        <div className="auth-lang-wrap">
-          <LanguageSwitcher />
-        </div>
         <div className="auth-logo">
           <BookOpenIcon size={32} />
           <div className="auth-brand-badge">{APP_CONFIG.name}</div>

@@ -16,9 +16,17 @@ const getInitialLanguage = (): SupportedLanguage => {
     if (saved === 'uk' || saved === 'en') {
       return saved;
     }
-    const navLang = navigator.language?.toLowerCase();
-    if (navLang?.startsWith('en')) {
-      return 'en';
+    // Automatically detect primary language from browser
+    const candidateLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
+    for (const lang of candidateLanguages) {
+      if (!lang) continue;
+      const lower = lang.toLowerCase();
+      if (lower.startsWith('uk') || lower.startsWith('ua')) {
+        return 'uk';
+      }
+      if (lower.startsWith('en')) {
+        return 'en';
+      }
     }
   } catch {
     // ignore localStorage errors
