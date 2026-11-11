@@ -1,5 +1,6 @@
 import React from 'react';
 import { BookOpenIcon, PlusIcon, CloseIcon } from '../../../components/icons';
+import { useTranslation } from '../../../i18n';
 
 interface BooksEmptyStateProps {
   scope?: 'my' | 'all';
@@ -26,6 +27,7 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
   onResetFilters,
   onAddBook,
 }) => {
+  const { t, language } = useTranslation();
   const isAll = scope === 'all';
 
   return (
@@ -36,7 +38,7 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
 
       {isFiltered ? (
         <>
-          <h3 className="empty-title">Ничего не найдено</h3>
+          <h3 className="empty-title">{t('catalog.emptyCatalogTitle')}</h3>
           <p className="empty-desc">
             {searchQuery && (
               <span>По запросу «<strong>{searchQuery}</strong>» </span>
@@ -76,14 +78,14 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
             onClick={onResetFilters}
           >
             <CloseIcon size={16} />
-            <span>Сбросить все фильтры</span>
+            <span>{language === 'en' ? 'Reset all filters' : 'Сбросить все фильтры'}</span>
           </button>
         </>
       ) : isAll ? (
         <>
-          <h3 className="empty-title">В каталоге пока нет книг</h3>
+          <h3 className="empty-title">{t('catalog.emptyCatalogTitle')}</h3>
           <p className="empty-desc">
-            Книги других читателей пока не добавлены. Вы можете стать первым, кто добавит книгу в общий каталог!
+            {t('catalog.emptyCatalogText')}
           </p>
           <button
             id="add-first-book-btn"
@@ -92,14 +94,14 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
             onClick={onAddBook}
           >
             <PlusIcon size={20} />
-            <span>Добавить книгу</span>
+            <span>{t('catalog.addBook')}</span>
           </button>
         </>
       ) : (
         <>
-          <h3 className="empty-title">В вашей библиотеке пока нет книг</h3>
+          <h3 className="empty-title">{t('catalog.emptyMyBooksTitle')}</h3>
           <p className="empty-desc">
-            Добавьте свои любимые книги, укажите жанры, язык и год издания, чтобы создать персональную полку для чтения!
+            {t('catalog.emptyMyBooksText')}
           </p>
           <button
             id="add-first-book-btn"
@@ -108,7 +110,7 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
             onClick={onAddBook}
           >
             <PlusIcon size={20} />
-            <span>Добавить первую книгу</span>
+            <span>{t('catalog.addBook')}</span>
           </button>
         </>
       )}

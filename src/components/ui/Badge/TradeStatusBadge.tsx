@@ -1,5 +1,6 @@
 import React from 'react';
 import { ClockIcon, CheckCircleIcon, XCircleIcon } from '../../icons';
+import { useTranslation } from '../../../i18n';
 
 export interface TradeStatusBadgeProps {
   status: string;
@@ -22,6 +23,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
   className = '',
   style,
 }) => {
+  const { t, language } = useTranslation();
   const iconSize = size === 'lg' ? 18 : size === 'sm' ? 14 : 16;
   const padding = size === 'lg' ? '0.5rem 1rem' : size === 'sm' ? '0.25rem 0.6rem' : '0.4rem 0.85rem';
   const fontSize = size === 'lg' ? '0.95rem' : size === 'sm' ? '0.775rem' : '0.85rem';
@@ -40,7 +42,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           style={baseStyle}
         >
           <ClockIcon size={iconSize} />
-          <span>Ожидает ответа (Возможны изменения)</span>
+          <span>{t('trades.badges.pending')}</span>
         </span>
       );
 
@@ -62,7 +64,9 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           >
             <ClockIcon size={iconSize} />
             <span>
-              Вы подтвердили получение (Ожидание {partnerUsername ? `@${partnerUsername}` : 'партнёра'})
+              {language === 'en'
+                ? `You confirmed (Awaiting ${partnerUsername ? `@${partnerUsername}` : 'partner'})`
+                : `Вы подтвердили получение (Ожидание ${partnerUsername ? `@${partnerUsername}` : 'партнёра'})`}
             </span>
           </span>
         );
@@ -81,7 +85,9 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           >
             <CheckCircleIcon size={iconSize} />
             <span>
-              {partnerUsername ? `@${partnerUsername}` : 'Партнёр'} подтвердил(а) получение книг!
+              {language === 'en'
+                ? `${partnerUsername ? `@${partnerUsername}` : 'Partner'} confirmed books received!`
+                : `${partnerUsername ? `@${partnerUsername}` : 'Партнёр'} подтвердил(а) получение книг!`}
             </span>
           </span>
         );
@@ -98,7 +104,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           }}
         >
           <CheckCircleIcon size={iconSize} />
-          <span>Согласован (Условия зафиксированы)</span>
+          <span>{t('trades.badges.agreed')}</span>
         </span>
       );
     }
@@ -115,7 +121,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           }}
         >
           <CheckCircleIcon size={iconSize} />
-          <span>Завершён (Книги получены)</span>
+          <span>{t('trades.badges.completed')}</span>
         </span>
       );
 
@@ -126,7 +132,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           style={baseStyle}
         >
           <XCircleIcon size={iconSize} />
-          <span>Предложение отклонено</span>
+          <span>{t('trades.badges.rejected')}</span>
         </span>
       );
 
@@ -137,7 +143,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           style={baseStyle}
         >
           <XCircleIcon size={iconSize} />
-          <span>Предложение отозвано</span>
+          <span>{t('trades.badges.cancelled')}</span>
         </span>
       );
 

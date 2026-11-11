@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Book } from '../types/book';
 import { TrashIcon } from './icons';
 import { Modal } from './ui';
+import { useTranslation } from '../i18n';
 
 interface DeleteConfirmModalProps {
   book: Book | null;
@@ -16,6 +17,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const { t, language } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -53,14 +55,19 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <TrashIcon size={28} />
         </div>
 
-        <h3 className="delete-modal-title">Удалить книгу?</h3>
+        <h3 className="delete-modal-title">
+          {language === 'en' ? 'Delete book?' : 'Удалить книгу?'}
+        </h3>
 
         <p className="delete-modal-text">
-          Вы действительно хотите удалить книгу <strong className="delete-highlight">«{book.title}»</strong> ({book.author})?
+          {language === 'en' ? 'Are you sure you want to delete ' : 'Вы действительно хотите удалить книгу '}
+          <strong className="delete-highlight">«{book.title}»</strong> ({book.author})?
         </p>
 
         <p className="delete-modal-warning">
-          Это действие нельзя будет отменить. Книга навсегда удалится из вашей библиотеки.
+          {language === 'en'
+            ? 'This action cannot be undone. The book will be permanently removed from your library.'
+            : 'Это действие нельзя будет отменить. Книга навсегда удалится из вашей библиотеки.'}
         </p>
 
         {error && <div className="modal-error-banner">{error}</div>}
@@ -72,7 +79,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             onClick={handleClose}
             disabled={loading}
           >
-            Отмена
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -81,7 +88,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             disabled={loading}
           >
             <TrashIcon size={16} />
-            <span>{loading ? 'Удаление...' : 'Да, удалить'}</span>
+            <span>{loading ? t('common.loading') : t('common.delete')}</span>
           </button>
         </div>
       </div>

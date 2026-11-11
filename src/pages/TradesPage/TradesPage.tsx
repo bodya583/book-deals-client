@@ -8,9 +8,11 @@ import { TradesSidebar } from './components/TradesSidebar';
 import { TradesToolbar } from './components/TradesToolbar';
 import { TradeCard } from './components/TradeCard';
 import { EmptyState } from '../../components/ui';
+import { useTranslation } from '../../i18n';
 import './TradesPage.css';
 
 export const TradesPage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     currentUser,
     currentTab,
@@ -46,10 +48,10 @@ export const TradesPage: React.FC = () => {
           <div className="trades-header-left">
             <h1 className="trades-header-title">
               <TradeIcon size={28} />
-              <span>Обмен книгами</span>
+              <span>{t('trades.title')}</span>
             </h1>
             <p className="trades-header-subtitle">
-              Steam-like обмен без денег: отдавайте прочитанные книги и получайте взамен желаемые
+              {t('trades.subtitle')}
             </p>
           </div>
         </div>
@@ -73,41 +75,41 @@ export const TradesPage: React.FC = () => {
             {/* Category Heading */}
             <div className="trades-section-heading">
               <h2 className="trades-section-title">
-                {currentTab === 'requests' && 'Запросы на обмен'}
-                {currentTab === 'agreed' && 'Согласованные сделки'}
-                {currentTab === 'completed' && 'Архив завершённых обменов'}
+                {currentTab === 'requests' && t('trades.tabs.requests')}
+                {currentTab === 'agreed' && t('trades.tabs.agreed')}
+                {currentTab === 'completed' && t('trades.tabs.completed')}
               </h2>
               <span className="trades-section-counter">
-                {filteredTrades.length} {filteredTrades.length === 1 ? 'сделка' : filteredTrades.length > 1 && filteredTrades.length < 5 ? 'сделки' : 'сделок'}
+                {filteredTrades.length}
               </span>
             </div>
 
             {/* Trade Cards List */}
             {loading ? (
               <div style={{ padding: '3rem', textAlign: 'center', color: '#666660' }}>
-                Загрузка предложений обмена...
+                {t('common.loading')}
               </div>
             ) : filteredTrades.length === 0 ? (
               <EmptyState
                 icon={<TradeIcon size={32} />}
                 title={
                   currentTab === 'requests'
-                    ? 'Нет активных запросов на обмен'
+                    ? t('trades.empty.requestsTitle')
                     : currentTab === 'agreed'
-                    ? 'Пока нет согласованных обменов'
-                    : 'Пока нет завершённых обменов'
+                    ? t('trades.empty.agreedTitle')
+                    : t('trades.empty.completedTitle')
                 }
                 description={
                   currentTab === 'requests'
-                    ? 'Здесь будут отображаться входящие и исходящие предложения обмена на стадии переговоров.'
+                    ? t('trades.empty.requestsText')
                     : currentTab === 'agreed'
-                    ? 'Здесь находятся сделки, условия которых зафиксированы, в ожидании передачи книг.'
-                    : 'Здесь сохраняется архив успешно проведённых сделок, в которых книги получены.'
+                    ? t('trades.empty.agreedText')
+                    : t('trades.empty.completedText')
                 }
                 action={
                   <Link to="/books" className="btn-new-trade">
                     <BookOpenIcon size={18} />
-                    <span>Выбрать книги в каталоге</span>
+                    <span>{t('trades.newTradeBtn')}</span>
                   </Link>
                 }
               />

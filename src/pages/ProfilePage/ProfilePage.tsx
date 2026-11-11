@@ -19,6 +19,7 @@ import {
 } from '../../components/icons';
 import BookDetailsModal from '../../components/BookDetailsModal';
 import BookCard from '../../components/BookCard';
+import { useTranslation } from '../../i18n';
 import '../books.css';
 import '../trades.css';
 
@@ -26,6 +27,7 @@ export const ProfilePage: React.FC = () => {
   const { userId: routeUserId } = useParams<{ userId?: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
+  const { t, language } = useTranslation();
 
   const {
     user: myUser,
@@ -283,7 +285,7 @@ export const ProfilePage: React.FC = () => {
       {!isOtherUser && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.85rem', color: '#666660', marginRight: '0.25rem' }}>
-            Статус книги:
+            {language === 'en' ? 'Book status:' : 'Статус книги:'}
           </span>
           <button
             type="button"
@@ -291,7 +293,7 @@ export const ProfilePage: React.FC = () => {
             className={`trade-tab-btn ${tradeFilter === 'all' ? 'active' : ''}`}
             style={{ padding: '0.35rem 0.85rem', fontSize: '0.825rem' }}
           >
-            Все ({myBooks.length})
+            {t('profile.allBooksTab')} ({myBooks.length})
           </button>
           <button
             type="button"
@@ -300,7 +302,7 @@ export const ProfilePage: React.FC = () => {
             style={{ padding: '0.35rem 0.85rem', fontSize: '0.825rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
           >
             <CheckIcon size={13} />
-            <span>В профиле (для обмена) ({myBooks.filter((b) => b.isForTrade !== false).length})</span>
+            <span>{t('profile.forTradeTab')} ({myBooks.filter((b) => b.isForTrade !== false).length})</span>
           </button>
           <button
             type="button"
@@ -309,7 +311,7 @@ export const ProfilePage: React.FC = () => {
             style={{ padding: '0.35rem 0.85rem', fontSize: '0.825rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
           >
             <LockIcon size={13} />
-            <span>Только для вас ({myBooks.filter((b) => b.isForTrade === false).length})</span>
+            <span>{t('profile.collectionTab')} ({myBooks.filter((b) => b.isForTrade === false).length})</span>
           </button>
         </div>
       )}

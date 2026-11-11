@@ -6,12 +6,15 @@ import { BookOpenIcon, UserIcon, LogOutIcon, GlobeIcon, TradeIcon } from './icon
 import { Avatar } from './ui';
 import { getTradeCounts } from '../api/tradesApi';
 import { APP_CONFIG } from '../config/app';
+import { useTranslation } from '../i18n';
+import { LanguageSwitcher } from './LanguageSwitcher/LanguageSwitcher';
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [incomingCount, setIncomingCount] = React.useState<number>(0);
 
   React.useEffect(() => {
@@ -54,7 +57,7 @@ export const Navbar: React.FC = () => {
             className={`navbar-link ${location.pathname === '/catalog' || location.pathname === '/all-books' ? 'active' : ''}`}
           >
             <GlobeIcon size={18} />
-            <span>Все книги</span>
+            <span>{t('nav.catalog')}</span>
           </Link>
 
           <Link
@@ -62,7 +65,7 @@ export const Navbar: React.FC = () => {
             className={`navbar-link ${location.pathname.startsWith('/trades') ? 'active' : ''}`}
           >
             <TradeIcon size={18} />
-            <span>Трейды</span>
+            <span>{t('nav.trades')}</span>
             {incomingCount > 0 && (
               <span className="navbar-badge" title={`${incomingCount} входящих предложений`}>
                 {incomingCount}
@@ -74,12 +77,14 @@ export const Navbar: React.FC = () => {
             className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
           >
             <UserIcon size={18} />
-            <span>Профиль</span>
+            <span>{t('nav.profile')}</span>
           </Link>
         </nav>
 
         {/* Actions & User menu */}
         <div className="navbar-actions">
+          <LanguageSwitcher />
+
           <div className="navbar-user-chip" onClick={() => navigate('/profile')} title="Перейти в профиль">
             <Avatar photoURL={user?.photoURL} username={user?.username} size={32} />
             <span className="navbar-username">{user?.username || 'Пользователь'}</span>
@@ -90,10 +95,10 @@ export const Navbar: React.FC = () => {
             type="button"
             className="navbar-btn-logout"
             onClick={handleLogout}
-            title="Выйти из системы"
+            title={t('nav.logout')}
           >
             <LogOutIcon size={18} />
-            <span className="logout-text">Выйти</span>
+            <span className="logout-text">{t('nav.logout')}</span>
           </button>
         </div>
       </div>

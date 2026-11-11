@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { XCircleIcon } from './icons';
 import { Modal } from './ui';
+import { useTranslation } from '../i18n';
 
 interface RejectTradeModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const RejectTradeModal: React.FC<RejectTradeModalProps> = ({
   onConfirm,
   loading = false,
 }) => {
+  const { t, language } = useTranslation();
   const [reason, setReason] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,22 +29,24 @@ export const RejectTradeModal: React.FC<RejectTradeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Отклонить предложение обмена"
+      title={t('modals.rejectModalTitle')}
       icon={<XCircleIcon size={24} color="#dc2626" />}
       maxWidth={480}
     >
       <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: '#64748b', lineHeight: 1.5 }}>
-        Вы можете оставить комментарий для партнёра с объяснением причины отказа. Он отобразится в чате трейда.
+        {language === 'en'
+          ? 'You can leave a note for your trade partner explaining the reason. It will appear in the trade chat.'
+          : 'Вы можете оставить комментарий для партнёра с объяснением причины отказа. Он отобразится в чате трейда.'}
       </p>
 
       <form onSubmit={handleSubmit}>
         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>
-          Причина отклонения (необязательно):
+          {language === 'en' ? 'Reason (optional):' : 'Причина отклонения (необязательно):'}
         </label>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Например: эту книгу уже пообещал другому читателю, или не подошли предложенные книги..."
+          placeholder={t('modals.rejectReasonPlaceholder')}
           rows={3}
           style={{
             width: '100%',
@@ -67,7 +71,7 @@ export const RejectTradeModal: React.FC<RejectTradeModalProps> = ({
             disabled={loading}
             style={{ padding: '0.6rem 1.1rem' }}
           >
-            Отмена
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
@@ -82,7 +86,7 @@ export const RejectTradeModal: React.FC<RejectTradeModalProps> = ({
             }}
           >
             <XCircleIcon size={16} />
-            <span>{loading ? 'Отклонение...' : 'Отклонить обмен'}</span>
+            <span>{loading ? t('common.loading') : t('modals.rejectConfirmBtn')}</span>
           </button>
         </div>
       </form>

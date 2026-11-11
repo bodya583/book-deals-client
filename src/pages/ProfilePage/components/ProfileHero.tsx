@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarIcon, TradeIcon, BookOpenIcon, MapPinIcon } from '../../../components/icons';
 import LocationButton from './LocationButton';
+import { useTranslation } from '../../../i18n';
+import { APP_CONFIG } from '../../../config/app';
 
 export interface ProfileUser {
   id: string;
@@ -30,6 +32,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   bookCount,
 }) => {
   const navigate = useNavigate();
+  const { t, language } = useTranslation();
   const [localLat, setLocalLat] = useState<number | null>(user?.latitude ?? null);
   const [localLng, setLocalLng] = useState<number | null>(user?.longitude ?? null);
 
@@ -63,7 +66,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         {/* User Info */}
         <div className="profile-hero-info">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <h1 className="profile-username">@{user?.username || 'Пользователь'}</h1>
+            <h1 className="profile-username">@{user?.username || (language === 'en' ? 'User' : 'Пользователь')}</h1>
             {isOtherUser && (
               <span
                 style={{
@@ -75,7 +78,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                   fontWeight: 600,
                 }}
               >
-                Читатель BookShelf
+                {language === 'en' ? `${APP_CONFIG.name} Member` : `Читатель ${APP_CONFIG.name}`}
               </span>
             )}
           </div>
@@ -83,7 +86,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           <div className="profile-meta-list">
             <div className="profile-meta-item">
               <CalendarIcon size={16} />
-              <span>Зарегистрирован: {formattedDate}</span>
+              <span>{t('profile.memberSince')}: {formattedDate}</span>
             </div>
             {user?.city && (
               <div className="profile-meta-item">
@@ -94,7 +97,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
             {bookCount !== undefined && (
               <div className="profile-meta-item">
                 <BookOpenIcon size={16} />
-                <span>Книг для обмена: {bookCount}</span>
+                <span>{t('profile.booksCount')}: {bookCount}</span>
               </div>
             )}
           </div>
@@ -116,10 +119,10 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                 boxShadow: '0 4px 14px rgba(45, 106, 79, 0.25)',
               }}
               onClick={() => navigate(`/trades/new?partnerId=${user.id}`)}
-              title={`Предложить обмен книгами с @${user.username}`}
+              title={`${t('profile.proposeTradeWithUser')} @${user.username}`}
             >
               <TradeIcon size={20} />
-              <span>Предложить обмен</span>
+              <span>{t('profile.proposeTradeWithUser')}</span>
             </button>
           ) : (
             <LocationButton

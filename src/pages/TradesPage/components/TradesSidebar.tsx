@@ -2,6 +2,7 @@ import React from 'react';
 import type { TabType } from '../hooks/useTradesPage';
 import type { TradeCounts } from '../../../types/trade';
 import { InboxIcon, HandshakeIcon, ArchiveIcon } from '../../../components/icons';
+import { useTranslation } from '../../../i18n';
 
 interface TradesSidebarProps {
   currentTab: TabType;
@@ -14,6 +15,7 @@ export const TradesSidebar: React.FC<TradesSidebarProps> = ({
   counts,
   onTabChange,
 }) => {
+  const { t } = useTranslation();
   const totalRequests = counts.requests ?? (counts.incoming + counts.outgoing);
 
   return (
@@ -26,7 +28,7 @@ export const TradesSidebar: React.FC<TradesSidebarProps> = ({
         >
           <div className="sidebar-item-left">
             <InboxIcon size={17} />
-            <span>Запросы</span>
+            <span>{t('trades.tabs.requests')}</span>
           </div>
           <span
             className={`sidebar-badge ${counts.incoming > 0 ? 'badge-highlight' : ''}`}
@@ -47,7 +49,7 @@ export const TradesSidebar: React.FC<TradesSidebarProps> = ({
         >
           <div className="sidebar-item-left">
             <HandshakeIcon size={17} />
-            <span>Согласованные</span>
+            <span>{t('trades.tabs.agreed')}</span>
           </div>
           <span className={`sidebar-badge ${counts.agreed > 0 ? 'badge-agreed' : ''}`}>
             {counts.agreed}
@@ -61,7 +63,7 @@ export const TradesSidebar: React.FC<TradesSidebarProps> = ({
         >
           <div className="sidebar-item-left">
             <ArchiveIcon size={17} />
-            <span>Архив</span>
+            <span>{t('trades.tabs.completed')}</span>
           </div>
           <span className="sidebar-badge">{counts.completed}</span>
         </button>

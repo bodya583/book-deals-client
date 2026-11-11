@@ -5,11 +5,14 @@ import api from '../api/axiosInstance';
 import { useAuthStore } from '../store/authStore';
 import { BookOpenIcon } from '../components/icons';
 import { APP_CONFIG } from '../config/app';
+import { useTranslation } from '../i18n';
+import { LanguageSwitcher } from '../components/LanguageSwitcher/LanguageSwitcher';
 import './auth.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,28 +41,31 @@ const LoginPage = () => {
   return (
     <div className="auth-bg">
       <div className="auth-card">
+        <div className="auth-lang-wrap">
+          <LanguageSwitcher />
+        </div>
         <div className="auth-logo">
           <BookOpenIcon size={32} />
           <div className="auth-brand-badge">{APP_CONFIG.name}</div>
         </div>
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Sign in to your account</p>
+        <h1 className="auth-title">{t('auth.welcomeBack')}</h1>
+        <p className="auth-subtitle">{t('auth.signInSubtitle')}</p>
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="auth-field">
-            <label>Email</label>
+            <label>{t('auth.email')}</label>
             <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="auth-field">
-            <label>Password</label>
+            <label>{t('auth.password')}</label>
             <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           {error && <p className="auth-error">{error}</p>}
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? <span className="auth-spinner" /> : 'Sign In'}
+            {loading ? <span className="auth-spinner" /> : t('auth.signInBtn')}
           </button>
         </form>
         <p className="auth-link">
-          No account? <Link to="/register">Register</Link>
+          {t('auth.noAccount')} <Link to="/register">{t('auth.signUpBtn')}</Link>
         </p>
       </div>
     </div>

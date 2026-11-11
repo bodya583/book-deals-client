@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlusIcon } from '../../../components/icons';
+import { useTranslation } from '../../../i18n';
 
 interface BooksHeaderProps {
   scope?: 'my' | 'all';
@@ -10,18 +11,17 @@ export const BooksHeader: React.FC<BooksHeaderProps> = ({
   scope = 'my',
   onAddBook,
 }) => {
+  const { t } = useTranslation();
   const isAll = scope === 'all';
 
   return (
     <section className="books-hero-header">
       <div className="books-hero-left">
         <h1 className="books-hero-title">
-          {isAll ? 'Каталог книг' : 'Моя библиотека'}
+          {isAll ? t('catalog.title') : t('catalog.myBooksTitle')}
         </h1>
         <p className="books-hero-subtitle">
-          {isAll
-            ? 'Книги всех читателей сообщества. Находите интересные произведения, фильтруйте по авторам, жанрам и языкам.'
-            : 'Книги на вашем аккаунте. Читайте, управляйте и пополняйте свою личную коллекцию.'}
+          {isAll ? t('catalog.subtitle') : t('catalog.myBooksSubtitle')}
         </p>
       </div>
 
@@ -33,7 +33,7 @@ export const BooksHeader: React.FC<BooksHeaderProps> = ({
           onClick={onAddBook}
         >
           <PlusIcon size={20} />
-          <span>Добавить книгу</span>
+          <span>{t('catalog.addBook')}</span>
         </button>
       </div>
     </section>

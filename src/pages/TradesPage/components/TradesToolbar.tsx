@@ -1,6 +1,7 @@
 import React from 'react';
 import type { SortOption } from '../hooks/useTradesPage';
 import { SearchIcon, CloseIcon } from '../../../components/icons';
+import { useTranslation } from '../../../i18n';
 
 interface TradesToolbarProps {
   searchQuery: string;
@@ -15,13 +16,15 @@ export const TradesToolbar: React.FC<TradesToolbarProps> = ({
   sortBy,
   onSortChange,
 }) => {
+  const { t, language } = useTranslation();
+
   return (
     <div className="trades-search-toolbar">
       <div className="inventory-search-wrap trades-search-box">
         <SearchIcon size={16} className="inventory-search-icon" />
         <input
           type="text"
-          placeholder="Поиск по названию книги, автору или партнеру..."
+          placeholder={t('trades.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="inventory-search-input"
@@ -31,7 +34,7 @@ export const TradesToolbar: React.FC<TradesToolbarProps> = ({
             type="button"
             onClick={() => onSearchChange('')}
             className="books-search-clear"
-            title="Очистить поиск"
+            title={language === 'en' ? 'Clear search' : 'Очистить поиск'}
           >
             <CloseIcon size={13} />
           </button>
@@ -40,7 +43,7 @@ export const TradesToolbar: React.FC<TradesToolbarProps> = ({
 
       <div className="trades-sort-wrap">
         <label htmlFor="trades-sort-select" className="trades-sort-label">
-          Сортировка:
+          {language === 'en' ? 'Sort by:' : 'Сортировка:'}
         </label>
         <select
           id="trades-sort-select"
@@ -49,10 +52,10 @@ export const TradesToolbar: React.FC<TradesToolbarProps> = ({
           className="trades-sort-select"
           aria-label="Сортировка предложений обмена"
         >
-          <option value="turn">По ходу действия</option>
-          <option value="newest">Сначала новые</option>
-          <option value="updated">По последнему изменению</option>
-          <option value="oldest">Сначала старые</option>
+          <option value="turn">{t('trades.sort.turn')}</option>
+          <option value="newest">{t('trades.sort.newest')}</option>
+          <option value="updated">{t('trades.sort.updated')}</option>
+          <option value="oldest">{t('trades.sort.oldest')}</option>
         </select>
       </div>
     </div>

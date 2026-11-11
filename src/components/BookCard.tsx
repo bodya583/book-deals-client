@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
 import { formatBookYear } from '../types/book';
 import { EditIcon, TrashIcon, EyeIcon, BookOpenIcon, GlobeIcon, TagIcon, TradeIcon, MapPinIcon } from './icons';
+import { useTranslation } from '../i18n';
 
 interface BookCardProps {
   book: Book;
@@ -22,6 +23,7 @@ export const BookCard: React.FC<BookCardProps> = ({
   isOwner = true,
 }) => {
   const navigate = useNavigate();
+  const { t, language } = useTranslation();
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -157,25 +159,25 @@ export const BookCard: React.FC<BookCardProps> = ({
               type="button"
               className="btn-card-profile-details"
               onClick={() => onView(book)}
-              title="Подробнее о книге"
+              title={t('common.details')}
             >
-              Подробнее
+              {t('common.details')}
             </button>
             <button
               type="button"
               className="btn-card-profile-trade"
               onClick={() => onTrade(book)}
-              title="Предложить обмен на эту книгу"
+              title={t('trades.card.openDetails')}
             >
               <TradeIcon size={14} />
-              <span>Обмен</span>
+              <span>{t('nav.trades')}</span>
             </button>
           </div>
         ) : book.user?.username ? (
           <div className="book-card-actions creator-bar">
             <span
               className="book-card-creator"
-              title={`Перейти в профиль пользователя @${book.user.username}`}
+              title={`@${book.user.username}`}
               style={{ cursor: 'pointer' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -183,7 +185,7 @@ export const BookCard: React.FC<BookCardProps> = ({
                 if (uId) navigate(`/profile/${uId}`);
               }}
             >
-              <span className="creator-label">от</span>
+              <span className="creator-label">{language === 'en' ? 'by' : 'от'}</span>
               <span className="creator-name">@{book.user.username}</span>
             </span>
           </div>
