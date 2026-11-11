@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { CloseIcon } from './icons';
+import { useTranslation } from '../i18n';
 
 export interface ToastMessage {
   id: string;
@@ -13,6 +14,8 @@ interface ToastProps {
 }
 
 export const Toast: React.FC<ToastProps> = ({ toasts, onRemove }) => {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (toasts.length === 0) return;
 
@@ -35,7 +38,7 @@ export const Toast: React.FC<ToastProps> = ({ toasts, onRemove }) => {
             type="button"
             className="toast-close-btn"
             onClick={() => onRemove(toast.id)}
-            aria-label="Закрыть уведомление"
+            aria-label={t('common.closeNotification')}
           >
             <CloseIcon size={14} />
           </button>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { BooksPagination as BooksPaginationType, BookSortOption } from '../../../types/book';
 import {
   ChevronLeftIcon,
@@ -9,6 +9,7 @@ import {
   GridIcon,
   MapIcon,
 } from '../../../components/icons';
+import { useTranslation } from '../../../i18n';
 
 interface BooksPaginationProps {
   pagination: BooksPaginationType;
@@ -23,15 +24,6 @@ interface BooksPaginationProps {
   onViewModeChange?: (mode: 'grid' | 'map') => void;
 }
 
-const SORT_OPTIONS: { value: BookSortOption; label: string }[] = [
-  { value: 'newest', label: 'Сначала новые' },
-  { value: 'popular', label: 'По популярности' },
-  { value: 'distance', label: 'По расстоянию' },
-  { value: 'title_asc', label: 'По названию (А–Я)' },
-  { value: 'title_desc', label: 'По названию (Я–А)' },
-  { value: 'oldest', label: 'Сначала старые' },
-];
-
 export const BooksPagination: React.FC<BooksPaginationProps> = ({
   pagination,
   onPageChange,
@@ -44,7 +36,20 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
   viewMode = 'grid',
   onViewModeChange,
 }) => {
+  const { t } = useTranslation();
   const { page, limit, total, totalPages } = pagination;
+
+  const sortOptions = useMemo(
+    (): { value: BookSortOption; label: string }[] => [
+      { value: 'newest', label: t('pagination.sortNewest') },
+      { value: 'popular', label: t('pagination.sortPopular') },
+      { value: 'distance', label: t('pagination.sortDistance') },
+      { value: 'title_asc', label: t('pagination.sortTitleAsc') },
+      { value: 'title_desc', label: t('pagination.sortTitleDesc') },
+      { value: 'oldest', label: t('pagination.sortOldest') },
+    ],
+    [t]
+  );
 
   // Don't render pagination if there are no items, or if bottom variant has <= 1 page or map mode
   if (total <= 0) {
@@ -64,23 +69,22 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
     return (
       <nav
         className={`books-pagination books-pagination-top ${className}`}
-        aria-label="Верхняя панель пагинации и сортировки"
+        aria-label={t('pagination.sortLabel')}
       >
         {/* Left: Range Info */}
         <div className="pagination-info">
           {viewMode === 'map' ? (
             <span className="pagination-info-text">
-              На карте: <strong className="pagination-strong">{total}</strong> {total === 1 ? 'книга' : total > 1 && total < 5 ? 'книги' : 'книг'}
+              {t('catalog.onMapCount', { total })}
             </span>
           ) : (
             <>
               <span className="pagination-info-text">
-                Показано <strong className="pagination-strong">{fromItem}–{toItem}</strong> из{' '}
-                <strong className="pagination-strong">{total}</strong>
+                {t('catalog.shownRange', { from: fromItem, to: toItem, total })}
               </span>
               {totalPages > 1 && (
                 <span className="pagination-page-indicator">
-                  (Стр. {page} из {totalPages})
+                  {t('catalog.pageIndicator', { page, totalPages })}
                 </span>
               )}
             </>
@@ -91,24 +95,24 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
         <div className="pagination-top-controls">
           {/* View switcher (Grid vs Map) */}
           {onViewModeChange && (
-            <div className="catalog-view-switcher" role="group" aria-label="Режим отображения каталога">
+            <div className="catalog-view-switcher" role="group">
               <button
                 type="button"
                 className={`catalog-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                 onClick={() => onViewModeChange('grid')}
-                title="Отобразить плиткой"
+                title={t('catalog.viewGrid')}
               >
                 <GridIcon size={14} />
-                <span>Сетка</span>
+                <span>{t('catalog.viewGrid')}</span>
               </button>
               <button
                 type="button"
                 className={`catalog-view-btn ${viewMode === 'map' ? 'active' : ''}`}
                 onClick={() => onViewModeChange('map')}
-                title="Отобразить на интерактивной карте с защитой приватности"
+                title={t('catalog.viewMap')}
               >
                 <MapIcon size={14} />
-                <span>Карта</span>
+                <span>{t('catalog.viewMap')}</span>
               </button>
             </div>
           )}
@@ -116,7 +120,7 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
           {/* Sorting dropdown */}
           {onSortChange && (
             <div className="pagination-sort-wrapper">
-              <span className="pagination-sort-label">Сортировка:</span>
+              <span className="pagination-sort-label">{t('pagination.sortLabel')}</span>
               <div className="pagination-sort-select-box">
                 <ArrowUpDownIcon size={14} className="pagination-sort-icon" />
                 <select
@@ -124,10 +128,10 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
                   className="pagination-sort-select"
                   value={sortBy}
                   onChange={(e) => onSortChange(e.target.value as BookSortOption)}
-                  aria-label="Сортировка каталога книг"
-                  title="Выбрать порядок сортировки"
+                  aria-label={t('pagination.sortLabel')}
+                  title={t('pagination.sortLabel')}
                 >
-                  {SORT_OPTIONS.map((opt) => (
+                  {sortOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>
@@ -139,14 +143,14 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
 
           {/* Quick mini-pager if more than 1 page (grid mode only) */}
           {viewMode === 'grid' && totalPages > 1 && (
-            <div className="pagination-top-nav" aria-label="Быстрый переход по страницам">
+            <div className="pagination-top-nav">
               <button
                 type="button"
                 className="pagination-btn pagination-btn-mini"
                 disabled={page <= 1}
                 onClick={() => onPageChange(page - 1, false)}
-                title="Предыдущая страница"
-                aria-label="Предыдущая страница"
+                title={t('pagination.prev')}
+                aria-label={t('pagination.prev')}
               >
                 <ChevronLeftIcon size={15} />
               </button>
@@ -158,8 +162,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
                 className="pagination-btn pagination-btn-mini"
                 disabled={page >= totalPages}
                 onClick={() => onPageChange(page + 1, false)}
-                title="Следующая страница"
-                aria-label="Следующая страница"
+                title={t('pagination.next')}
+                aria-label={t('pagination.next')}
               >
                 <ChevronRightIcon size={15} />
               </button>
@@ -169,13 +173,13 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
           {/* Compact limit selector (grid mode only) */}
           {viewMode === 'grid' && (
             <div className="pagination-top-limit">
-              <span className="pagination-limit-caption">По:</span>
+              <span className="pagination-limit-caption">{t('pagination.perPage')}</span>
               <select
                 className="pagination-limit-select"
                 value={limit}
                 onChange={(e) => onLimitChange(Number(e.target.value))}
-                aria-label="Книг на странице"
-                title="Количество книг на странице"
+                aria-label={t('pagination.perPage')}
+                title={t('pagination.perPage')}
               >
                 {limitOptions.map((opt) => (
                   <option key={opt} value={opt}>
@@ -232,7 +236,7 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
   return (
     <nav
       className={`books-pagination books-pagination-bottom ${className}`}
-      aria-label="Пагинация страниц каталога"
+      aria-label={t('pagination.perPage')}
     >
       {/* Page Navigation Buttons */}
       <div className="pagination-nav-group">
@@ -241,8 +245,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
           className="pagination-btn pagination-btn-first"
           disabled={page <= 1}
           onClick={() => onPageChange(1, isBottom)}
-          title="Первая страница"
-          aria-label="Первая страница"
+          title={t('pagination.first')}
+          aria-label={t('pagination.first')}
         >
           <ChevronsLeftIcon size={15} />
         </button>
@@ -252,11 +256,11 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
           className="pagination-btn pagination-btn-prev"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1, isBottom)}
-          title="Предыдущая страница"
-          aria-label="Предыдущая страница"
+          title={t('pagination.prev')}
+          aria-label={t('pagination.prev')}
         >
           <ChevronLeftIcon size={15} />
-          <span className="pagination-btn-label">Назад</span>
+          <span className="pagination-btn-label">{t('pagination.prev')}</span>
         </button>
 
         <div className="pagination-page-numbers">
@@ -277,7 +281,7 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
                 className={`pagination-page-num ${isCurrent ? 'active' : ''}`}
                 onClick={() => onPageChange(item, isBottom)}
                 aria-current={isCurrent ? 'page' : undefined}
-                aria-label={`Страница ${item}`}
+                aria-label={t('common.pageLabel', { page: item })}
               >
                 {item}
               </button>
@@ -290,10 +294,10 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
           className="pagination-btn pagination-btn-next"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1, isBottom)}
-          title="Следующая страница"
-          aria-label="Следующая страница"
+          title={t('pagination.next')}
+          aria-label={t('pagination.next')}
         >
-          <span className="pagination-btn-label">Вперёд</span>
+          <span className="pagination-btn-label">{t('pagination.next')}</span>
           <ChevronRightIcon size={15} />
         </button>
 
@@ -302,8 +306,8 @@ export const BooksPagination: React.FC<BooksPaginationProps> = ({
           className="pagination-btn pagination-btn-last"
           disabled={page >= totalPages}
           onClick={() => onPageChange(totalPages, isBottom)}
-          title="Последняя страница"
-          aria-label="Последняя страница"
+          title={t('pagination.last')}
+          aria-label={t('pagination.last')}
         >
           <ChevronsRightIcon size={15} />
         </button>

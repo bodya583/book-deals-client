@@ -23,7 +23,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
   className = '',
   style,
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const iconSize = size === 'lg' ? 18 : size === 'sm' ? 14 : 16;
   const padding = size === 'lg' ? '0.5rem 1rem' : size === 'sm' ? '0.25rem 0.6rem' : '0.4rem 0.85rem';
   const fontSize = size === 'lg' ? '0.95rem' : size === 'sm' ? '0.775rem' : '0.85rem';
@@ -64,9 +64,9 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           >
             <ClockIcon size={iconSize} />
             <span>
-              {language === 'en'
-                ? `You confirmed (Awaiting ${partnerUsername ? `@${partnerUsername}` : 'partner'})`
-                : `Ви підтвердили отримання (Очікування ${partnerUsername ? `@${partnerUsername}` : 'партнера'})`}
+              {t('trades.badges.youConfirmedWaiting', {
+                partner: partnerUsername ? `@${partnerUsername}` : t('common.partner').toLowerCase(),
+              })}
             </span>
           </span>
         );
@@ -85,9 +85,9 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
           >
             <CheckCircleIcon size={iconSize} />
             <span>
-              {language === 'en'
-                ? `${partnerUsername ? `@${partnerUsername}` : 'Partner'} confirmed books received!`
-                : `${partnerUsername ? `@${partnerUsername}` : 'Партнер'} підтвердив(-ла) отримання книг!`}
+              {t('trades.badges.partnerConfirmedNotice', {
+                partner: partnerUsername ? `@${partnerUsername}` : t('common.partner'),
+              })}
             </span>
           </span>
         );

@@ -29,9 +29,9 @@ const RegisterPage = () => {
       navigate('/');
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Registration error');
+        setError(err.response?.data?.message || t('auth.registerError'));
       } else {
-        setError('Registration error');
+        setError(t('auth.registerError'));
       }
     } finally {
       setLoading(false);

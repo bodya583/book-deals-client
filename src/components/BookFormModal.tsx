@@ -14,6 +14,7 @@ import {
   CheckIcon,
   PlusIcon,
 } from './icons';
+import { useTranslation } from '../i18n';
 
 interface BookFormModalProps {
   isOpen: boolean;
@@ -22,26 +23,6 @@ interface BookFormModalProps {
   onClose: () => void;
   onSubmit: (formData: BookFormData) => Promise<void>;
 }
-
-const DEFAULT_POPULAR_GENRES = [
-  'Художественная литература',
-  'Фантастика',
-  'Фэнтези',
-  'Детектив',
-  'Триллер / Ужасы',
-  'Приключения',
-  'Роман / Проза',
-  'Классическая литература',
-  'Научная литература',
-  'Биография / Мемуары',
-  'История',
-  'Психология / Саморазвитие',
-  'Бизнес / Финансы',
-  'Философия',
-  'Поэзия',
-  'Детская литература',
-  'Компьютерные технологии / IT',
-];
 
 interface FormContentProps {
   mode: 'create' | 'edit';
@@ -56,6 +37,9 @@ const FormContent: React.FC<FormContentProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t, language: currentLang, dict } = useTranslation();
+  const defaultPopular = dict.bookForm.popularGenres;
+
   const [title, setTitle] = useState(mode === 'edit' && initialBook ? initialBook.title || '' : '');
   const [author, setAuthor] = useState(mode === 'edit' && initialBook ? initialBook.author || '' : '');
   const [description, setDescription] = useState(
@@ -77,7 +61,7 @@ const FormContent: React.FC<FormContentProps> = ({
       ? initialBook.genres.map((g) => g.name)
       : []
   );
-  const [availableGenres, setAvailableGenres] = useState<string[]>(DEFAULT_POPULAR_GENRES);
+  const [availableGenres, setAvailableGenres] = useState<string[]>(defaultPopular);
 
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
@@ -97,7 +81,7 @@ const FormContent: React.FC<FormContentProps> = ({
         }
       })
       .catch(() => {
-        // Fallback to DEFAULT_POPULAR_GENRES
+        // Fallback to defaultPopular
       });
 
     return () => {
@@ -149,7 +133,6 @@ const FormContent: React.FC<FormContentProps> = ({
       setSelectedFileName(file.name);
       setPreviewError(false);
       setError('');
-      // Create local data URL for instantaneous live preview
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
@@ -173,11 +156,11 @@ const FormContent: React.FC<FormContentProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      setError('Пожалуйста, укажите название книги');
+      setError(t('bookForm.errTitleRequired'));
       return;
     }
     if (!author.trim()) {
-      setError('Пожалуйста, укажите автора книги');
+      setError(t('bookForm.errAuthorRequired'));
       return;
     }
 
@@ -189,7 +172,7 @@ const FormContent: React.FC<FormContentProps> = ({
 
       // If user selected a new file, upload it to Cloudinary first
       if (selectedFile) {
-        setLoadingStatus('Загрузка обложки в Cloudinary...');
+        setLoadingStatus(t('bookForm.uploadingCover'));
         try {
           const uploadRes = await uploadBookCover(selectedFile);
           finalCoverURL = uploadRes.url;
@@ -197,7 +180,7 @@ const FormContent: React.FC<FormContentProps> = ({
           const uploadMsg =
             uploadErr?.response?.data?.message ||
             uploadErr?.message ||
-            'Ошибка при загрузке обложки в Cloudinary';
+            t('bookForm.errUploadFailed');
           setError(uploadMsg);
           setLoading(false);
           setLoadingStatus('');
@@ -208,7 +191,7 @@ const FormContent: React.FC<FormContentProps> = ({
         finalCoverURL = '';
       }
 
-      setLoadingStatus('Сохранение книги...');
+      setLoadingStatus(t('bookForm.savingBook'));
       await onSubmit({
         title: title.trim(),
         author: author.trim(),
@@ -220,7 +203,7 @@ const FormContent: React.FC<FormContentProps> = ({
       });
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Произошла ошибка при сохранении книги';
+      const msg = err instanceof Error ? err.message : t('bookForm.errSaveFailed');
       setError(msg);
     } finally {
       setLoading(false);
@@ -238,7 +221,7 @@ const FormContent: React.FC<FormContentProps> = ({
         className="modal-close-btn"
         onClick={onClose}
         disabled={loading}
-        aria-label="Закрыть"
+        aria-label={t('common.close')}
       >
         <CloseIcon size={20} />
       </button>
@@ -249,12 +232,12 @@ const FormContent: React.FC<FormContentProps> = ({
         </div>
         <div>
           <h3 className="modal-title">
-            {mode === 'create' ? 'Добавить новую книгу' : 'Редактировать книгу'}
+            {mode === 'create' ? t('bookForm.createTitle') : t('bookForm.editTitle')}
           </h3>
           <p className="modal-subtitle">
             {mode === 'create'
-              ? 'Заполните информацию о книге, выберите обложку, жанры и язык издания'
-              : 'Внесите необходимые изменения в информацию о книге'}
+              ? t('bookForm.createSubtitle')
+              : t('bookForm.editSubtitle')}
           </p>
         </div>
       </div>
@@ -267,12 +250,12 @@ const FormContent: React.FC<FormContentProps> = ({
           <div className="modal-form-fields">
             <div className="form-group">
               <label htmlFor="book-title">
-                Название книги <span className="required-star">*</span>
+                {t('bookForm.titleLabel')} <span className="required-star">*</span>
               </label>
               <input
                 id="book-title"
                 type="text"
-                placeholder="Например, «Мастер и Маргарита»"
+                placeholder={t('bookForm.titlePlaceholder')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={loading}
@@ -283,12 +266,12 @@ const FormContent: React.FC<FormContentProps> = ({
 
             <div className="form-group">
               <label htmlFor="book-author">
-                Автор <span className="required-star">*</span>
+                {t('bookForm.authorLabel')} <span className="required-star">*</span>
               </label>
               <input
                 id="book-author"
                 type="text"
-                placeholder="Например, Михаил Булгаков"
+                placeholder={t('bookForm.authorPlaceholder')}
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 disabled={loading}
@@ -302,7 +285,7 @@ const FormContent: React.FC<FormContentProps> = ({
               <div className="form-group">
                 <label htmlFor="book-language" className="label-with-icon">
                   <GlobeIcon size={15} />
-                  <span>Язык издания</span>
+                  <span>{t('bookForm.languageLabel')}</span>
                 </label>
                 <select
                   id="book-language"
@@ -311,10 +294,10 @@ const FormContent: React.FC<FormContentProps> = ({
                   disabled={loading}
                   className="modal-select-field"
                 >
-                  <option value="">Не указан</option>
+                  <option value="">{t('bookForm.languageNotSet')}</option>
                   {BOOK_LANGUAGES.map((lang) => (
                     <option key={lang} value={lang}>
-                      {lang}
+                      {lang === 'Other' ? t('filters.languages.otherLabel') : lang}
                     </option>
                   ))}
                 </select>
@@ -324,12 +307,12 @@ const FormContent: React.FC<FormContentProps> = ({
               <div className="form-group">
                 <label htmlFor="book-year" className="label-with-icon">
                   <CalendarIcon size={15} />
-                  <span>Год издания</span>
+                  <span>{t('bookForm.yearLabel')}</span>
                 </label>
                 <input
                   id="book-year"
                   type="number"
-                  placeholder="Например, 1967"
+                  placeholder={t('bookForm.yearPlaceholder')}
                   min="1"
                   max="2100"
                   value={year}
@@ -344,7 +327,7 @@ const FormContent: React.FC<FormContentProps> = ({
               <div className="genres-label-row">
                 <span className="label-with-icon">
                   <TagIcon size={15} />
-                  <span>Жанры</span>
+                  <span>{t('bookForm.genresLabel')}</span>
                 </span>
                 {selectedGenres.length > 0 && (
                   <span className="selected-count-pill">{selectedGenres.length}</span>
@@ -361,7 +344,7 @@ const FormContent: React.FC<FormContentProps> = ({
                         type="button"
                         onClick={() => handleRemoveGenre(genre)}
                         className="remove-genre-btn"
-                        title={`Удалить ${genre}`}
+                        title={t('bookForm.removeGenre', { genre })}
                       >
                         <CloseIcon size={13} />
                       </button>
@@ -394,11 +377,11 @@ const FormContent: React.FC<FormContentProps> = ({
 
             {/* Description */}
             <div className="form-group">
-              <label htmlFor="book-description">Описание книги</label>
+              <label htmlFor="book-description">{t('bookForm.descriptionLabel')}</label>
               <textarea
                 id="book-description"
                 rows={3}
-                placeholder="Краткое описание сюжета, ваши впечатления или заметки..."
+                placeholder={t('bookForm.descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={loading}
@@ -408,12 +391,14 @@ const FormContent: React.FC<FormContentProps> = ({
 
           {/* Right Column: Cover Preview & File Upload */}
           <div className="modal-form-preview-col">
-            <span className="preview-heading">Предпросмотр карточки</span>
+            <span className="preview-heading">
+              {t('bookCard.previewHeading')}
+            </span>
             <div className="preview-cover-card">
               {coverURL && !previewError ? (
                 <img
                   src={coverURL}
-                  alt="Предпросмотр"
+                  alt={title || t('bookCard.coverAltFallback')}
                   className="preview-img"
                   onError={() => setPreviewError(true)}
                 />
@@ -421,10 +406,10 @@ const FormContent: React.FC<FormContentProps> = ({
                 <div className="preview-fallback">
                   <BookOpenIcon size={44} className="preview-fallback-icon" />
                   <span className="preview-fallback-title">
-                    {title || 'Название книги'}
+                    {title || t('bookCard.previewTitleFallback')}
                   </span>
                   <span className="preview-fallback-author">
-                    {author || 'Автор'}
+                    {author || t('bookCard.previewAuthorFallback')}
                   </span>
                 </div>
               )}
@@ -438,7 +423,7 @@ const FormContent: React.FC<FormContentProps> = ({
                 )}
                 {year && (
                   <span className="preview-year-pill">
-                    <CalendarIcon size={11} /> {formatBookYear(year)}
+                    <CalendarIcon size={11} /> {formatBookYear(year, currentLang)}
                   </span>
                 )}
                 {selectedGenres.length > 0 && (
@@ -469,7 +454,9 @@ const FormContent: React.FC<FormContentProps> = ({
                 disabled={loading}
               >
                 <UploadIcon size={16} />
-                <span>{coverURL ? 'Заменить файл' : 'Выбрать файл'}</span>
+                <span>
+                  {coverURL ? t('bookCard.replaceFile') : t('bookCard.selectFile')}
+                </span>
               </button>
 
               {selectedFileName ? (
@@ -482,13 +469,13 @@ const FormContent: React.FC<FormContentProps> = ({
                     type="button"
                     onClick={handleClearCover}
                     className="clear-file-btn"
-                    title="Удалить файл"
+                    title={t('common.remove')}
                   >
                     <CloseIcon size={13} />
                   </button>
                 </div>
               ) : (
-                <span className="file-upload-hint">JPG, PNG, WEBP до 5 МБ</span>
+                <span className="file-upload-hint">JPG, PNG, WEBP &le; 5 MB</span>
               )}
             </div>
           </div>
@@ -502,7 +489,7 @@ const FormContent: React.FC<FormContentProps> = ({
             onClick={onClose}
             disabled={loading}
           >
-            Отмена
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
@@ -512,10 +499,10 @@ const FormContent: React.FC<FormContentProps> = ({
             {loading ? (
               <>
                 <span className="spinner-small" />
-                <span>{loadingStatus || 'Сохранение...'}</span>
+                <span>{loadingStatus || t('common.loading')}</span>
               </>
             ) : (
-              <span>{mode === 'create' ? 'Добавить книгу' : 'Сохранить изменения'}</span>
+              <span>{mode === 'create' ? t('bookForm.submitCreate') : t('bookForm.submitEdit')}</span>
             )}
           </button>
         </div>

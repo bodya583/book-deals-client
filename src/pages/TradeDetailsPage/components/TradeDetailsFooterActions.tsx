@@ -7,6 +7,7 @@ import {
   XCircleIcon,
   ClockIcon,
 } from '../../../components/icons';
+import { useTranslation } from '../../../i18n';
 
 interface TradeDetailsFooterActionsProps {
   trade: Trade;
@@ -28,11 +29,12 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
   onCancel,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderTop: '1px solid #f0f0eb', paddingTop: '1.25rem' }}>
       <Link to="/trades" className="btn-trade-details">
-        <span>Вернуться к списку</span>
+        <span>{t('tradeDetails.backToTrades')}</span>
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -55,10 +57,10 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
                 cursor: 'pointer',
               }}
               onClick={() => navigate(`/trades/new?counterTradeId=${trade.id}`)}
-              title="Изменить условия обмена и отправить встречное предложение"
+              title={t('trades.card.counterBtn')}
             >
               <TradeIcon size={16} />
-              <span>Изменить предложение</span>
+              <span>{t('trades.card.counterBtn')}</span>
             </button>
             <button
               type="button"
@@ -67,7 +69,7 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
               onClick={onReject}
             >
               <XCircleIcon size={16} />
-              <span>Отклонить предложение</span>
+              <span>{t('trades.card.rejectBtn')}</span>
             </button>
             <button
               type="button"
@@ -77,7 +79,7 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
               style={{ padding: '0.7rem 1.5rem', fontSize: '1rem' }}
             >
               <CheckCircleIcon size={18} />
-              <span>Согласовать обмен</span>
+              <span>{t('trades.card.acceptBtn')}</span>
             </button>
           </>
         )}
@@ -90,7 +92,11 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
             return (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', padding: '0.65rem 1.15rem', borderRadius: '8px', fontSize: '0.925rem', fontWeight: 600 }}>
                 <ClockIcon size={18} />
-                <span>Вы подтвердили получение. Ожидается подтверждение от @{partner?.username || 'партнёра'}.</span>
+                <span>
+                  {t('tradeDetails.footerConfirmedWaiting', {
+                    username: partner?.username || t('common.partner').toLowerCase(),
+                  })}
+                </span>
               </div>
             );
           }
@@ -100,7 +106,9 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
               {partnerConfirmed && (
                 <span style={{ fontSize: '0.875rem', color: '#15803d', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                   <CheckCircleIcon size={16} />
-                  @{partner?.username} уже подтвердил(а) получение!
+                  {t('tradeDetails.footerPartnerConfirmed', {
+                    username: partner?.username || t('common.partner'),
+                  })}
                 </span>
               )}
               <button
@@ -121,10 +129,10 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
                 }}
                 disabled={actionLoading}
                 onClick={onComplete}
-                title="Подтвердить получение книг"
+                title={t('trades.card.completeBtn')}
               >
                 <CheckCircleIcon size={18} />
-                <span>{partnerConfirmed ? 'Подтвердить получение и завершить обмен' : 'Книги получены'}</span>
+                <span>{t('trades.card.completeBtn')}</span>
               </button>
             </div>
           );
@@ -133,7 +141,9 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
         {trade.status === 'COMPLETED' && (
           <span style={{ fontSize: '0.95rem', color: '#2d6a4f', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
             <CheckCircleIcon size={18} />
-            <span>Обмен успешно завершён</span>
+            <span>
+              {t('tradeDetails.footerCompleted')}
+            </span>
           </span>
         )}
 
@@ -145,7 +155,7 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
             onClick={onCancel}
           >
             <XCircleIcon size={16} />
-            <span>Отозвать предложение</span>
+            <span>{t('trades.card.cancelBtn')}</span>
           </button>
         )}
       </div>

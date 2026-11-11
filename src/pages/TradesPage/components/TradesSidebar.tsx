@@ -20,7 +20,7 @@ export const TradesSidebar: React.FC<TradesSidebarProps> = ({
 
   return (
     <aside className="trades-sidebar">
-      <nav className="trades-sidebar-nav" aria-label="Категории обменов">
+      <nav className="trades-sidebar-nav" aria-label={t('trades.sidebarAriaLabel')}>
         <button
           type="button"
           className={`trades-sidebar-item ${currentTab === 'requests' ? 'active' : ''}`}
@@ -34,8 +34,8 @@ export const TradesSidebar: React.FC<TradesSidebarProps> = ({
             className={`sidebar-badge ${counts.incoming > 0 ? 'badge-highlight' : ''}`}
             title={
               counts.incoming > 0
-                ? `${counts.incoming} требуют вашего ответа (всего: ${totalRequests})`
-                : `Всего запросов: ${totalRequests}`
+                ? t('trades.sidebarNeedsActionTitle', { incoming: counts.incoming, total: totalRequests })
+                : t('trades.sidebarTotalTitle', { total: totalRequests })
             }
           >
             {totalRequests}

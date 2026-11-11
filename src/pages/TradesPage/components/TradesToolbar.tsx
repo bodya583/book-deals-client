@@ -16,7 +16,7 @@ export const TradesToolbar: React.FC<TradesToolbarProps> = ({
   sortBy,
   onSortChange,
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <div className="trades-search-toolbar">
@@ -34,7 +34,7 @@ export const TradesToolbar: React.FC<TradesToolbarProps> = ({
             type="button"
             onClick={() => onSearchChange('')}
             className="books-search-clear"
-            title={language === 'en' ? 'Clear search' : 'Очистити пошук'}
+            title={t('common.clearSearch')}
           >
             <CloseIcon size={13} />
           </button>
@@ -43,14 +43,14 @@ export const TradesToolbar: React.FC<TradesToolbarProps> = ({
 
       <div className="trades-sort-wrap">
         <label htmlFor="trades-sort-select" className="trades-sort-label">
-          {language === 'en' ? 'Sort by:' : 'Сортування:'}
+          {t('pagination.sortLabel')}
         </label>
         <select
           id="trades-sort-select"
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value as SortOption)}
           className="trades-sort-select"
-          aria-label="Сортировка предложений обмена"
+          aria-label={t('trades.toolbarSortAria')}
         >
           <option value="turn">{t('trades.sort.turn')}</option>
           <option value="newest">{t('trades.sort.newest')}</option>

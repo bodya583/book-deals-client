@@ -7,6 +7,7 @@ import BooksEmptyState from './components/BooksEmptyState';
 import BookCard from '../../components/BookCard';
 import BooksMap from '../../components/BooksMap/BooksMap';
 import BooksModals from '../../components/BooksModals';
+import { useTranslation } from '../../i18n';
 import '../books.css';
 
 interface BooksPageProps {
@@ -14,6 +15,7 @@ interface BooksPageProps {
 }
 
 export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
+  const { t } = useTranslation();
   const {
     user,
     userId,
@@ -113,7 +115,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
         <div className="books-error-card">
           <p>{error}</p>
           <button type="button" onClick={handleManualRefresh} className="btn-retry">
-            Попробовать снова
+            {t('common.tryAgain')}
           </button>
         </div>
       )}
@@ -136,7 +138,7 @@ export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
       {loading ? (
         <div className="books-loading-state">
           <div className="books-spinner" />
-          <p>{scope === 'all' ? 'Загрузка общего каталога книг...' : 'Загрузка книг вашей библиотеки...'}</p>
+          <p>{scope === 'all' ? t('catalog.loadingCatalog') : t('catalog.loadingMyBooks')}</p>
         </div>
       ) : books.length === 0 ? (
         <BooksEmptyState

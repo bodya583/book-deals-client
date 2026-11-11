@@ -7,9 +7,11 @@ import { TradeDetailsHeader } from './components/TradeDetailsHeader';
 import { SteamTradeMatrix } from './components/SteamTradeMatrix';
 import { TradeDetailsFooterActions } from './components/TradeDetailsFooterActions';
 import { TradeChatSection } from './components/TradeChatSection';
+import { useTranslation } from '../../i18n';
 import './TradeDetailsPage.css';
 
 export const TradeDetailsPage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     trade,
     loading,
@@ -45,7 +47,7 @@ export const TradeDetailsPage: React.FC = () => {
     return (
       <div className="trades-page-container">
         <div style={{ textAlign: 'center', padding: '4rem', color: '#666660' }}>
-          Загрузка информации о сделке...
+          {t('common.loading')}
         </div>
       </div>
     );
@@ -55,9 +57,9 @@ export const TradeDetailsPage: React.FC = () => {
     return (
       <div className="trades-page-container">
         <div style={{ textAlign: 'center', padding: '4rem', color: '#666660' }}>
-          <p>Сделка не найдена или была удалена.</p>
+          <p>{t('common.notFound')}</p>
           <Link to="/trades" className="btn-trade-details" style={{ marginTop: '1rem' }}>
-            Вернуться ко всем сделкам
+            {t('tradeDetails.backToTrades')}
           </Link>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { CloseIcon } from '../../icons';
+import { useTranslation } from '../../../i18n';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const Modal: React.FC<ModalProps> = ({
   className = '',
   zIndex = 1100,
 }) => {
+  const { t } = useTranslation();
   useEffect(() => {
     if (!isOpen) return;
 
@@ -67,7 +69,7 @@ export const Modal: React.FC<ModalProps> = ({
             type="button"
             className="modal-close-btn"
             onClick={onClose}
-            aria-label="Закрыть"
+            aria-label={t('common.close')}
           >
             <CloseIcon size={16} />
           </button>

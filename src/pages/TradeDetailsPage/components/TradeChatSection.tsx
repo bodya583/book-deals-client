@@ -8,6 +8,7 @@ import {
   type HandoverAgreement,
 } from './TradeHandoverSection';
 import { Avatar, EmptyState } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 export interface TradeChatSectionProps {
   partner?: TradePartner;
@@ -46,6 +47,8 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
   handleAcceptTime,
   formatMessageTime,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="trade-chat-section">
       <div className="trade-chat-header">
@@ -54,10 +57,10 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
             <span className="trade-chat-title-icon">
               <MessageSquareIcon size={20} />
             </span>
-            <span>Чат по сделке</span>
+            <span>{t('tradeDetails.chatTitle')}</span>
           </h3>
           <span className="trade-chat-subtitle">
-            Обсуждение деталей сделки и передачи книг с @{partner?.username}
+            {t('tradeDetails.chatSubtitle', { username: partner?.username || '' })}
           </span>
         </div>
       </div>
@@ -68,14 +71,14 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
       <div className="trade-chat-messages">
         {messagesLoading ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#888880' }}>
-            Загрузка сообщений...
+            {t('common.loading')}
           </div>
         ) : messages.length === 0 ? (
           <EmptyState
             compact
             icon={<MessageSquareIcon size={28} />}
-            title="Пока нет сообщений в этом трейде"
-            description="Напишите сообщение или предложите время и точку передачи книг"
+            title={t('tradeDetails.emptyChatTitle')}
+            description={t('tradeDetails.emptyChatDesc')}
           />
         ) : (
           messages.map((msg) => {
@@ -83,7 +86,9 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
               return (
                 <div key={msg.id} className="trade-chat-self-notice-row">
                   <div className="trade-chat-self-notice-pill">
-                    <span className="self-notice-badge">Только для вас</span>
+                    <span className="self-notice-badge">
+                      {t('tradeDetails.onlyForYouBadge')}
+                    </span>
                     <span className="self-notice-text">{msg.text}</span>
                   </div>
                 </div>
@@ -110,7 +115,7 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
                 <div className={`trade-chat-bubble ${isMine ? 'mine' : 'theirs'}`}>
                   <div className="trade-chat-meta">
                     <span className="trade-chat-sender-name">
-                      {isMine ? 'Вы' : `@${msg.sender?.username}`}
+                      {isMine ? t('common.you') : `@${msg.sender?.username}`}
                     </span>
                   </div>
                   {renderProposalBubbleContent(
@@ -140,7 +145,7 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
         <input
           type="text"
           className="trade-chat-input"
-          placeholder="Напишите сообщение партнеру по сделке..."
+          placeholder={t('tradeDetails.chatPlaceholder')}
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
           disabled={sendingMessage}
@@ -151,7 +156,7 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
           disabled={!messageText.trim() || sendingMessage}
         >
           <TradeIcon size={16} />
-          <span>{sendingMessage ? 'Отправка...' : 'Отправить'}</span>
+          <span>{sendingMessage ? t('common.loading') : t('tradeDetails.sendBtn')}</span>
         </button>
       </form>
     </div>

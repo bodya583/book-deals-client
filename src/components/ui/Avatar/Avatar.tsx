@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../i18n';
 
 export interface AvatarProps {
   photoURL?: string | null;
@@ -24,10 +25,11 @@ export const Avatar: React.FC<AvatarProps> = ({
   style,
   alt,
 }) => {
+  const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
 
   const dimension = typeof size === 'number' ? size : SIZE_MAP[size] || 40;
-  const displayName = username?.trim() || 'Пользователь';
+  const displayName = username?.trim() || t('common.user');
   const initials = displayName
     .replace(/^@/, '')
     .slice(0, 2)

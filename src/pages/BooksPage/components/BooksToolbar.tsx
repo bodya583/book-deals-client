@@ -6,6 +6,7 @@ import { LanguageFilterPopover } from './filters/LanguageFilterPopover';
 import { YearFilterPopover } from './filters/YearFilterPopover';
 import { LocationFilterPopover } from './filters/LocationFilterPopover';
 import { ActiveFiltersChips } from './filters/ActiveFiltersChips';
+import { useTranslation } from '../../../i18n';
 
 export interface BooksToolbarProps {
   searchQuery: string;
@@ -78,6 +79,7 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
   onResetFilters,
   hasActiveFilters,
 }) => {
+  const { t } = useTranslation();
   const [openDropdown, setOpenDropdown] = useState<'none' | 'genres' | 'languages' | 'year' | 'location'>('none');
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -94,7 +96,7 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
   }, []);
 
   return (
-    <section className="books-toolbar-section" aria-label="Панель поиска и фильтров" ref={containerRef}>
+    <section className="books-toolbar-section" aria-label={t('filters.title')} ref={containerRef}>
       <div className="books-toolbar-row">
         {/* Left-side cluster: Search input + Popover Buttons */}
         <div className="books-toolbar-left">
@@ -105,17 +107,17 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
               type="text"
               id="books-search-input"
               className="books-search-input"
-              placeholder="Поиск по названию, автору или ISBN..."
+              placeholder={t('catalog.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              aria-label="Поиск книг по названию или автору"
+              aria-label={t('catalog.searchPlaceholder')}
             />
             {searchQuery && (
               <button
                 type="button"
                 className="books-search-clear"
                 onClick={() => onSearchChange('')}
-                aria-label="Очистить поиск"
+                aria-label={t('common.close')}
               >
                 <CloseIcon size={14} />
               </button>
@@ -180,10 +182,10 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
               type="button"
               onClick={onResetFilters}
               className="toolbar-reset-filters-btn"
-              title="Сбросить все примененные фильтры"
+              title={t('filters.resetAll')}
             >
               <CloseIcon size={14} />
-              <span>Сбросить всё</span>
+              <span>{t('filters.resetAll')}</span>
             </button>
           </div>
         )}

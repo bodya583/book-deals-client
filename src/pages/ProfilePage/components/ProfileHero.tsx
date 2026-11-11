@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { CalendarIcon, TradeIcon, BookOpenIcon, MapPinIcon } from '../../../components/icons';
 import LocationButton from './LocationButton';
 import { useTranslation } from '../../../i18n';
-import { APP_CONFIG } from '../../../config/app';
 
 export interface ProfileUser {
   id: string;
@@ -32,7 +31,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   bookCount,
 }) => {
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [localLat, setLocalLat] = useState<number | null>(user?.latitude ?? null);
   const [localLng, setLocalLng] = useState<number | null>(user?.longitude ?? null);
 
@@ -66,7 +65,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         {/* User Info */}
         <div className="profile-hero-info">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <h1 className="profile-username">@{user?.username || (language === 'en' ? 'User' : 'Користувач')}</h1>
+            <h1 className="profile-username">@{user?.username || t('common.user')}</h1>
             {isOtherUser && (
               <span
                 style={{
@@ -78,7 +77,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                   fontWeight: 600,
                 }}
               >
-                {language === 'en' ? `${APP_CONFIG.name} Member` : `Читач ${APP_CONFIG.name}`}
+                {t('profile.memberLabel')}
               </span>
             )}
           </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpenIcon } from '../../icons';
+import { useTranslation } from '../../../i18n';
 
 export interface BookCoverProps {
   coverURL?: string | null;
@@ -21,7 +22,7 @@ const SIZE_PRESETS = {
 
 export const BookCover: React.FC<BookCoverProps> = ({
   coverURL,
-  title = 'Обложка книги',
+  title,
   size,
   width,
   height,
@@ -29,7 +30,9 @@ export const BookCover: React.FC<BookCoverProps> = ({
   style,
   iconSize,
 }) => {
+  const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
+  const resolvedTitle = title ?? t('bookCard.coverAltFallback');
 
   const preset = size ? SIZE_PRESETS[size] : undefined;
   const finalWidth = width ?? preset?.width;
@@ -55,7 +58,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
       <div className={`ui-book-cover ${className}`} style={containerStyle}>
         <img
           src={coverURL}
-          alt={title}
+          alt={resolvedTitle}
           onError={() => setImgError(true)}
           style={{
             width: '100%',
@@ -72,7 +75,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
     <div
       className={`ui-book-cover ui-book-cover-placeholder ${className}`}
       style={containerStyle}
-      title={title}
+      title={resolvedTitle}
     >
       <BookOpenIcon size={finalIconSize} color="#64748b" />
     </div>

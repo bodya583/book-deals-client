@@ -8,6 +8,7 @@ import {
   MessageSquareIcon,
 } from '../../../components/icons';
 import { Avatar, TradeStatusBadge } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 interface TradeDetailsHeaderProps {
   trade: Trade;
@@ -21,6 +22,7 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
   formatDate,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -28,7 +30,7 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <Link to="/trades" className="trade-back-btn">
           <ChevronLeftIcon size={16} />
-          <span>Назад к списку трейдов</span>
+          <span>{t('tradeDetails.backToTrades')}</span>
         </Link>
       </div>
 
@@ -43,14 +45,7 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
               <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
-                Предложение обмена с{' '}
-                <Link
-                  to={partner?.id ? `/profile/${partner.id}` : '#'}
-                  style={{ color: '#2d6a4f', textDecoration: 'none' }}
-                  title="Перейти в профиль пользователя"
-                >
-                  @{partner?.username || 'читателем'}
-                </Link>
+                {t('tradeDetails.titleWithPartner', { username: partner?.username || '' })}
               </h1>
               {partner?.city && (
                 <span style={{ fontSize: '0.9rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -60,8 +55,8 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
               )}
             </div>
             <span style={{ fontSize: '0.85rem', color: '#888880' }}>
-              Создан: {formatDate(trade.createdAt)}
-              {trade.status === 'ACCEPTED' && ` • Согласован: ${formatDate(trade.updatedAt)}`}
+              {t('tradeDetails.createdAt', { date: formatDate(trade.createdAt) })}
+              {trade.status === 'ACCEPTED' && ` • ${t('tradeDetails.updatedAt', { date: formatDate(trade.updatedAt) })}`}
             </span>
           </div>
         </div>
@@ -72,10 +67,10 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
               type="button"
               className="btn-trade-counter-top"
               onClick={() => navigate(`/trades/new?counterTradeId=${trade.id}`)}
-              title="Изменить состав книг и предложить новые условия обмена"
+              title={t('trades.card.counterBtn')}
             >
               <TradeIcon size={16} />
-              <span>Изменить условия обмена</span>
+              <span>{t('trades.card.counterBtn')}</span>
             </button>
           )}
 
@@ -98,7 +93,7 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
           </span>
           <div>
             <strong style={{ display: 'block', marginBottom: '0.2rem', color: '#1a1a1a' }}>
-              Сообщение от @{trade.sender?.username}:
+              {t('tradeDetails.noteFrom', { username: trade.sender?.username || '' })}
             </strong>
             <span>«{trade.message}»</span>
           </div>

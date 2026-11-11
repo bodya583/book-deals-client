@@ -7,6 +7,7 @@ import type { TradePartner } from '../../../types/trade';
 import type { Book } from '../../../types/book';
 import type { ToastMessage } from '../../../components/Toast';
 import { useAuthStore } from '../../../store/authStore';
+import { useTranslation } from '../../../i18n';
 
 // Sort book IDs alphabetically and compute a hash so that selection order does not matter
 export const computeBooksHash = (offeredIds: string[], targetIds: string[]): string => {
@@ -25,6 +26,7 @@ export const useTradeOffer = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
+  const { t } = useTranslation();
 
   const preselectedPartnerId = searchParams.get('partnerId') || '';
   const preselectedBookId = searchParams.get('bookId') || '';
@@ -82,7 +84,6 @@ export const useTradeOffer = () => {
         if (counterTradeId) {
           try {
             const originalTrade = await getTradeById(counterTradeId);
-            // Partner is ALWAYS the other party, never the current user!
             const partnerId =
               originalTrade.senderId === currentUser?.id
                 ? originalTrade.receiverId
@@ -97,7 +98,6 @@ export const useTradeOffer = () => {
               finalPartners.unshift(partnerUser);
             }
 
-            // Items from user's perspective:
             const origOffered = (
               originalTrade.senderId === currentUser?.id
                 ? originalTrade.offeredBooks || []
@@ -112,16 +112,12 @@ export const useTradeOffer = () => {
             setOfferedBookIds(origOffered);
             setTargetBookIds(origTarget);
 
-            // Pre-sort and hash initial trade book composition
             setInitialBooksHash(computeBooksHash(origOffered, origTarget));
-
-            // Requirement: Do not pre-fill previous comment in counter-trade
             setMessage('');
           } catch {
-            addToast('Не удалось загрузить исходный трейд для изменения', 'error');
+            addToast(t('offer.errLoadOriginal'), 'error');
           }
         } else {
-          // If a partner was preselected from profile or book
           if (preselectedPartnerId) {
             if (!finalPartners.some((p) => p.id === preselectedPartnerId)) {
               try {
@@ -143,7 +139,7 @@ export const useTradeOffer = () => {
 
           if (preselectedBookId) {
             setTargetBookIds([preselectedBookId]);
-            setInventoryTab('my'); // Prompt user to select what they give
+            setInventoryTab('my');
           }
         }
 
@@ -152,7 +148,7 @@ export const useTradeOffer = () => {
         const errorMsg =
           err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message
             ? (err as any).response.data.message
-            : 'Не удалось загрузить данные обмена';
+            : t('offer.errLoadData');
         addToast(errorMsg, 'error');
       } finally {
         setLoading(false);
@@ -160,7 +156,7 @@ export const useTradeOffer = () => {
     };
 
     initData();
-  }, [preselectedPartnerId, preselectedBookId, counterTradeId, currentUser?.id, addToast]);
+  }, [preselectedPartnerId, preselectedBookId, counterTradeId, currentUser?.id, addToast, t]);
 
   // Load partner's books whenever selectedPartner changes
   useEffect(() => {
@@ -188,7 +184,6 @@ export const useTradeOffer = () => {
     return partners.find((p) => p.id === selectedPartnerId) || null;
   }, [partners, selectedPartnerId]);
 
-  // Books currently staged
   const stagedOfferedBooks = useMemo(() => {
     return myBooks.filter((b) => offeredBookIds.includes(b.id));
   }, [myBooks, offeredBookIds]);
@@ -197,7 +192,6 @@ export const useTradeOffer = () => {
     return partnerBooks.filter((b) => targetBookIds.includes(b.id));
   }, [partnerBooks, targetBookIds]);
 
-  // Toggle books in staging
   const toggleOfferedBook = useCallback((bookId: string) => {
     setOfferedBookIds((prev) =>
       prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
@@ -210,7 +204,6 @@ export const useTradeOffer = () => {
     );
   }, []);
 
-  // Pre-sort books and compute hash to verify whether books were modified (order does not matter)
   const currentBooksHash = useMemo(() => {
     return computeBooksHash(offeredBookIds, targetBookIds);
   }, [offeredBookIds, targetBookIds]);
@@ -220,30 +213,26 @@ export const useTradeOffer = () => {
     return currentBooksHash === initialBooksHash;
   }, [counterTradeId, initialBooksHash, currentBooksHash]);
 
-  // Submit Trade Offer
   const handleSubmitTrade = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedPartnerId) {
-      addToast('Пожалуйста, выберите партнера по обмену', 'error');
+      addToast(t('offer.errSelectPartner'), 'error');
       return;
     }
 
     if (currentUser?.id && selectedPartnerId === currentUser.id) {
-      addToast('Нельзя создать предложение обмена с самим собой', 'error');
+      addToast(t('offer.errSelfTrade'), 'error');
       return;
     }
 
     if (counterTradeId && isTradeUnchanged) {
-      addToast(
-        'Состав книг не изменился. Добавьте или удалите книги, чтобы отправить встречное предложение',
-        'error'
-      );
+      addToast(t('offer.unchangedTitle'), 'error');
       return;
     }
 
     if (offeredBookIds.length === 0 && targetBookIds.length === 0) {
-      addToast('Выберите хотя бы одну книгу для предложения или запроса', 'error');
+      addToast(t('offer.errNoBooks'), 'error');
       return;
     }
 
@@ -256,7 +245,7 @@ export const useTradeOffer = () => {
           targetBookIds: targetBookIds,
           message,
         });
-        addToast('Встречное предложение успешно отправлено!', 'success');
+        addToast(t('offer.successCounter'), 'success');
       } else {
         await createTrade({
           receiverId: selectedPartnerId,
@@ -264,7 +253,7 @@ export const useTradeOffer = () => {
           targetBookIds: targetBookIds,
           message,
         });
-        addToast('Предложение обмена успешно отправлено!', 'success');
+        addToast(t('offer.successCreated'), 'success');
       }
 
       setTimeout(() => {
@@ -274,13 +263,12 @@ export const useTradeOffer = () => {
       const errorMsg =
         err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message
           ? (err as any).response.data.message
-          : 'Не удалось отправить предложение обмена';
+          : t('offer.errSubmit');
       addToast(errorMsg, 'error');
       setSubmitting(false);
     }
   };
 
-  // Filter current inventory
   const activeInventoryBooks = inventoryTab === 'my' ? myBooks : partnerBooks;
   const filteredInventoryBooks = useMemo(() => {
     if (!searchFilter.trim()) return activeInventoryBooks;

@@ -3,6 +3,7 @@ import { TradeIcon, ArrowLeftRightIcon, BookOpenIcon } from '../../../components
 import type { Book } from '../../../types/book';
 import type { TradePartner } from '../../../types/trade';
 import { BookCover } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 interface TradeOfferTableProps {
   selectedPartner: TradePartner | null;
@@ -23,12 +24,14 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
   toggleOfferedBook,
   toggleTargetBook,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="steam-trade-table">
       <div className="steam-table-header">
         <h2 className="steam-table-title">
           <TradeIcon size={20} />
-          <span>Стол обмена</span>
+          <span>{t('offer.tableTitle')}</span>
         </h2>
       </div>
 
@@ -36,14 +39,14 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
         {/* Left Box: Your items to give */}
         <div className="steam-side-box">
           <div className="steam-side-header">
-            <span className="steam-side-label">Ваше предложение (Вы отдаёте)</span>
-            <span className="steam-side-count">{offeredBookIds.length} выбрано</span>
+            <span className="steam-side-label">{t('offer.yourSideLabel')}</span>
+            <span className="steam-side-count">{t('offer.selectedCount', { count: offeredBookIds.length })}</span>
           </div>
 
           {stagedOfferedBooks.length === 0 ? (
             <div className="steam-slot-empty">
               <BookOpenIcon size={28} />
-              <span>Перетащите или нажмите на книги из вашего инвентаря ниже, чтобы предложить их</span>
+              <span>{t('offer.emptySlotsYour')}</span>
             </div>
           ) : (
             <div className="steam-slots-container">
@@ -52,10 +55,10 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
                   key={book.id}
                   className="steam-slot-item"
                   onClick={() => toggleOfferedBook(book.id)}
-                  title="Нажмите, чтобы убрать из предложения"
+                  title={t('offer.removeOfferTooltip')}
                 >
                   <div className="steam-remove-overlay">
-                    <span>Убрать</span>
+                    <span>{t('offer.removeSlot')}</span>
                   </div>
                   <BookCover
                     coverURL={book.coverURL}
@@ -81,17 +84,17 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
         <div className="steam-side-box">
           <div className="steam-side-header">
             <span className="steam-side-label">
-              Предложение партнера (@{selectedPartner?.username || 'читатель'})
+              {t('offer.theirSideLabel', { username: selectedPartner?.username || t('common.reader') })}
             </span>
             <span className="steam-side-count" style={{ color: '#4ade80' }}>
-              {targetBookIds.length} выбрано
+              {t('offer.selectedCount', { count: targetBookIds.length })}
             </span>
           </div>
 
           {stagedTargetBooks.length === 0 ? (
             <div className="steam-slot-empty">
               <BookOpenIcon size={28} />
-              <span>Выберите книги партнера из вкладки «Инвентарь партнера»</span>
+              <span>{t('offer.emptySlotsTheir')}</span>
             </div>
           ) : (
             <div className="steam-slots-container">
@@ -100,10 +103,10 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
                   key={book.id}
                   className="steam-slot-item"
                   onClick={() => toggleTargetBook(book.id)}
-                  title="Нажмите, чтобы убрать из запроса"
+                  title={t('offer.removeTargetTooltip')}
                 >
                   <div className="steam-remove-overlay">
-                    <span>Убрать</span>
+                    <span>{t('offer.removeSlot')}</span>
                   </div>
                   <BookCover
                     coverURL={book.coverURL}
@@ -121,3 +124,5 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
     </div>
   );
 };
+
+export default TradeOfferTable;

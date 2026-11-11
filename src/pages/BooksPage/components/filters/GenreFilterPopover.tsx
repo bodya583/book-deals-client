@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Genre } from '../../../../types/book';
 import { TagIcon, ChevronDownIcon, CheckIcon } from '../../../../components/icons';
+import { useTranslation } from '../../../../i18n';
 
 interface GenreFilterPopoverProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
   onStrictGenresChange,
   availableGenres,
 }) => {
+  const { t } = useTranslation();
   const [genreSearch, setGenreSearch] = useState('');
 
   const filteredGenres = availableGenres.filter((g) =>
@@ -36,10 +38,10 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
         id="filter-genres-button"
         className={`filter-trigger-btn ${selectedGenres.length > 0 ? 'active' : ''}`}
         onClick={onToggleOpen}
-        title="Фильтр по литературным жанрам"
+        title={t('filters.genres.title')}
       >
         <TagIcon size={15} />
-        <span className="filter-trigger-text">Жанры</span>
+        <span className="filter-trigger-text">{t('filters.genres.buttonLabel')}</span>
         <span className="filter-trigger-slot">
           {selectedGenres.length > 0 ? (
             <span className="filter-count-badge">{selectedGenres.length}</span>
@@ -54,7 +56,7 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
           <div className="popover-header">
             <div className="popover-header-title">
               <TagIcon size={15} />
-              <span>Фильтр по жанрам</span>
+              <span>{t('filters.genres.title')}</span>
             </div>
             {selectedGenres.length > 0 && (
               <button
@@ -62,12 +64,12 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
                 onClick={onClearGenres}
                 className="popover-clear-btn"
               >
-                Очистить ({selectedGenres.length})
+                {t('filters.genres.clearCount', { count: selectedGenres.length })}
               </button>
             )}
           </div>
 
-          {/* Strict match checkbox toggle: 1 и 2 и 3 VS 1 или 2 или 3 */}
+          {/* Strict match checkbox toggle: 1 AND 2 AND 3 vs 1 OR 2 OR 3 */}
           <div className="strict-toggle-box">
             <label className="strict-checkbox-label">
               <input
@@ -78,12 +80,12 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
               />
               <div className="strict-checkbox-info">
                 <span className="strict-title">
-                  Жёсткая выборка
+                  {t('filters.genres.strictModeTitle')}
                 </span>
                 <span className="strict-subtitle">
                   {strictGenres
-                    ? 'Книга обязана содержать ВСЕ выбранные жанры одновременно'
-                    : 'Книга может содержать ЛЮБОЙ из выбранных жанров'}
+                    ? t('filters.genres.strictModeDescStrict')
+                    : t('filters.genres.strictModeDescLenient')}
                 </span>
               </div>
             </label>
@@ -93,7 +95,7 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
           <div className="popover-search-box">
             <input
               type="text"
-              placeholder="Найти жанр в списке..."
+              placeholder={t('filters.genres.searchPlaceholder')}
               value={genreSearch}
               onChange={(e) => setGenreSearch(e.target.value)}
               className="popover-search-input"
@@ -103,7 +105,7 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
           {/* Genres checklist */}
           <div className="popover-checklist">
             {filteredGenres.length === 0 ? (
-              <div className="popover-empty-list">Жанры не найдены</div>
+              <div className="popover-empty-list">{t('common.notFound')}</div>
             ) : (
               filteredGenres.map((g) => {
                 const isChecked = selectedGenres.includes(g.name);
@@ -134,3 +136,5 @@ export const GenreFilterPopover: React.FC<GenreFilterPopoverProps> = ({
     </div>
   );
 };
+
+export default GenreFilterPopover;

@@ -1,3 +1,5 @@
+import { translate, type SupportedLanguage } from '../i18n';
+
 /**
  * Geo Privacy & Spatial Cloaking Utilities for P2P Book Exchange
  * Protects user home addresses against trilateration and exact location harvesting.
@@ -124,24 +126,28 @@ export function calculateDistanceKm(
  * Discrete Distance Bucketing (Differential Privacy against Trilateration).
  * Rather than displaying exact metrics (e.g. 842 meters), distance is displayed in safe ranges.
  */
-export function getDiscreteDistanceLabel(distanceKm: number | null | undefined): string {
+export function getDiscreteDistanceLabel(
+  distanceKm: number | null | undefined,
+  lang?: string
+): string {
+  const override = lang === 'en' || lang === 'uk' ? (lang as SupportedLanguage) : undefined;
   if (distanceKm == null || isNaN(distanceKm)) {
-    return 'В вашем городе';
+    return translate('geo.inYourCity', undefined, override);
   }
 
   if (distanceKm < 1) {
-    return 'Поблизости (< 1 км)';
+    return translate('geo.kmRange1', undefined, override);
   }
   if (distanceKm < 3.5) {
-    return '~2–3 км от вас';
+    return translate('geo.kmRange3', undefined, override);
   }
   if (distanceKm < 6.5) {
-    return '~5 км от вас';
+    return translate('geo.kmRange5', undefined, override);
   }
   if (distanceKm < 12) {
-    return '~10 км от вас';
+    return translate('geo.kmRange10', undefined, override);
   }
 
   const rounded = Math.round(distanceKm / 5) * 5;
-  return `~${rounded} км от вас`;
+  return translate('geo.kmRangeApprox', { dist: rounded }, override);
 }

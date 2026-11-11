@@ -17,7 +17,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,7 +36,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       await onConfirm(book.id);
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Не удалось удалить книгу';
+      const msg = err instanceof Error ? err.message : t('catalog.errDeleteBook');
       setError(msg);
     } finally {
       setLoading(false);
@@ -56,18 +56,16 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         </div>
 
         <h3 className="delete-modal-title">
-          {language === 'en' ? 'Delete book?' : 'Видалити книгу?'}
+          {t('modals.deleteBookTitle')}
         </h3>
 
         <p className="delete-modal-text">
-          {language === 'en' ? 'Are you sure you want to delete ' : 'Ви дійсно бажаєте видалити книгу '}
+          {t('modals.deleteBookPromptPrefix')}
           <strong className="delete-highlight">«{book.title}»</strong> ({book.author})?
         </p>
 
         <p className="delete-modal-warning">
-          {language === 'en'
-            ? 'This action cannot be undone. The book will be permanently removed from your library.'
-            : 'Цю дію не можна скасувати. Книгу буде назавжди видалено з вашої бібліотеки.'}
+          {t('modals.deleteBookWarningFull')}
         </p>
 
         {error && <div className="modal-error-banner">{error}</div>}

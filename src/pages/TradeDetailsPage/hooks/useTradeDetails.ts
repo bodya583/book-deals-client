@@ -12,9 +12,14 @@ import {
 import type { Trade, TradeMessage } from '../../../types/trade';
 import { useAuthStore } from '../../../store/authStore';
 import type { ToastMessage } from '../../../components/Toast';
-import { parseHandoverFromMessages } from '../components/TradeHandoverSection';
+import {
+  parseHandoverFromMessages,
+  LOC_PROP_REGEX,
+  TIME_PROP_REGEX,
+} from '../components/TradeHandoverSection';
 import { useQuery } from '../../../hooks/useQuery';
 import { queryClient } from '../../../utils/queryClient';
+import { useTranslation } from '../../../i18n';
 
 export const computeSimpleHash = (str: string): string => {
   let hash = 0;
@@ -29,6 +34,7 @@ export const computeSimpleHash = (str: string): string => {
 export const useTradeDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuthStore();
+  const { t, language } = useTranslation();
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
@@ -52,7 +58,7 @@ export const useTradeDetails = () => {
     (signal) => (id ? getTradeById(id, { signal }) : Promise.resolve(null)),
     {
       staleTime: 10_000,
-      onError: (err) => addToast(err.message || 'Не удалось загрузить данные трейда', 'error'),
+      onError: (err) => addToast(err.message || t('common.error'), 'error'),
     }
   );
 
@@ -79,13 +85,13 @@ export const useTradeDetails = () => {
   const lastLocationProposalId = useMemo(() => {
     return [...messages]
       .reverse()
-      .find((m) => m.text?.includes('Предложение точки передачи:'))?.id;
+      .find((m) => LOC_PROP_REGEX.test(m.text || ''))?.id;
   }, [messages]);
 
   const lastTimeProposalId = useMemo(() => {
     return [...messages]
       .reverse()
-      .find((m) => m.text?.includes('Предложение времени встречи:'))?.id;
+      .find((m) => TIME_PROP_REGEX.test(m.text || ''))?.id;
   }, [messages]);
 
   useEffect(() => {
@@ -116,7 +122,7 @@ export const useTradeDetails = () => {
       const newMsg = await sendTradeMessage(id, text);
       setMessages((prev = []) => [...prev, newMsg]);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Не удалось отправить сообщение';
+      const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
       addToast(message, 'error');
     } finally {
       setSendingMessage(false);
@@ -135,18 +141,18 @@ export const useTradeDetails = () => {
         tradeId: trade?.id || '',
         senderId: currentUser?.id || '',
         sender: currentUser as any,
-        text: `Точка передачи уже согласована («${loc}»). Повторное сообщение в чат не отправлено.`,
+        text: t('tradeDetails.toasts.locAgreedAlready', { loc }),
         createdAt: new Date().toISOString(),
         isSelfOnly: true,
       };
       setMessages((prev = []) => [...prev, selfNotice]);
-      addToast(`Точка передачи уже согласована: ${loc}`, 'info');
+      addToast(t('tradeDetails.toasts.locAgreedAlready', { loc }), 'info');
       return;
     }
 
     setTrade((prev) => (prev ? { ...prev, agreedLocationHash: locHash } : prev));
-    await handleSendCustomMessage(`Точка встречи согласована: ${loc}`);
-    addToast('Точка встречи согласована!', 'success');
+    await handleSendCustomMessage(`Meeting location agreed: ${loc}`);
+    addToast(t('handover.chatBubbleLocAgreed'), 'success');
   };
 
   const handleAcceptTime = async (tm: string) => {
@@ -161,18 +167,18 @@ export const useTradeDetails = () => {
         tradeId: trade?.id || '',
         senderId: currentUser?.id || '',
         sender: currentUser as any,
-        text: `Время встречи уже согласовано («${tm}»). Повторное сообщение в чат не отправлено.`,
+        text: t('tradeDetails.toasts.timeAgreedAlready', { time: tm }),
         createdAt: new Date().toISOString(),
         isSelfOnly: true,
       };
       setMessages((prev = []) => [...prev, selfNotice]);
-      addToast(`Время встречи уже согласовано: ${tm}`, 'info');
+      addToast(t('tradeDetails.toasts.timeAgreedAlready', { time: tm }), 'info');
       return;
     }
 
     setTrade((prev) => (prev ? { ...prev, agreedTimeHash: timeHash } : prev));
-    await handleSendCustomMessage(`Время встречи согласовано: ${tm}`);
-    addToast('Время встречи согласовано!', 'success');
+    await handleSendCustomMessage(`Meeting time agreed: ${tm}`);
+    addToast(t('handover.chatBubbleTimeAgreed'), 'success');
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -186,7 +192,7 @@ export const useTradeDetails = () => {
       setMessages((prev = []) => [...prev, newMsg]);
       setMessageText('');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Не удалось отправить сообщение';
+      const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
       addToast(message, 'error');
     } finally {
       setSendingMessage(false);
@@ -194,7 +200,7 @@ export const useTradeDetails = () => {
   };
 
   const handleAccept = async () => {
-    if (!id || !window.confirm('Согласовать условия обмена? После этого состав сделки будет зафиксирован.')) {
+    if (!id || !window.confirm(t('tradeDetails.confirmModalAccept'))) {
       return;
     }
     try {
@@ -202,9 +208,9 @@ export const useTradeDetails = () => {
       const updated = await acceptTrade(id);
       setTrade(updated);
       queryClient.invalidate('trades');
-      addToast('Обмен успешно согласован! Условия зафиксированы.', 'success');
+      addToast(t('tradeDetails.toasts.acceptSuccess'), 'success');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при согласовании трейда';
+      const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
       addToast(message, 'error');
     } finally {
       setActionLoading(false);
@@ -212,7 +218,7 @@ export const useTradeDetails = () => {
   };
 
   const handleComplete = async () => {
-    if (!id || !window.confirm('Подтвердить получение книг? Сделка перейдёт в статус завершённой, когда обе стороны подтвердят получение.')) {
+    if (!id || !window.confirm(t('tradeDetails.confirmModalComplete'))) {
       return;
     }
     try {
@@ -221,12 +227,12 @@ export const useTradeDetails = () => {
       setTrade(updated);
       queryClient.invalidate('trades');
       if (updated.status === 'COMPLETED') {
-        addToast('Обмен успешно завершён обеими сторонами! Книги перешли новым владельцам.', 'success');
+        addToast(t('tradeDetails.toasts.completeSuccessBoth'), 'success');
       } else {
-        addToast('Вы подтвердили получение книг! Ожидается подтверждение партнёра.', 'info');
+        addToast(t('tradeDetails.toasts.completeSuccessWaiting'), 'info');
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при завершении трейда';
+      const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
       addToast(message, 'error');
     } finally {
       setActionLoading(false);
@@ -245,10 +251,10 @@ export const useTradeDetails = () => {
       setTrade(updated);
       setRejectModalOpen(false);
       queryClient.invalidate('trades');
-      addToast('Предложение обмена отклонено', 'success');
+      addToast(t('tradeDetails.toasts.rejectSuccess'), 'success');
       await refetchMessages();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при отклонении трейда';
+      const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
       addToast(message, 'error');
     } finally {
       setActionLoading(false);
@@ -256,7 +262,7 @@ export const useTradeDetails = () => {
   };
 
   const handleCancel = async () => {
-    if (!id || !window.confirm('Отозвать предложение обмена?')) {
+    if (!id || !window.confirm(t('tradeDetails.confirmModalCancel'))) {
       return;
     }
     try {
@@ -264,30 +270,33 @@ export const useTradeDetails = () => {
       const updated = await cancelTrade(id);
       setTrade(updated);
       queryClient.invalidate('trades');
-      addToast('Предложение обмена отозвано', 'success');
+      addToast(t('tradeDetails.toasts.cancelSuccess'), 'success');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при отмене трейда';
+      const message = err instanceof Error ? err.message : t('tradeDetails.toasts.errorGeneric');
       addToast(message, 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
-  const formatDate = useCallback((dateStr?: string) => {
-    if (!dateStr) return '';
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
-  }, []);
+  const formatDate = useCallback(
+    (dateStr?: string) => {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString(language === 'en' ? 'en-US' : 'uk-UA', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      } catch {
+        return dateStr;
+      }
+    },
+    [language]
+  );
 
   const formatMessageTime = useCallback((isoString?: string) => {
     if (!isoString) return '';

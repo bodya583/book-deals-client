@@ -67,7 +67,7 @@ export const Navbar: React.FC = () => {
             <TradeIcon size={18} />
             <span>{t('nav.trades')}</span>
             {incomingCount > 0 && (
-              <span className="navbar-badge" title={`${incomingCount} входящих предложений`}>
+              <span className="navbar-badge" title={t('nav.incomingOffersTitle', { count: incomingCount })}>
                 {incomingCount}
               </span>
             )}
@@ -85,9 +85,9 @@ export const Navbar: React.FC = () => {
         <div className="navbar-actions">
           <LanguageSwitcher />
 
-          <div className="navbar-user-chip" onClick={() => navigate('/profile')} title="Перейти в профиль">
+          <div className="navbar-user-chip" onClick={() => navigate('/profile')} title={t('nav.goToProfile')}>
             <Avatar photoURL={user?.photoURL} username={user?.username} size={32} />
-            <span className="navbar-username">{user?.username || 'Пользователь'}</span>
+            <span className="navbar-username">{user?.username || t('common.user')}</span>
           </div>
 
           <button

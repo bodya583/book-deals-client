@@ -1,6 +1,7 @@
 import React from 'react';
 import { BOOK_LANGUAGES } from '../../../../types/book';
 import { GlobeIcon, ChevronDownIcon, CheckIcon } from '../../../../components/icons';
+import { useTranslation } from '../../../../i18n';
 
 interface LanguageFilterPopoverProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
   onToggleLanguage,
   onClearLanguages,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="filter-popover-anchor">
       <button
@@ -24,10 +27,10 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
         id="filter-languages-button"
         className={`filter-trigger-btn ${selectedLanguages.length > 0 ? 'active' : ''}`}
         onClick={onToggleOpen}
-        title="Фильтр по языкам издания"
+        title={t('filters.languages.title')}
       >
         <GlobeIcon size={15} />
-        <span className="filter-trigger-text">Языки</span>
+        <span className="filter-trigger-text">{t('filters.languages.buttonLabel')}</span>
         <span className="filter-trigger-slot">
           {selectedLanguages.length > 0 ? (
             <span className="filter-count-badge">{selectedLanguages.length}</span>
@@ -42,7 +45,7 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
           <div className="popover-header">
             <div className="popover-header-title">
               <GlobeIcon size={15} />
-              <span>Язык книги</span>
+              <span>{t('filters.languages.title')}</span>
             </div>
             {selectedLanguages.length > 0 && (
               <button
@@ -50,7 +53,7 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
                 onClick={onClearLanguages}
                 className="popover-clear-btn"
               >
-                Очистить ({selectedLanguages.length})
+                {t('filters.genres.clearCount', { count: selectedLanguages.length })}
               </button>
             )}
           </div>
@@ -71,7 +74,9 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
                   <span className="check-custom">
                     {isChecked && <CheckIcon size={12} />}
                   </span>
-                  <span className="check-label-text">{lang}</span>
+                  <span className="check-label-text">
+                    {lang === 'Other' ? t('filters.languages.otherLabel') : lang}
+                  </span>
                 </label>
               );
             })}
@@ -81,3 +86,5 @@ export const LanguageFilterPopover: React.FC<LanguageFilterPopoverProps> = ({
     </div>
   );
 };
+
+export default LanguageFilterPopover;

@@ -9,6 +9,7 @@ import {
   CloseIcon,
   SendIcon,
 } from '../../../components/icons';
+import { useTranslation, translate } from '../../../i18n';
 
 export interface HandoverAgreement {
   agreedLocation: string | null;
@@ -16,6 +17,11 @@ export interface HandoverAgreement {
   pendingLocation: { text: string; senderId: string; senderName: string } | null;
   pendingTime: { text: string; senderId: string; senderName: string } | null;
 }
+
+export const LOC_AGREE_REGEX = /(?:Точка зустрічі узгоджена|Точка встречи согласована|Meeting location agreed):\s*(.*)/i;
+export const LOC_PROP_REGEX = /(?:Пропозиція місця(?: зустрічі| передачі)?|Предложение точки передачи|Meeting location proposal):\s*(.*)/i;
+export const TIME_AGREE_REGEX = /(?:Час зустрічі узгоджено|Время встречи согласовано|Meeting time agreed):\s*(.*)/i;
+export const TIME_PROP_REGEX = /(?:Пропозиція часу зустрічі|Предложение времени встречи|Meeting time proposal):\s*(.*)/i;
 
 export function parseHandoverFromMessages(messages: TradeMessage[]): HandoverAgreement {
   let agreedLocation: string | null = null;
@@ -27,31 +33,37 @@ export function parseHandoverFromMessages(messages: TradeMessage[]): HandoverAgr
     const text = msg.text || '';
 
     // Check location confirmation
-    if (text.includes('Точка встречи согласована:')) {
-      agreedLocation = text.replace(/.*Точка встречи согласована:\s*/, '').trim();
+    const agreeLocMatch = text.match(LOC_AGREE_REGEX);
+    if (agreeLocMatch) {
+      agreedLocation = agreeLocMatch[1].trim();
       pendingLocation = null;
-    } else if (text.includes('Предложение точки передачи:')) {
-      const loc = text.replace(/.*Предложение точки передачи:\s*/, '').trim();
-      pendingLocation = {
-        text: loc,
-        senderId: msg.senderId,
-        senderName: msg.sender?.username || 'Партнёр',
-      };
-      agreedLocation = null;
+    } else {
+      const propLocMatch = text.match(LOC_PROP_REGEX);
+      if (propLocMatch) {
+        pendingLocation = {
+          text: propLocMatch[1].trim(),
+          senderId: msg.senderId,
+          senderName: msg.sender?.username || translate('common.partner'),
+        };
+        agreedLocation = null;
+      }
     }
 
     // Check time confirmation
-    if (text.includes('Время встречи согласовано:')) {
-      agreedTime = text.replace(/.*Время встречи согласовано:\s*/, '').trim();
+    const agreeTimeMatch = text.match(TIME_AGREE_REGEX);
+    if (agreeTimeMatch) {
+      agreedTime = agreeTimeMatch[1].trim();
       pendingTime = null;
-    } else if (text.includes('Предложение времени встречи:')) {
-      const t = text.replace(/.*Предложение времени встречи:\s*/, '').trim();
-      pendingTime = {
-        text: t,
-        senderId: msg.senderId,
-        senderName: msg.sender?.username || 'Партнёр',
-      };
-      agreedTime = null;
+    } else {
+      const propTimeMatch = text.match(TIME_PROP_REGEX);
+      if (propTimeMatch) {
+        pendingTime = {
+          text: propTimeMatch[1].trim(),
+          senderId: msg.senderId,
+          senderName: msg.sender?.username || translate('common.partner'),
+        };
+        agreedTime = null;
+      }
     }
   }
 
@@ -64,6 +76,7 @@ interface HandoverBannerProps {
 }
 
 export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partner }) => {
+  const { t } = useTranslation();
   const isBothAgreed = Boolean(handover.agreedLocation && handover.agreedTime);
 
   return (
@@ -71,12 +84,12 @@ export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partne
       <div className="handover-widget-header">
         <span className="handover-widget-title">
           <MapPinIcon size={18} />
-          <span>Согласование встречи и передачи книг</span>
+          <span>{t('handover.title')}</span>
         </span>
         {isBothAgreed && (
           <span className="handover-cell-status status-agreed">
             <CheckCircleIcon size={14} />
-            <span>Готово к встрече</span>
+            <span>{t('handover.readyStatus')}</span>
           </span>
         )}
       </div>
@@ -90,7 +103,7 @@ export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partne
         >
           <div className="handover-cell-label">
             <MapPinIcon size={14} />
-            <span>Точка передачи (Место)</span>
+            <span>{t('handover.locLabel')}</span>
           </div>
           <div className="handover-cell-value">
             {handover.agreedLocation ? (
@@ -98,22 +111,22 @@ export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partne
             ) : handover.pendingLocation ? (
               <span>{handover.pendingLocation.text}</span>
             ) : (
-              <span style={{ color: '#94a3b8', fontWeight: 400 }}>Не назначено</span>
+              <span style={{ color: '#94a3b8', fontWeight: 400 }}>{t('handover.notSet')}</span>
             )}
           </div>
           <div>
             {handover.agreedLocation ? (
               <span className="handover-cell-status status-agreed">
                 <CheckIcon size={13} />
-                <span>Согласовано</span>
+                <span>{t('handover.agreedStatus')}</span>
               </span>
             ) : handover.pendingLocation ? (
               <span className="handover-cell-status status-pending">
                 <ClockIcon size={13} />
-                <span>Ожидает согласия ({handover.pendingLocation.senderName})</span>
+                <span>{t('handover.waitingPartner', { name: handover.pendingLocation.senderName })}</span>
               </span>
             ) : (
-              <span className="handover-cell-status status-empty">Требуется согласовать</span>
+              <span className="handover-cell-status status-empty">{t('handover.needsAgreement')}</span>
             )}
           </div>
         </div>
@@ -126,7 +139,7 @@ export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partne
         >
           <div className="handover-cell-label">
             <ClockIcon size={14} />
-            <span>Время встречи</span>
+            <span>{t('handover.timeLabel')}</span>
           </div>
           <div className="handover-cell-value">
             {handover.agreedTime ? (
@@ -134,22 +147,22 @@ export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partne
             ) : handover.pendingTime ? (
               <span>{handover.pendingTime.text}</span>
             ) : (
-              <span style={{ color: '#94a3b8', fontWeight: 400 }}>Не назначено</span>
+              <span style={{ color: '#94a3b8', fontWeight: 400 }}>{t('handover.notSet')}</span>
             )}
           </div>
           <div>
             {handover.agreedTime ? (
               <span className="handover-cell-status status-agreed">
                 <CheckIcon size={13} />
-                <span>Согласовано</span>
+                <span>{t('handover.agreedStatus')}</span>
               </span>
             ) : handover.pendingTime ? (
               <span className="handover-cell-status status-pending">
                 <ClockIcon size={13} />
-                <span>Ожидает согласия ({handover.pendingTime.senderName})</span>
+                <span>{t('handover.waitingPartner', { name: handover.pendingTime.senderName })}</span>
               </span>
             ) : (
-              <span className="handover-cell-status status-empty">Требуется согласовать</span>
+              <span className="handover-cell-status status-empty">{t('handover.needsAgreement')}</span>
             )}
           </div>
         </div>
@@ -159,8 +172,7 @@ export const HandoverBanner: React.FC<HandoverBannerProps> = ({ handover, partne
         <div className="handover-celebration-banner">
           <CheckCircleIcon size={18} />
           <span>
-            Точка и время встречи успешно согласованы с @{partner?.username}! Возьмите с собой книги к
-            указанному времени.
+            {t('handover.celebrationNotice', { username: partner?.username || '' })}
           </span>
         </div>
       )}
@@ -174,6 +186,7 @@ interface HandoverToolbarProps {
 }
 
 export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal, disabled }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'none' | 'location' | 'time'>('none');
   const [locationInput, setLocationInput] = useState('');
   const [timeInput, setTimeInput] = useState('');
@@ -181,7 +194,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
   const handleSendLocation = async () => {
     const val = locationInput.trim();
     if (!val || disabled) return;
-    await onSendProposal(`Предложение точки передачи: ${val}`);
+    await onSendProposal(`Meeting location proposal: ${val}`);
     setLocationInput('');
     setActiveTab('none');
   };
@@ -189,7 +202,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
   const handleSendTime = async () => {
     const val = timeInput.trim();
     if (!val || disabled) return;
-    await onSendProposal(`Предложение времени встречи: ${val}`);
+    await onSendProposal(`Meeting time proposal: ${val}`);
     setTimeInput('');
     setActiveTab('none');
   };
@@ -202,13 +215,13 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#166534', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <MapPinIcon size={16} />
-              <span>Предложить место или ориентир для передачи книг</span>
+              <span>{t('handover.proposeLocTitle')}</span>
             </span>
             <button
               type="button"
               onClick={() => setActiveTab('none')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
-              title="Закрыть"
+              title={t('common.close')}
             >
               <CloseIcon size={16} />
             </button>
@@ -218,7 +231,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
             <input
               type="text"
               className="trade-chat-input"
-              placeholder="Введите точный адрес, парк или ориентир (напр. Парк Шевченко у фонтана)..."
+              placeholder={t('handover.locInputPlaceholder')}
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSendLocation())}
@@ -232,7 +245,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
               onClick={handleSendLocation}
             >
               <SendIcon size={14} />
-              <span>Предложить</span>
+              <span>{t('handover.submitPropose')}</span>
             </button>
           </div>
         </div>
@@ -243,13 +256,13 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e40af', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <CalendarIcon size={16} />
-              <span>Предложить удобное время для встречи</span>
+              <span>{t('handover.proposeTimeTitle')}</span>
             </span>
             <button
               type="button"
               onClick={() => setActiveTab('none')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
-              title="Закрыть"
+              title={t('common.close')}
             >
               <CloseIcon size={16} />
             </button>
@@ -259,7 +272,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
             <input
               type="text"
               className="trade-chat-input"
-              placeholder="Введите удобное время (напр. Завтра в 18:30)..."
+              placeholder={t('handover.timeInputPlaceholder')}
               value={timeInput}
               onChange={(e) => setTimeInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSendTime())}
@@ -273,7 +286,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
               onClick={handleSendTime}
             >
               <SendIcon size={14} />
-              <span>Предложить</span>
+              <span>{t('handover.submitPropose')}</span>
             </button>
           </div>
         </div>
@@ -288,7 +301,7 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
           disabled={disabled}
         >
           <MapPinIcon size={15} />
-          <span>Предложить место встречи</span>
+          <span>{t('handover.proposeLocBtn')}</span>
         </button>
 
         <button
@@ -298,31 +311,40 @@ export const HandoverToolbar: React.FC<HandoverToolbarProps> = ({ onSendProposal
           disabled={disabled}
         >
           <ClockIcon size={15} />
-          <span>Предложить время встречи</span>
+          <span>{t('handover.proposeTimeBtn')}</span>
         </button>
       </div>
     </div>
   );
 };
 
-export const renderProposalBubbleContent = (
-  msg: TradeMessage,
-  isMine: boolean,
-  isLatestLocation: boolean,
-  isLatestTime: boolean,
-  onAcceptLocation: (loc: string) => Promise<void>,
-  onAcceptTime: (timeStr: string) => Promise<void>
-): React.ReactNode => {
+export const ProposalBubbleContent: React.FC<{
+  msg: TradeMessage;
+  isMine: boolean;
+  isLatestLocation: boolean;
+  isLatestTime: boolean;
+  onAcceptLocation: (loc: string) => Promise<void>;
+  onAcceptTime: (timeStr: string) => Promise<void>;
+}> = ({
+  msg,
+  isMine,
+  isLatestLocation,
+  isLatestTime,
+  onAcceptLocation,
+  onAcceptTime,
+}) => {
+  const { t } = useTranslation();
   const text = msg.text || '';
 
   // Location proposal
-  if (text.includes('Предложение точки передачи:')) {
-    const loc = text.replace(/.*Предложение точки передачи:\s*/, '').trim();
+  const propLocMatch = text.match(LOC_PROP_REGEX);
+  if (propLocMatch) {
+    const loc = propLocMatch[1].trim();
     return (
       <div className="chat-proposal-card loc-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
           <MapPinIcon size={16} />
-          <span>Предложение точки передачи</span>
+          <span>{t('handover.chatBubbleLocTitle')}</span>
         </div>
         <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>{loc}</div>
         {!isMine ? (
@@ -331,19 +353,19 @@ export const renderProposalBubbleContent = (
               type="button"
               className="btn-accept-proposal"
               onClick={() => onAcceptLocation(loc)}
-              title="Принять предложенное место встречи"
+              title={t('handover.acceptLocBtn')}
             >
               <CheckIcon size={14} />
-              <span>Согласовать это место</span>
+              <span>{t('handover.acceptLocBtn')}</span>
             </button>
           ) : (
-            <span className="proposal-superseded-tag" title="Это предложение точки передачи было заменено более поздним запросом">
-              Заменено более новым предложением
+            <span className="proposal-superseded-tag" title={t('handover.supersededTag')}>
+              {t('handover.supersededTag')}
             </span>
           )
         ) : (
           <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
-            {isLatestLocation ? 'Вы предложили это место. Ожидается ответ партнёра.' : 'Вы предложили это место (устарело).'}
+            {isLatestLocation ? t('handover.youProposedLocWaiting') : t('handover.youProposedLocOld')}
           </span>
         )}
       </div>
@@ -351,13 +373,14 @@ export const renderProposalBubbleContent = (
   }
 
   // Location confirmed
-  if (text.includes('Точка встречи согласована:')) {
-    const loc = text.replace(/.*Точка встречи согласована:\s*/, '').trim();
+  const agreeLocMatch = text.match(LOC_AGREE_REGEX);
+  if (agreeLocMatch) {
+    const loc = agreeLocMatch[1].trim();
     return (
       <div className="chat-proposal-card confirm-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
           <CheckCircleIcon size={16} />
-          <span>Точка встречи согласована!</span>
+          <span>{t('handover.chatBubbleLocAgreed')}</span>
         </div>
         <div style={{ fontSize: '0.925rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
           <MapPinIcon size={14} />
@@ -368,13 +391,14 @@ export const renderProposalBubbleContent = (
   }
 
   // Time proposal
-  if (text.includes('Предложение времени встречи:')) {
-    const tm = text.replace(/.*Предложение времени встречи:\s*/, '').trim();
+  const propTimeMatch = text.match(TIME_PROP_REGEX);
+  if (propTimeMatch) {
+    const tm = propTimeMatch[1].trim();
     return (
       <div className="chat-proposal-card time-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
           <ClockIcon size={16} />
-          <span>Предложение времени встречи</span>
+          <span>{t('handover.chatBubbleTimeTitle')}</span>
         </div>
         <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>{tm}</div>
         {!isMine ? (
@@ -384,19 +408,19 @@ export const renderProposalBubbleContent = (
               className="btn-accept-proposal"
               style={{ background: '#2563eb' }}
               onClick={() => onAcceptTime(tm)}
-              title="Принять предложенное время встречи"
+              title={t('handover.acceptTimeBtn')}
             >
               <CheckIcon size={14} />
-              <span>Согласовать это время</span>
+              <span>{t('handover.acceptTimeBtn')}</span>
             </button>
           ) : (
-            <span className="proposal-superseded-tag" title="Это предложение времени встречи было заменено более поздним запросом">
-              Заменено более новым предложением
+            <span className="proposal-superseded-tag" title={t('handover.supersededTag')}>
+              {t('handover.supersededTag')}
             </span>
           )
         ) : (
           <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
-            {isLatestTime ? 'Вы предложили это время. Ожидается ответ партнёра.' : 'Вы предложили это время (устарело).'}
+            {isLatestTime ? t('handover.youProposedTimeWaiting') : t('handover.youProposedTimeOld')}
           </span>
         )}
       </div>
@@ -404,13 +428,14 @@ export const renderProposalBubbleContent = (
   }
 
   // Time confirmed
-  if (text.includes('Время встречи согласовано:')) {
-    const tm = text.replace(/.*Время встречи согласовано:\s*/, '').trim();
+  const agreeTimeMatch = text.match(TIME_AGREE_REGEX);
+  if (agreeTimeMatch) {
+    const tm = agreeTimeMatch[1].trim();
     return (
       <div className="chat-proposal-card confirm-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.85rem' }}>
           <CheckCircleIcon size={16} />
-          <span>Время встречи согласовано!</span>
+          <span>{t('handover.chatBubbleTimeAgreed')}</span>
         </div>
         <div style={{ fontSize: '0.925rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
           <ClockIcon size={14} />
@@ -422,4 +447,24 @@ export const renderProposalBubbleContent = (
 
   // Regular plain message
   return <div>{text}</div>;
+};
+
+export const renderProposalBubbleContent = (
+  msg: TradeMessage,
+  isMine: boolean,
+  isLatestLocation: boolean,
+  isLatestTime: boolean,
+  onAcceptLocation: (loc: string) => Promise<void>,
+  onAcceptTime: (timeStr: string) => Promise<void>
+): React.ReactNode => {
+  return (
+    <ProposalBubbleContent
+      msg={msg}
+      isMine={isMine}
+      isLatestLocation={isLatestLocation}
+      isLatestTime={isLatestTime}
+      onAcceptLocation={onAcceptLocation}
+      onAcceptTime={onAcceptTime}
+    />
+  );
 };

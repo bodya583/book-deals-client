@@ -8,6 +8,7 @@ import {
   getDiscreteDistanceLabel,
 } from '../../utils/geoPrivacy';
 import { ShieldCheckIcon, NavigationIcon } from '../icons';
+import { useTranslation } from '../../i18n';
 import './BooksMap.css';
 
 interface BooksMapProps {
@@ -17,6 +18,7 @@ interface BooksMapProps {
 }
 
 export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBook }) => {
+  const { t, language } = useTranslation();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupRef = useRef<L.FeatureGroup | null>(null);
@@ -50,7 +52,7 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
     };
   }, []);
 
-  // Update Markers & Fuzzy Zones when books or userCoords change
+  // Update Markers & Fuzzy Zones when books, userCoords, or language change
   useEffect(() => {
     const map = mapInstanceRef.current;
     const featureGroup = layerGroupRef.current;
@@ -63,12 +65,12 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
       const userMarker = L.marker([userCoords.latitude, userCoords.longitude], {
         icon: L.divIcon({
           className: 'user-map-marker-container',
-          html: '<div class="user-map-marker" title="Ваше текущее местоположение"></div>',
+          html: `<div class="user-map-marker" title="${t('map.userMarkerTitle')}"></div>`,
           iconSize: [22, 22],
           iconAnchor: [11, 11],
         }),
         zIndexOffset: 1000,
-      }).bindPopup('<b>Вы здесь</b><br/><span style="font-size:0.8rem;color:#64748b;">Ваша базовая точка для поиска</span>');
+      }).bindPopup(`<b>${t('map.youAreHere')}</b><br/><span style="font-size:0.8rem;color:#64748b;">${t('map.youAreHereSubtitle')}</span>`);
 
       featureGroup.addLayer(userMarker);
     }
@@ -90,7 +92,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
         const baseCoords = resolveBookBaseCoordinates(book.user);
         if (!baseCoords) return;
 
-        // Apply golden angle dispersal if multiple books share the same location
         const [cloakedLat, cloakedLng] = disperseAndCloakCoordinates(
           baseCoords[0],
           baseCoords[1],
@@ -99,7 +100,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
           groupBooks.length
         );
 
-        // Distance calculation (bucketed into discrete privacy ranges)
         let distKm: number | null = null;
         if (userCoords?.latitude && userCoords?.longitude) {
           distKm = calculateDistanceKm(
@@ -109,9 +109,8 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
             baseCoords[1]
           );
         }
-        const distanceLabel = getDiscreteDistanceLabel(distKm);
+        const distanceLabel = getDiscreteDistanceLabel(distKm, language);
 
-        // A. Fuzzy Radius Circle (Zone of book presence)
         const circle = L.circle([cloakedLat, cloakedLng], {
           radius: 750,
           color: '#2d6a4f',
@@ -122,7 +121,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
           fillOpacity: 0.12,
         });
 
-        // B. Center Book Marker
         const marker = L.marker([cloakedLat, cloakedLng], {
           riseOnHover: true,
           icon: L.divIcon({
@@ -133,7 +131,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
           }),
         });
 
-        // Click to center and zoom in
         marker.on('click', () => {
           map.setView([cloakedLat, cloakedLng], Math.max(map.getZoom(), 12), { animate: true });
         });
@@ -141,7 +138,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
           map.setView([cloakedLat, cloakedLng], Math.max(map.getZoom(), 12), { animate: true });
         });
 
-        // Circle hover interactions
         marker.on('mouseover', () => {
           circle.setStyle({ weight: 2.5, fillOpacity: 0.25 });
         });
@@ -155,7 +151,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
           circle.setStyle({ weight: 1.5, fillOpacity: 0.12 });
         });
 
-        // C. Popup content with discrete distance
         const popupDiv = document.createElement('div');
         popupDiv.className = 'book-popup-card';
         popupDiv.innerHTML = `
@@ -168,7 +163,7 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
             <div class="book-popup-meta">
               <h4 class="book-popup-title" title="${book.title}">${book.title}</h4>
               <span class="book-popup-author" title="${book.author}">${book.author}</span>
-              <span class="book-popup-distance-badge" title="Дискретный диапазон расстояния для защиты от трилатерации">
+              <span class="book-popup-distance-badge" title="${t('map.distanceBadgeTitle')}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:3px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
               </span>
             </div>
@@ -177,7 +172,7 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
 
         const viewBtn = document.createElement('button');
         viewBtn.className = 'book-popup-btn';
-        viewBtn.textContent = 'Подробнее о книге';
+        viewBtn.textContent = t('map.bookDetailsBtn');
         viewBtn.onclick = () => onViewBook(book);
         popupDiv.appendChild(viewBtn);
 
@@ -190,15 +185,14 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
       });
     });
 
-    // Auto-fit bounds if we have elements
     if (featureGroup.getLayers().length > 0) {
       try {
         map.fitBounds(featureGroup.getBounds().pad(0.12));
       } catch {
-        // Fallback if bounds cannot be computed
+        // Fallback
       }
     }
-  }, [books, userCoords, onViewBook]);
+  }, [books, userCoords, onViewBook, t, language]);
 
   const handleCenterOnUser = () => {
     if (mapInstanceRef.current && userCoords?.latitude && userCoords?.longitude) {
@@ -222,14 +216,12 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
 
   return (
     <div className="books-map-wrapper">
-      {/* Privacy Guarantee Header Banner */}
       <div className="map-privacy-banner">
         <div className="map-privacy-text">
           <ShieldCheckIcon size={20} color="#166534" />
           <span>
-            <span className="map-privacy-strong">Режим защиты локации (Spatial Cloaking): </span>
-            Координаты книг размыты зонами радиусом ~750м со случайным смещением для защиты адресов
-            читателей.
+            <span className="map-privacy-strong">{t('map.privacyBannerStrong')}</span>
+            {t('map.privacyBannerText')}
           </span>
         </div>
 
@@ -239,10 +231,10 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
               type="button"
               className="btn-map-control"
               onClick={handleCenterOnUser}
-              title="Перейти к моему местоположению"
+              title={t('map.centerOnMeTitle')}
             >
               <NavigationIcon size={14} />
-              <span>Я здесь</span>
+              <span>{t('map.centerOnMeBtn')}</span>
             </button>
           )}
 
@@ -250,9 +242,9 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
             type="button"
             className="btn-map-control"
             onClick={handleFitAll}
-            title="Отобразить все книги на карте"
+            title={t('map.fitAllTitle')}
           >
-            <span>Показать все</span>
+            <span>{t('map.fitAllBtn')}</span>
           </button>
         </div>
       </div>

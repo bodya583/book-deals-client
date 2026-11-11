@@ -2,6 +2,7 @@ import React from 'react';
 import type { Book } from '../../../types/book';
 import { ArrowLeftRightIcon } from '../../../components/icons';
 import { BookCover } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 interface TradeExchangeMatrixProps {
   myBooksToGive: Book[];
@@ -12,18 +13,20 @@ export const TradeExchangeMatrix: React.FC<TradeExchangeMatrixProps> = ({
   myBooksToGive,
   myBooksToReceive,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="trade-exchange-row">
       {/* Left: What I Give */}
       <div className="trade-exchange-side">
         <div className="trade-side-label" style={{ color: '#b91c1c' }}>
-          <span>Вы отдаёте:</span>
+          <span>{t('trades.card.youGive')}</span>
           <span>({myBooksToGive.length})</span>
         </div>
         <div className="trade-items-preview-grid">
           {myBooksToGive.length === 0 ? (
             <span style={{ fontSize: '0.85rem', color: '#888880', fontStyle: 'italic' }}>
-              Ничего не отдаете (дар от партнера)
+              {t('trades.card.noBooksGivenGift')}
             </span>
           ) : (
             myBooksToGive.map((book) => (
@@ -47,20 +50,20 @@ export const TradeExchangeMatrix: React.FC<TradeExchangeMatrixProps> = ({
       </div>
 
       {/* Center: Exchange Icon */}
-      <div className="trade-direction-divider" title="Предметы на предметы, без валюты">
+      <div className="trade-direction-divider" title={t('trades.card.exchangeTooltip')}>
         <ArrowLeftRightIcon size={20} />
       </div>
 
       {/* Right: What I Receive */}
       <div className="trade-exchange-side">
         <div className="trade-side-label" style={{ color: '#15803d' }}>
-          <span>Вы получаете:</span>
+          <span>{t('trades.card.youGet')}</span>
           <span>({myBooksToReceive.length})</span>
         </div>
         <div className="trade-items-preview-grid">
           {myBooksToReceive.length === 0 ? (
             <span style={{ fontSize: '0.85rem', color: '#888880', fontStyle: 'italic' }}>
-              Ничего не запрашиваете (подарок партнеру)
+              {t('trades.card.noBooksRequestedGift')}
             </span>
           ) : (
             myBooksToReceive.map((book) => (

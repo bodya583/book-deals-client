@@ -8,6 +8,7 @@ import {
   CloseIcon,
   CheckIcon,
 } from '../../../../components/icons';
+import { useTranslation } from '../../../../i18n';
 
 interface LocationFilterPopoverProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
   onNearCenterChange,
   userCoords,
 }) => {
+  const { t } = useTranslation();
   const [settlementSearch, setSettlementSearch] = useState('');
   const [locTab, setLocTab] = useState<'settlement' | 'radius'>('settlement');
   const [geoLoading, setGeoLoading] = useState(false);
@@ -55,7 +57,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
 
   const handleRequestLocation = () => {
     if (!navigator.geolocation) {
-      setGeoError('Геолокация не поддерживается вашим браузером');
+      setGeoError(t('filters.location.gpsUnsupported'));
       return;
     }
     setGeoLoading(true);
@@ -64,7 +66,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
       (pos) => {
         setGeoLoading(false);
         onNearCenterChange({
-          name: 'Моя геопозиция',
+          name: t('filters.location.myGpsLocation'),
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         });
@@ -74,8 +76,8 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
         setGeoLoading(false);
         setGeoError(
           err.code === 1
-            ? 'Доступ к геопозиции отклонен'
-            : 'Не удалось определить местоположение'
+            ? t('filters.location.gpsErrorDenied')
+            : t('filters.location.gpsErrorFailed')
         );
       },
       { timeout: 8000 }
@@ -89,10 +91,10 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
         id="filter-location-button"
         className={`filter-trigger-btn ${isLocationActive ? 'active' : ''}`}
         onClick={onToggleOpen}
-        title="Фильтр по населённым пунктам и дистанции"
+        title={t('filters.location.title')}
       >
         <MapPinIcon size={15} />
-        <span className="filter-trigger-text">Локация</span>
+        <span className="filter-trigger-text">{t('filters.location.buttonLabel')}</span>
         <span className="filter-trigger-slot">
           {locationActiveCount > 0 ? (
             <span className="filter-count-badge">{locationActiveCount}</span>
@@ -112,7 +114,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
               onClick={() => setLocTab('settlement')}
             >
               <MapPinIcon size={14} />
-              <span>По городам</span>
+              <span>{t('filters.location.settlementsTab')}</span>
               {selectedSettlements.length > 0 && (
                 <span className="location-tab-pill">{selectedSettlements.length}</span>
               )}
@@ -123,19 +125,19 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
               onClick={() => setLocTab('radius')}
             >
               <NavigationIcon size={14} />
-              <span>По дистанции</span>
+              <span>{t('filters.location.radiusTab')}</span>
               {nearMe && <span className="location-tab-dot" />}
             </button>
           </div>
 
           {locTab === 'settlement' ? (
-            /* Tab 1: Населённые пункты */
+            /* Tab 1: Settlements */
             <div className="location-tab-content">
               <div className="popover-search-wrap">
                 <SearchIcon size={14} className="popover-search-icon" />
                 <input
                   type="text"
-                  placeholder="Поиск населённого пункта..."
+                  placeholder={t('filters.location.searchPlaceholder')}
                   value={settlementSearch}
                   onChange={(e) => setSettlementSearch(e.target.value)}
                   className="popover-search-input"
@@ -153,7 +155,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
 
               <div className="popover-checklist location-settlements-list">
                 {filteredSettlements.length === 0 ? (
-                  <div className="popover-empty-notice">Населённый пункт не найден</div>
+                  <div className="popover-empty-notice">{t('filters.location.settlementNotFound')}</div>
                 ) : (
                   filteredSettlements.map((s) => {
                     const isChecked = selectedSettlements.includes(s.name);
@@ -187,30 +189,27 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                     onClick={onClearSettlements}
                     className="popover-clear-btn"
                   >
-                    Сбросить выбор городов ({selectedSettlements.length})
+                    {t('filters.location.clearSettlementsCount', { count: selectedSettlements.length })}
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            /* Tab 2: По дистанции / радиусу */
+            /* Tab 2: Distance / Radius */
             <div className="location-tab-content location-radius-content">
-              {/* Точка отсчёта */}
               <div className="location-origin-box">
-                <div className="location-origin-title">Точка отсчёта:</div>
+                <div className="location-origin-title">{t('filters.location.originTitle')}</div>
 
                 <div className="location-origin-choices">
-                  {/* 1. Моя геопозиция */}
                   <button
                     type="button"
                     className={`location-origin-chip ${nearCenter === null ? 'selected' : ''}`}
                     onClick={() => onNearCenterChange(null)}
                   >
                     <NavigationIcon size={13} />
-                    <span>Моя геопозиция</span>
+                    <span>{t('filters.location.myGpsLocation')}</span>
                   </button>
 
-                  {/* 2. Города как опорные точки */}
                   {availableSettlements.slice(0, 5).map((s) => (
                     <button
                       key={s.name}
@@ -223,16 +222,20 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                   ))}
                 </div>
 
-                {/* Status / prompt */}
                 {nearCenter === null ? (
                   userHasCoords ? (
                     <div className="location-origin-status location-origin-status--ok">
                       <CheckIcon size={13} />
-                      <span>Геопозиция сохранена ({userCoords?.latitude?.toFixed(2)}°, {userCoords?.longitude?.toFixed(2)}°)</span>
+                      <span>
+                        {t('filters.location.geoSaved', {
+                          lat: userCoords?.latitude?.toFixed(2) ?? '',
+                          lng: userCoords?.longitude?.toFixed(2) ?? '',
+                        })}
+                      </span>
                     </div>
                   ) : (
                     <div className="location-origin-status location-origin-status--prompt">
-                      <span>Локация пока не определена.</span>
+                      <span>{t('filters.location.geoNotDetected')}</span>
                       <button
                         type="button"
                         className="location-geo-trigger-btn"
@@ -240,23 +243,22 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                         disabled={geoLoading}
                       >
                         <NavigationIcon size={13} />
-                        <span>{geoLoading ? 'Определяем...' : 'Определить где я'}</span>
+                        <span>{geoLoading ? t('filters.location.gpsDetecting') : t('filters.location.geoDetectBtn')}</span>
                       </button>
                       {geoError && <div className="location-geo-error">{geoError}</div>}
                     </div>
                   )
                 ) : (
                   <div className="location-origin-status location-origin-status--city">
-                    Ищем вокруг: <strong>{nearCenter.name}</strong>
+                    {t('filters.location.searchingAround')} <strong>{nearCenter.name}</strong>
                   </div>
                 )}
               </div>
 
-              {/* Радиус ползунок */}
               <div className="location-radius-slider-wrap">
                 <div className="location-radius-info">
-                  <span className="location-radius-title">Дистанция:</span>
-                  <span className="location-radius-num">{radius} км</span>
+                  <span className="location-radius-title">{t('filters.location.distanceLabel')}</span>
+                  <span className="location-radius-num">{t('filters.location.presetKm', { km: radius })}</span>
                 </div>
                 <input
                   type="range"
@@ -275,13 +277,12 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                       className={`radius-preset-chip ${radius === preset ? 'active' : ''}`}
                       onClick={() => onRadiusChange(preset)}
                     >
-                      {preset} км
+                      {t('filters.location.presetKm', { km: preset })}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Toggle activation button */}
               <div className="location-radius-action-row">
                 {nearMe ? (
                   <button
@@ -290,7 +291,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                     onClick={() => onNearMeChange(false)}
                   >
                     <CloseIcon size={13} />
-                    <span>Отключить фильтр дистанции</span>
+                    <span>{t('filters.location.disableDistanceFilter')}</span>
                   </button>
                 ) : (
                   <button
@@ -304,7 +305,7 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
                       }
                     }}
                   >
-                    Искать в радиусе {radius} км
+                    {t('filters.location.searchWithinRadius', { radius })}
                   </button>
                 )}
               </div>
@@ -315,3 +316,5 @@ export const LocationFilterPopover: React.FC<LocationFilterPopoverProps> = ({
     </div>
   );
 };
+
+export default LocationFilterPopover;

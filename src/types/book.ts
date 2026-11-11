@@ -70,15 +70,14 @@ export type ModalType =
   | { type: 'DELETE'; book: Book };
 
 export const BOOK_LANGUAGES = [
-  'English',
   'Українська',
+  'English',
   'Deutsch',
   'Français',
   'Español',
   'Polski',
-  'Русский',
   'Italiano',
-  'Другой',
+  'Other',
 ] as const;
 
 export { formatBookYear } from '../utils/formatters';

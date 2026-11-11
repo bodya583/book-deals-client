@@ -6,12 +6,14 @@ import type { ToastMessage } from '../../../components/Toast';
 import { useBookFilters } from './useBookFilters';
 import { useBookPagination } from './useBookPagination';
 import { useBookModals } from './useBookModals';
+import { useTranslation } from '../../../i18n';
 
 export interface UseBooksPageOptions {
   scope?: 'my' | 'all';
 }
 
 export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const userId = user?.id;
 
@@ -124,7 +126,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       }
       hasLoadedInitial.current = true;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Не удалось загрузить книги';
+      const message = err instanceof Error ? err.message : t('catalog.errLoadBooks');
       setError(message);
     } finally {
       setLoading(false);
@@ -149,6 +151,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     filters.viewMode,
     paginationHook.page,
     paginationHook.limit,
+    t,
   ]);
 
   useEffect(() => {
@@ -161,16 +164,16 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       if (modals.formModal.mode === 'create') {
         const newBook = await createBook(formData);
         setBooks((prev) => [newBook, ...prev]);
-        showToast('Книга успешно добавлена!');
+        showToast(t('catalog.toastBookAdded'));
       } else if (modals.formModal.mode === 'edit' && modals.formModal.book) {
         const updated = await updateBook(modals.formModal.book.id, formData);
         setBooks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
-        showToast('Книга успешно обновлена!');
+        showToast(t('catalog.toastBookUpdated'));
       }
       modals.closeForm();
       fetchBooks();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при сохранении книги';
+      const message = err instanceof Error ? err.message : t('catalog.errSaveBook');
       showToast(message, 'error');
     }
   };
@@ -180,11 +183,11 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     try {
       await deleteBook(modals.deletingBook.id);
       setBooks((prev) => prev.filter((b) => b.id !== modals.deletingBook?.id));
-      showToast('Книга удалена');
+      showToast(t('catalog.toastBookDeleted'));
       modals.closeDelete();
       fetchBooks();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Не удалось удалить книгу';
+      const message = err instanceof Error ? err.message : t('catalog.errDeleteBook');
       showToast(message, 'error');
     }
   };

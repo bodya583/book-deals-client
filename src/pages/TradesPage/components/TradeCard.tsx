@@ -10,6 +10,7 @@ import {
 } from '../../../components/icons';
 import { TradeExchangeMatrix } from './TradeExchangeMatrix';
 import { Avatar, TradeStatusBadge, TradeRoleBadge } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 interface TradeCardProps {
   trade: Trade;
@@ -37,6 +38,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
   onCancel,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const isSender = trade.senderId === currentUser?.id || (trade.isSender && trade.receiverId !== currentUser?.id);
   const rawPartner = isSender ? trade.receiver : trade.sender;
@@ -62,7 +64,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
           navigate(`/trades/${trade.id}`);
         }
       }}
-      title="Нажмите, чтобы открыть подробности сделки и чат согласования"
+      title={t('trades.card.openCardTitle')}
       tabIndex={0}
       role="button"
     >
@@ -70,7 +72,11 @@ export const TradeCard: React.FC<TradeCardProps> = ({
       {badgeCount > 0 && (
         <span
           className="trade-card-badge-circle"
-          title={`${badgeCount} ${badgeCount === 1 ? 'новое сообщение или изменение условий' : 'новых сообщений или изменений'}`}
+          title={
+            badgeCount === 1
+              ? t('trades.card.newNotificationOne', { count: badgeCount })
+              : t('trades.card.newNotificationMany', { count: badgeCount })
+          }
         >
           {badgeCount}
         </span>
@@ -83,7 +89,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
           className="trade-card-user-info"
           onClick={(e) => e.stopPropagation()}
           style={{ textDecoration: 'none', color: 'inherit' }}
-          title={`Перейти в профиль пользователя @${partner?.username}`}
+          title={t('bookCard.viewProfileTitle', { username: partner?.username || '' })}
         >
           <Avatar
             photoURL={partner?.photoURL}
@@ -93,7 +99,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
           <div className="trade-user-meta">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span className="trade-user-name">
-                @{partner?.username || 'Читатель'}
+                @{partner?.username || t('common.reader')}
               </span>
               {partner?.city && (
                 <span style={{ fontSize: '0.8rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
@@ -105,8 +111,8 @@ export const TradeCard: React.FC<TradeCardProps> = ({
             <div className="trade-date-meta">
               <span>
                 {isPartnerInitiator
-                  ? 'Входящее предложение'
-                  : 'Исходящее предложение'}
+                  ? t('trades.badges.incoming')
+                  : t('trades.badges.outgoing')}
               </span>
               <span>•</span>
               <span>{formatDate(trade.createdAt)}</span>
@@ -163,7 +169,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               }}
             >
               <XCircleIcon size={16} />
-              <span>Отклонить</span>
+              <span>{t('trades.card.rejectBtn')}</span>
             </button>
             <button
               type="button"
@@ -175,7 +181,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               }}
             >
               <CheckCircleIcon size={16} />
-              <span>Согласовать обмен</span>
+              <span>{t('trades.card.acceptBtn')}</span>
             </button>
           </>
         )}
@@ -188,7 +194,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
             return (
               <span style={{ fontSize: '0.825rem', color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                 <ClockIcon size={14} />
-                <span>Вы подтвердили. Ожидаем партнёра</span>
+                <span>{t('trades.card.youConfirmedWaitingShort')}</span>
               </span>
             );
           }
@@ -198,7 +204,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               {partnerConfirmed && (
                 <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                   <CheckCircleIcon size={14} />
-                  <span>Партнёр подтвердил!</span>
+                  <span>{t('trades.card.partnerConfirmedShort')}</span>
                 </span>
               )}
               <button
@@ -222,10 +228,10 @@ export const TradeCard: React.FC<TradeCardProps> = ({
                   e.stopPropagation();
                   onComplete(trade.id);
                 }}
-                title="Подтвердить получение книг"
+                title={t('trades.card.completeBtn')}
               >
                 <CheckCircleIcon size={16} />
-                <span>{partnerConfirmed ? 'Подтвердить получение (Завершить)' : 'Книги получены'}</span>
+                <span>{partnerConfirmed ? t('trades.card.completeBtnFinish') : t('trades.card.completeBtnReceived')}</span>
               </button>
             </div>
           );
@@ -234,7 +240,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
         {trade.status === 'COMPLETED' && (
           <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
             <CheckCircleIcon size={16} />
-            <span>Обмен успешно завершён</span>
+            <span>{t('tradeDetails.footerCompleted')}</span>
           </span>
         )}
 
@@ -247,10 +253,10 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               e.stopPropagation();
               onCancel(trade.id);
             }}
-            title="Отозвать предложение обмена, если передумали"
+            title={t('trades.card.cancelTooltip')}
           >
             <XCircleIcon size={16} />
-            <span>Отозвать предложение</span>
+            <span>{t('trades.card.cancelBtn')}</span>
           </button>
         )}
       </div>

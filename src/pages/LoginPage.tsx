@@ -28,9 +28,9 @@ const LoginPage = () => {
       navigate('/');
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Login error');
+        setError(err.response?.data?.message || t('auth.loginError'));
       } else {
-        setError('Login error');
+        setError(t('auth.loginError'));
       }
     } finally {
       setLoading(false);

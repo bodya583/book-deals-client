@@ -13,6 +13,7 @@ import { useAuthStore } from '../../../store/authStore';
 import type { ToastMessage } from '../../../components/Toast';
 import { useQuery } from '../../../hooks/useQuery';
 import { queryClient } from '../../../utils/queryClient';
+import { useTranslation } from '../../../i18n';
 
 export type TabType = 'requests' | 'agreed' | 'completed';
 export type SortOption = 'turn' | 'newest' | 'oldest' | 'updated';
@@ -21,6 +22,7 @@ export const useTradesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
+  const { t, language } = useTranslation();
 
   const rawTab = searchParams.get('tab');
   const currentTab: TabType = (rawTab === 'agreed' || rawTab === 'completed') ? rawTab : 'requests';
@@ -44,7 +46,7 @@ export const useTradesPage = () => {
     (signal) => getTrades(currentTab, { signal }),
     {
       staleTime: 15_000,
-      onError: (err) => addToast(err.message || 'Не удалось загрузить трейды', 'error'),
+      onError: (err) => addToast(err.message || t('trades.toasts.loadError'), 'error'),
     }
   );
 
@@ -77,16 +79,16 @@ export const useTradesPage = () => {
   }, [setSearchParams]);
 
   const handleAccept = async (tradeId: string) => {
-    if (!window.confirm('Согласовать условия обмена? После этого состав сделки будет зафиксирован.')) {
+    if (!window.confirm(t('trades.toasts.acceptConfirm'))) {
       return;
     }
     try {
       setActionLoadingId(tradeId);
       await acceptTrade(tradeId);
-      addToast('Обмен успешно согласован! Условия зафиксированы.', 'success');
+      addToast(t('trades.toasts.acceptSuccess'), 'success');
       queryClient.invalidate('trades');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при согласовании трейда';
+      const message = err instanceof Error ? err.message : t('trades.toasts.acceptError');
       addToast(message, 'error');
     } finally {
       setActionLoadingId(null);
@@ -94,20 +96,20 @@ export const useTradesPage = () => {
   };
 
   const handleComplete = async (tradeId: string) => {
-    if (!window.confirm('Подтвердить получение книг? Сделка перейдёт в статус завершённой, когда обе стороны подтвердят получение.')) {
+    if (!window.confirm(t('trades.toasts.completeConfirm'))) {
       return;
     }
     try {
       setActionLoadingId(tradeId);
       const updated = await completeTrade(tradeId);
       if (updated.status === 'COMPLETED') {
-        addToast('Обмен успешно завершён обеими сторонами! Книги получены.', 'success');
+        addToast(t('trades.toasts.completeSuccessBoth'), 'success');
       } else {
-        addToast('Вы подтвердили получение книг! Ожидается подтверждение партнёра.', 'info');
+        addToast(t('trades.toasts.completeSuccessWaiting'), 'info');
       }
       queryClient.invalidate('trades');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при завершении трейда';
+      const message = err instanceof Error ? err.message : t('trades.toasts.completeError');
       addToast(message, 'error');
     } finally {
       setActionLoadingId(null);
@@ -123,11 +125,11 @@ export const useTradesPage = () => {
     try {
       setActionLoadingId(rejectModalTradeId);
       await rejectTrade(rejectModalTradeId, reason);
-      addToast('Предложение обмена отклонено', 'success');
+      addToast(t('trades.toasts.rejectSuccess'), 'success');
       setRejectModalTradeId(null);
       queryClient.invalidate('trades');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при отклонении трейда';
+      const message = err instanceof Error ? err.message : t('trades.toasts.rejectError');
       addToast(message, 'error');
     } finally {
       setActionLoadingId(null);
@@ -135,16 +137,16 @@ export const useTradesPage = () => {
   };
 
   const handleCancel = async (tradeId: string) => {
-    if (!window.confirm('Отозвать ваше предложение обмена?')) {
+    if (!window.confirm(t('trades.toasts.cancelConfirm'))) {
       return;
     }
     try {
       setActionLoadingId(tradeId);
       await cancelTrade(tradeId);
-      addToast('Предложение обмена отозвано', 'success');
+      addToast(t('trades.toasts.cancelSuccess'), 'success');
       queryClient.invalidate('trades');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Ошибка при отмене трейда';
+      const message = err instanceof Error ? err.message : t('trades.toasts.cancelError');
       addToast(message, 'error');
     } finally {
       setActionLoadingId(null);
@@ -183,7 +185,7 @@ export const useTradesPage = () => {
     if (!dateStr) return '';
     try {
       const d = new Date(dateStr);
-      return d.toLocaleDateString('ru-RU', {
+      return d.toLocaleDateString(language === 'en' ? 'en-US' : 'uk-UA', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -193,7 +195,7 @@ export const useTradesPage = () => {
     } catch {
       return dateStr;
     }
-  }, []);
+  }, [language]);
 
   // Filter & sort trades
   const filteredTrades = useMemo(() => {

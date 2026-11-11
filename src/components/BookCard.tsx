@@ -33,7 +33,7 @@ export const BookCard: React.FC<BookCardProps> = ({
         {/* Podium Top Header: Language & Year Badges (above cover, clean contrast) */}
         <div className="book-card-podium-header">
           {book.language ? (
-            <span className="book-card-lang-tag" title={`Язык издания: ${book.language}`}>
+            <span className="book-card-lang-tag" title={t('bookCard.langTitle', { lang: book.language })}>
               <GlobeIcon size={11} />
               <span>{book.language}</span>
             </span>
@@ -42,8 +42,8 @@ export const BookCard: React.FC<BookCardProps> = ({
           )}
 
           {book.year && (
-            <span className="book-card-year-tag" title={`Год издания: ${formatBookYear(book.year)}`}>
-              {formatBookYear(book.year)}
+            <span className="book-card-year-tag" title={t('bookCard.yearTitle', { year: formatBookYear(book.year, language) })}>
+              {formatBookYear(book.year, language)}
             </span>
           )}
         </div>
@@ -70,7 +70,7 @@ export const BookCard: React.FC<BookCardProps> = ({
           <div className="book-card-overlay">
             <span className="book-card-hover-hint">
               <EyeIcon size={13} />
-              <span>Подробнее</span>
+              <span>{t('bookCard.detailsBtn')}</span>
             </span>
           </div>
         </div>
@@ -93,7 +93,7 @@ export const BookCard: React.FC<BookCardProps> = ({
         {/* Location */}
         {book.user?.city && (
           <div className="book-card-location">
-            <span className="book-card-city" title={`Населённый пункт: ${book.user.city}`}>
+            <span className="book-card-city" title={t('bookCard.cityTitle', { city: book.user.city })}>
               <MapPinIcon size={12} className="inline-location-icon" />
               <span>{book.user.city}</span>
             </span>
@@ -102,7 +102,7 @@ export const BookCard: React.FC<BookCardProps> = ({
 
         {/* Short description with 2-line ellipsis */}
         <p className="book-card-description" title={book.description || undefined}>
-          {book.description ? book.description : <span className="book-card-description-empty">Описание пока не добавлено</span>}
+          {book.description ? book.description : <span className="book-card-description-empty">{t('bookCard.noDescription')}</span>}
         </p>
 
         {/* Genres row */}
@@ -134,8 +134,8 @@ export const BookCard: React.FC<BookCardProps> = ({
                   type="button"
                   className="book-action-btn edit-btn"
                   onClick={() => onEdit(book)}
-                  title="Редактировать книгу"
-                  aria-label="Редактировать книгу"
+                  title={t('bookCard.editBook')}
+                  aria-label={t('bookCard.editBook')}
                 >
                   <EditIcon size={15} />
                 </button>
@@ -145,8 +145,8 @@ export const BookCard: React.FC<BookCardProps> = ({
                   type="button"
                   className="book-action-btn delete-btn"
                   onClick={() => onDelete(book)}
-                  title="Удалить книгу"
-                  aria-label="Удалить книгу"
+                  title={t('bookCard.deleteBook')}
+                  aria-label={t('bookCard.deleteBook')}
                 >
                   <TrashIcon size={15} />
                 </button>
@@ -185,7 +185,7 @@ export const BookCard: React.FC<BookCardProps> = ({
                 if (uId) navigate(`/profile/${uId}`);
               }}
             >
-              <span className="creator-label">{language === 'en' ? 'by' : 'від'}</span>
+              <span className="creator-label">{t('common.by')}</span>
               <span className="creator-name">@{book.user.username}</span>
             </span>
           </div>

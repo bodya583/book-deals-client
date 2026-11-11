@@ -1,5 +1,6 @@
 import React from 'react';
 import { MessageSquareIcon, TradeIcon } from '../../../components/icons';
+import { useTranslation } from '../../../i18n';
 
 interface TradeOfferFooterProps {
   message: string;
@@ -22,17 +23,19 @@ export const TradeOfferFooter: React.FC<TradeOfferFooterProps> = ({
   counterTradeId,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <form onSubmit={onSubmit} className="steam-action-footer">
       <div className="trade-message-group">
         <label className="trade-message-label" htmlFor="trade-message">
           <MessageSquareIcon size={16} />
-          <span>Сообщение партнеру (необязательно):</span>
+          <span>{t('offer.messageLabel')}</span>
         </label>
         <textarea
           id="trade-message"
           className="trade-message-textarea"
-          placeholder="Привет! Предлагаю обменяться книгами. Могу отправить по почте или встретиться лично."
+          placeholder={t('offer.messagePlaceholder')}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={2}
@@ -42,10 +45,10 @@ export const TradeOfferFooter: React.FC<TradeOfferFooterProps> = ({
       <div className="trade-footer-bottom">
         <div className="trade-summary-pills">
           <span className="summary-pill pill-give">
-            Вы отдаёте: {offeredCount} {offeredCount === 1 ? 'книгу' : 'книг'}
+            {t('offer.giveBooksCount', { count: offeredCount })}
           </span>
           <span className="summary-pill pill-get">
-            Вы получаете: {targetCount} {targetCount === 1 ? 'книгу' : 'книг'}
+            {t('offer.getBooksCount', { count: targetCount })}
           </span>
           {isTradeUnchanged && (
             <span
@@ -59,7 +62,7 @@ export const TradeOfferFooter: React.FC<TradeOfferFooterProps> = ({
                 fontWeight: 500,
               }}
             >
-              Состав книг не изменён. Измените книги для отправки.
+              {t('offer.unchangedWarning')}
             </span>
           )}
         </div>
@@ -75,24 +78,22 @@ export const TradeOfferFooter: React.FC<TradeOfferFooterProps> = ({
                 : { background: '#2563eb', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)' }
               : undefined
           }
-          title={
-            isTradeUnchanged
-              ? 'Состав книг не изменился. Добавьте или удалите книги, чтобы отправить встречное предложение'
-              : undefined
-          }
+          title={isTradeUnchanged ? t('offer.unchangedTitle') : undefined}
         >
           <TradeIcon size={18} />
           <span>
             {submitting
-              ? 'Отправка...'
+              ? t('offer.submitting')
               : counterTradeId
               ? isTradeUnchanged
-                ? 'Состав книг не изменён'
-                : 'Отправить встречное предложение'
-              : 'Предложить обмен'}
+                ? t('offer.unchangedBtn')
+                : t('offer.submitCounterBtn')
+              : t('offer.submitOfferBtn')}
           </span>
         </button>
       </div>
     </form>
   );
 };
+
+export default TradeOfferFooter;

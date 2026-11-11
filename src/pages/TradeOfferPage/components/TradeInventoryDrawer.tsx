@@ -3,6 +3,7 @@ import { UserIcon, BookOpenIcon, SearchIcon, CheckIcon } from '../../../componen
 import type { Book } from '../../../types/book';
 import type { TradePartner } from '../../../types/trade';
 import { BookCover, EmptyState } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 interface TradeInventoryDrawerProps {
   inventoryTab: 'my' | 'partner';
@@ -35,6 +36,9 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
   toggleOfferedBook,
   toggleTargetBook,
 }) => {
+  const { t } = useTranslation();
+  const partnerName = selectedPartner?.username || t('common.partner').toLowerCase();
+
   return (
     <div className="steam-inventory-box">
       <div className="inventory-tabs">
@@ -44,7 +48,7 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
           onClick={() => setInventoryTab('my')}
         >
           <UserIcon size={18} />
-          <span>Ваш инвентарь ({myBooksCount})</span>
+          <span>{t('offer.drawerYourTab', { count: myBooksCount })}</span>
         </button>
 
         <button
@@ -54,7 +58,7 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
         >
           <BookOpenIcon size={18} />
           <span>
-            Инвентарь @{selectedPartner?.username || 'партнера'} ({partnerBooksCount})
+            {t('offer.drawerPartnerTab', { username: partnerName, count: partnerBooksCount })}
           </span>
         </button>
       </div>
@@ -67,8 +71,8 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
             type="text"
             placeholder={
               inventoryTab === 'my'
-                ? 'Поиск по вашим книгам...'
-                : `Поиск по книгам @${selectedPartner?.username || 'партнера'}...`
+                ? t('offer.drawerSearchMy')
+                : t('offer.drawerSearchPartner', { username: partnerName })
             }
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
@@ -76,24 +80,24 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
           />
         </div>
         <span style={{ fontSize: '0.85rem', color: '#666660' }}>
-          Нажмите на книгу, чтобы добавить или убрать её из обмена
+          {t('offer.drawerHint')}
         </span>
       </div>
 
       {/* Book Cards Grid */}
       {loading ? (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#666660' }}>
-          Загрузка книг...
+          {t('common.loading')}
         </div>
       ) : filteredInventoryBooks.length === 0 ? (
         <EmptyState
           compact
           icon={<BookOpenIcon size={32} />}
-          title={inventoryTab === 'my' ? 'Нет доступных книг' : 'Нет доступных книг у партнёра'}
+          title={inventoryTab === 'my' ? t('offer.drawerEmptyMyTitle') : t('offer.drawerEmptyPartnerTitle')}
           description={
             inventoryTab === 'my'
-              ? 'В вашей библиотеке нет доступных книг для обмена. Добавьте книги в каталоге или откройте их для обмена в профиле.'
-              : 'У этого партнера пока нет книг для обмена.'
+              ? t('offer.drawerEmptyMyDesc')
+              : t('offer.drawerEmptyPartnerDesc')
           }
         />
       ) : (
@@ -121,7 +125,7 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
                     <span style={{ display: 'inline-flex', marginRight: 2 }}>
                       <CheckIcon size={12} />
                     </span>
-                    В обмене
+                    {t('offer.inTradeBadge')}
                   </span>
                 )}
 
@@ -142,3 +146,5 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
     </div>
   );
 };
+
+export default TradeInventoryDrawer;

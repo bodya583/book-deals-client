@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPinIcon, MapPinOffIcon, ShieldCheckIcon } from '../../../components/icons';
 import { setLocation, clearLocation } from '../../../api/usersApi';
 import { useAuthStore } from '../../../store/authStore';
+import { useTranslation } from '../../../i18n';
 
 interface LocationButtonProps {
   latitude: number | null;
@@ -16,6 +17,7 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
   longitude,
   onLocationChange,
 }) => {
+  const { t } = useTranslation();
   const updateUser = useAuthStore((s) => s.updateUser);
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState('');
@@ -24,13 +26,13 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
 
   const handleSetLocation = () => {
     if (!navigator.geolocation) {
-      setMessage('Геолокация не поддерживается вашим браузером');
+      setMessage(t('filters.location.gpsUnsupported'));
       setStatus('error');
       return;
     }
 
     setStatus('loading');
-    setMessage('Определяем координаты...');
+    setMessage(t('filters.location.gpsDetecting'));
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -40,21 +42,21 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
           updateUser({ latitude: updatedUser.latitude, longitude: updatedUser.longitude });
           onLocationChange(updatedUser.latitude, updatedUser.longitude);
           setStatus('success');
-          setMessage(`Сохранено: ${lat.toFixed(4)}°, ${lng.toFixed(4)}°`);
+          setMessage(t('profile.locationSavedMsg', { lat: lat.toFixed(4), lng: lng.toFixed(4) }));
           setTimeout(() => setMessage(''), 3000);
         } catch {
           setStatus('error');
-          setMessage('Не удалось сохранить координаты');
+          setMessage(t('profile.locationSaveError'));
         }
       },
       (err) => {
         setStatus('error');
         if (err.code === 1) {
-          setMessage('Доступ к геолокации запрещён');
+          setMessage(t('profile.locationDeniedError'));
         } else if (err.code === 2) {
-          setMessage('Не удалось определить местоположение');
+          setMessage(t('profile.locationUnavailableError'));
         } else {
-          setMessage('Превышено время ожидания');
+          setMessage(t('profile.locationTimeoutError'));
         }
       },
       { timeout: 10000, enableHighAccuracy: true }
@@ -71,7 +73,7 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
       setMessage('');
     } catch {
       setStatus('error');
-      setMessage('Не удалось удалить координаты');
+      setMessage(t('profile.locationClearError'));
     }
   };
 
@@ -82,38 +84,38 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
           <>
             <div className="location-badge location-badge--active">
               <MapPinIcon size={14} />
-              <span>Локация установлена</span>
+              <span>{t('profile.locationSet')}</span>
             </div>
             <button
               type="button"
               className="location-btn location-btn--update"
               onClick={handleSetLocation}
               disabled={status === 'loading'}
-              title="Обновить координаты"
+              title={t('profile.updateCoordsTitle')}
             >
               {status === 'loading' ? (
                 <span className="location-spinner" />
               ) : (
                 <MapPinIcon size={15} />
               )}
-              Обновить
+              {t('profile.updateCoordsBtn')}
             </button>
             <button
               type="button"
               className="location-btn location-btn--remove"
               onClick={handleClearLocation}
               disabled={status === 'loading'}
-              title="Удалить координаты"
+              title={t('profile.deleteCoordsTitle')}
             >
               <MapPinOffIcon size={15} />
-              Удалить
+              {t('common.delete')}
             </button>
           </>
         ) : (
           <>
             <div className="location-badge location-badge--none">
               <MapPinOffIcon size={14} />
-              <span>Локация не установлена</span>
+              <span>{t('profile.locationNotSet')}</span>
             </div>
             <button
               type="button"
@@ -126,7 +128,7 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
               ) : (
                 <MapPinIcon size={15} />
               )}
-              {status === 'loading' ? 'Определяем...' : 'Поделиться локацией'}
+              {status === 'loading' ? t('profile.detectingLocation') : t('profile.shareLocationBtn')}
             </button>
           </>
         )}
@@ -140,7 +142,7 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
 
       <p className="location-hint" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
         <ShieldCheckIcon size={14} />
-        <span>Ваши координаты приватны — они используются только для поиска ближайших книг и не видны другим пользователям.</span>
+        <span>{t('profile.locationPrivacyHint')}</span>
       </p>
     </div>
   );

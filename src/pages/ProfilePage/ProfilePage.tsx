@@ -202,7 +202,7 @@ export const ProfilePage: React.FC = () => {
           <SearchIcon size={18} />
           <input
             type="text"
-            placeholder="Поиск по названию или автору..."
+            placeholder={t('profile.searchBooksPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -227,7 +227,7 @@ export const ProfilePage: React.FC = () => {
                 padding: 0,
                 fontSize: '0.9rem',
               }}
-              title="Очистить поиск"
+              title={t('common.clearSearch')}
             >
               <CloseIcon size={14} />
             </button>
@@ -250,7 +250,7 @@ export const ProfilePage: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <option value="all">Все жанры ({availableGenres.length})</option>
+            <option value="all">{t('profile.allGenres', { count: availableGenres.length })}</option>
             {availableGenres.map((g) => (
               <option key={g} value={g}>
                 {g}
@@ -274,18 +274,18 @@ export const ProfilePage: React.FC = () => {
             cursor: 'pointer',
           }}
         >
-          <option value="default">Сортировка: По умолчанию</option>
-          <option value="title_asc">Название (А-Я)</option>
-          <option value="title_desc">Название (Я-А)</option>
-          <option value="year_desc">Год (сначала новые)</option>
-          <option value="year_asc">Год (сначала старые)</option>
+          <option value="default">{t('profile.sortDefault')}</option>
+          <option value="title_asc">{t('profile.sortTitleAsc')}</option>
+          <option value="title_desc">{t('profile.sortTitleDesc')}</option>
+          <option value="year_desc">{t('profile.sortYearDesc')}</option>
+          <option value="year_asc">{t('profile.sortYearAsc')}</option>
         </select>
       </div>
 
       {!isOtherUser && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.85rem', color: '#666660', marginRight: '0.25rem' }}>
-            {language === 'en' ? 'Book status:' : 'Статус книги:'}
+            {t('profile.bookStatusLabel')}
           </span>
           <button
             type="button"
@@ -328,7 +328,7 @@ export const ProfilePage: React.FC = () => {
             color: '#666660',
           }}
         >
-          <span>Найдено: <strong>{filteredBooks.length}</strong> из {sourceBooks.length}</span>
+          <span>{t('profile.foundCount', { count: filteredBooks.length, total: sourceBooks.length })}</span>
           <button
             type="button"
             onClick={handleResetFilters}
@@ -342,7 +342,7 @@ export const ProfilePage: React.FC = () => {
               padding: 0,
             }}
           >
-            Сбросить фильтры
+            {t('profile.resetFilters')}
           </button>
         </div>
       )}
@@ -361,7 +361,7 @@ export const ProfilePage: React.FC = () => {
             onClick={() => navigate(-1)}
           >
             <ChevronLeftIcon size={16} />
-            <span>Назад</span>
+            <span>{t('common.back')}</span>
           </button>
         </div>
       )}
@@ -390,10 +390,10 @@ export const ProfilePage: React.FC = () => {
           >
             <div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: '#1a1a1a' }}>
-                Книги пользователя для обмена ({otherBooks.length})
+                {t('profile.userBooksTitle', { count: otherBooks.length })}
               </h2>
               <p style={{ margin: '0.25rem 0 0', color: '#666660', fontSize: '0.9rem' }}>
-                Выберите книгу, которую хотите получить, или предложите обмен на всё предложение
+                {t('profile.userBooksSubtitle')}
               </p>
             </div>
 
@@ -405,21 +405,21 @@ export const ProfilePage: React.FC = () => {
                 onClick={() => navigate(`/trades/new?partnerId=${activeUser.id}`)}
               >
                 <TradeIcon size={18} />
-                <span>Предложить обмен</span>
+                <span>{t('profile.proposeTradeWithUser')}</span>
               </button>
             )}
           </div>
 
           {loading ? (
             <div style={{ padding: '3rem', textAlign: 'center', color: '#666660' }}>
-              Загрузка книг пользователя...
+              {t('profile.loadingUserBooks')}
             </div>
           ) : otherBooks.length === 0 ? (
             <div className="trades-empty-state">
               <BookOpenIcon size={36} />
-              <h3 className="empty-state-title">У этого пользователя пока нет книг</h3>
+              <h3 className="empty-state-title">{t('profile.userHasNoBooks')}</h3>
               <p className="empty-state-text">
-                Пользователь еще не добавил книги в свою библиотеку для обмена.
+                {t('profile.userNoBooksText')}
               </p>
             </div>
           ) : (
@@ -429,9 +429,9 @@ export const ProfilePage: React.FC = () => {
               {filteredBooks.length === 0 ? (
                 <div className="trades-empty-state">
                   <SearchIcon size={36} />
-                  <h3 className="empty-state-title">Ничего не найдено</h3>
+                  <h3 className="empty-state-title">{t('profile.noFilteredBooksTitle')}</h3>
                   <p className="empty-state-text">
-                    По выбранным параметрам поиска и фильтрам нет подходящих книг.
+                    {t('profile.noFilteredBooksText')}
                   </p>
                   <button
                     type="button"
@@ -439,7 +439,7 @@ export const ProfilePage: React.FC = () => {
                     className="btn-trade-details"
                     style={{ marginTop: '0.75rem' }}
                   >
-                    Сбросить фильтры
+                    {t('profile.resetFilters')}
                   </button>
                 </div>
               ) : (
@@ -487,23 +487,23 @@ export const ProfilePage: React.FC = () => {
           >
             <div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: '#1a1a1a' }}>
-                Мои книги ({myBooks.length})
+                {t('profile.myBooksTitle', { count: myBooks.length })}
               </h2>
               <p style={{ margin: '0.25rem 0 0', color: '#666660', fontSize: '0.9rem' }}>
-                Книги с меткой «В профиле» видны другим для обмена. Книги, полученные после обменов, скрыты и видны только вам, пока вы не решите выставить их.
+                {t('profile.myBooksSubtitle')}
               </p>
             </div>
             <Link to="/catalog" className="btn-new-trade" style={{ background: '#2d6a4f' }}>
-              <span>Добавить книгу</span>
+              <span>{t('profile.addBookBtn')}</span>
             </Link>
           </div>
 
           {myBooks.length === 0 ? (
             <div className="trades-empty-state">
               <BookOpenIcon size={36} />
-              <h3 className="empty-state-title">У вас пока нет книг</h3>
+              <h3 className="empty-state-title">{t('profile.myHasNoBooks')}</h3>
               <p className="empty-state-text">
-                Добавьте книги в каталоге или совершите обмен, чтобы пополнить коллекцию.
+                {t('profile.myNoBooksText')}
               </p>
             </div>
           ) : (
@@ -513,9 +513,9 @@ export const ProfilePage: React.FC = () => {
               {filteredBooks.length === 0 ? (
                 <div className="trades-empty-state">
                   <SearchIcon size={36} />
-                  <h3 className="empty-state-title">Ничего не найдено</h3>
+                  <h3 className="empty-state-title">{t('profile.noFilteredBooksTitle')}</h3>
                   <p className="empty-state-text">
-                    По выбранным параметрам поиска и фильтрам нет подходящих книг.
+                    {t('profile.noFilteredBooksText')}
                   </p>
                   <button
                     type="button"
@@ -523,7 +523,7 @@ export const ProfilePage: React.FC = () => {
                     className="btn-trade-details"
                     style={{ marginTop: '0.75rem' }}
                   >
-                    Сбросить фильтры
+                    {t('profile.resetFilters')}
                   </button>
                 </div>
               ) : (
@@ -602,7 +602,7 @@ export const ProfilePage: React.FC = () => {
                                   }}
                                 >
                                   <CheckIcon size={11} />
-                                  <span>В профиле (для обмена)</span>
+                                  <span>{t('profile.inProfileBadge')}</span>
                                 </span>
                               ) : (
                                 <span
@@ -620,7 +620,7 @@ export const ProfilePage: React.FC = () => {
                                   }}
                                 >
                                   <LockIcon size={11} />
-                                  <span>Только для вас (не в профиле)</span>
+                                  <span>{t('profile.onlyForYouBadge')}</span>
                                 </span>
                               )}
                             </div>
@@ -646,7 +646,7 @@ export const ProfilePage: React.FC = () => {
                             </h4>
                             {book.year && (
                               <span style={{ fontSize: '0.75rem', color: '#888880' }}>
-                                {formatBookYear(book.year)}
+                                {formatBookYear(book.year, language)}
                               </span>
                             )}
                           </div>
@@ -668,7 +668,7 @@ export const ProfilePage: React.FC = () => {
                             style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
                             onClick={() => setSelectedBook(book)}
                           >
-                            Подробнее
+                            {t('common.details')}
                           </button>
 
                           {inTrade ? (
@@ -677,9 +677,9 @@ export const ProfilePage: React.FC = () => {
                               className="btn-card-profile-untrade"
                               disabled={togglingBookId === book.id}
                               onClick={() => handleToggleTradeStatus(book)}
-                              title="Снять книгу с обмена и убрать из публичного профиля"
+                              title={t('profile.untradeTitle')}
                             >
-                              Снять с обмена
+                              {t('profile.untradeBtn')}
                             </button>
                           ) : (
                             <button
@@ -692,9 +692,9 @@ export const ProfilePage: React.FC = () => {
                               }}
                               disabled={togglingBookId === book.id}
                               onClick={() => handleToggleTradeStatus(book)}
-                              title="Добавить книгу в профиль и открыть для предложений обмена"
+                              title={t('profile.tradeTitle')}
                             >
-                              Готов обменять
+                              {t('profile.tradeBtn')}
                             </button>
                           )}
                         </div>
@@ -708,7 +708,7 @@ export const ProfilePage: React.FC = () => {
         </section>
       )}
 
-      {/* Book details modal when clicking "Подробнее" on user's book */}
+      {/* Book details modal when clicking Details on user's book */}
       <BookDetailsModal
         book={selectedBook}
         isOpen={Boolean(selectedBook)}

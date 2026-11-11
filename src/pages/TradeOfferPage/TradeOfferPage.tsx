@@ -7,11 +7,13 @@ import { TradeOfferPartnerHeader } from './components/TradeOfferPartnerHeader';
 import { TradeOfferTable } from './components/TradeOfferTable';
 import { TradeInventoryDrawer } from './components/TradeInventoryDrawer';
 import { TradeOfferFooter } from './components/TradeOfferFooter';
+import { useTranslation } from '../../i18n';
 import './TradeOfferPage.css';
 
 export { computeBooksHash };
 
 export const TradeOfferPage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     counterTradeId,
     selectedPartner,
@@ -47,7 +49,7 @@ export const TradeOfferPage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Link to="/trades" className="trade-back-btn">
             <ChevronLeftIcon size={16} />
-            <span>Назад к списку трейдов</span>
+            <span>{t('offer.backToTrades')}</span>
           </Link>
         </div>
 

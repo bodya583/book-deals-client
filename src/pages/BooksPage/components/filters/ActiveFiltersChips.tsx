@@ -9,6 +9,7 @@ import {
   CalendarIcon,
   NavigationIcon,
 } from '../../../../components/icons';
+import { useTranslation } from '../../../../i18n';
 
 interface ActiveFiltersChipsProps {
   searchQuery: string;
@@ -47,21 +48,23 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
   nearCenter,
   onNearMeChange,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="books-active-filters-bar">
       <span className="active-filters-label">
         <FilterIcon size={13} />
-        <span>Фильтры:</span>
+        <span>{t('filters.chips.filtersLabel')}</span>
       </span>
 
       <div className="active-filters-chips">
         {searchQuery && (
           <span className="active-filter-tag">
-            Поиск: «{searchQuery}»
+            {t('filters.chips.searchPrefix', { query: searchQuery })}
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              aria-label="Удалить фильтр поиска"
+              aria-label={t('filters.chips.removeSearch')}
             >
               <CloseIcon size={12} />
             </button>
@@ -76,7 +79,7 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
             <button
               type="button"
               onClick={() => onToggleGenre(genre)}
-              aria-label={`Удалить ${genre}`}
+              aria-label={t('filters.chips.removeItem', { item: genre })}
             >
               <CloseIcon size={12} />
             </button>
@@ -86,7 +89,7 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
         {selectedGenres.length > 1 && (
           <span className={`active-mode-badge ${strictGenres ? 'strict-mode' : 'lenient-mode'}`}>
             <CheckIcon size={11} />
-            <span>{strictGenres ? 'Режим: И (все)' : 'Режим: ИЛИ (любой)'}</span>
+            <span>{strictGenres ? t('filters.genres.modeAnd') : t('filters.genres.modeOr')}</span>
           </span>
         )}
 
@@ -94,11 +97,13 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
         {selectedLanguages.map((lang) => (
           <span key={lang} className="active-filter-tag active-lang-tag">
             <GlobeIcon size={11} />
-            <span>{lang}</span>
+            <span>{lang === 'Other' ? t('filters.languages.otherLabel') : lang}</span>
             <button
               type="button"
               onClick={() => onToggleLanguage(lang)}
-              aria-label={`Удалить ${lang}`}
+              aria-label={t('filters.chips.removeItem', {
+                item: lang === 'Other' ? t('filters.languages.otherLabel') : lang,
+              })}
             >
               <CloseIcon size={12} />
             </button>
@@ -113,7 +118,7 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
             <button
               type="button"
               onClick={() => onToggleSettlement(city)}
-              aria-label={`Удалить ${city}`}
+              aria-label={t('filters.chips.removeItem', { item: city })}
             >
               <CloseIcon size={12} />
             </button>
@@ -124,11 +129,11 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
         {(yearFrom || yearTo) && (
           <span className="active-filter-tag active-year-tag">
             <CalendarIcon size={11} />
-            <span>Год издания</span>
+            <span>{t('filters.chips.yearLabel')}</span>
             <button
               type="button"
               onClick={onClearYears}
-              aria-label="Удалить фильтр годов"
+              aria-label={t('filters.chips.removeYear')}
             >
               <CloseIcon size={12} />
             </button>
@@ -139,11 +144,15 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
         {nearMe && (
           <span className="active-filter-tag active-near-me-tag">
             <NavigationIcon size={11} />
-            <span>{nearCenter ? `${radius} км от ${nearCenter.name}` : `В радиусе ${radius} км`}</span>
+            <span>
+              {nearCenter
+                ? t('filters.location.radiusKmFrom', { radius, name: nearCenter.name })
+                : t('filters.location.radiusKm', { radius })}
+            </span>
             <button
               type="button"
               onClick={() => onNearMeChange(false)}
-              aria-label="Отключить фильтр дистанции"
+              aria-label={t('filters.location.disableDistanceFilter')}
             >
               <CloseIcon size={12} />
             </button>
@@ -153,3 +162,5 @@ export const ActiveFiltersChips: React.FC<ActiveFiltersChipsProps> = ({
     </div>
   );
 };
+
+export default ActiveFiltersChips;

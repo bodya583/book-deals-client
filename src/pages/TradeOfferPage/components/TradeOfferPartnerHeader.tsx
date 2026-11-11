@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPinIcon } from '../../../components/icons';
 import type { TradePartner } from '../../../types/trade';
 import { Avatar } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 interface TradeOfferPartnerHeaderProps {
   selectedPartner: TradePartner | null;
@@ -12,6 +13,8 @@ export const TradeOfferPartnerHeader: React.FC<TradeOfferPartnerHeaderProps> = (
   selectedPartner,
   partnerBooksCount,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="trade-partner-card">
       <div className="partner-card-left">
@@ -23,7 +26,7 @@ export const TradeOfferPartnerHeader: React.FC<TradeOfferPartnerHeaderProps> = (
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '1.05rem', fontWeight: 700 }}>
-              Обмен с {selectedPartner?.username ? `@${selectedPartner.username}` : 'читателем'}
+              {t('offer.partnerLabel', { username: selectedPartner?.username || t('common.reader') })}
             </span>
             {selectedPartner?.city && (
               <span
@@ -41,7 +44,7 @@ export const TradeOfferPartnerHeader: React.FC<TradeOfferPartnerHeaderProps> = (
             )}
           </div>
           <span style={{ fontSize: '0.85rem', color: '#666660' }}>
-            Книг для обмена у партнера: {partnerBooksCount}
+            {t('offer.partnerBooksCount', { count: partnerBooksCount })}
           </span>
         </div>
       </div>

@@ -20,7 +20,7 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
   className = '',
   style,
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
 
   if (currentTab === 'requests' || status === 'PENDING') {
     if (!isSender) {
@@ -28,7 +28,7 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
         <span
           className={`trade-role-badge role-action-needed ${className}`}
           style={style}
-          title={language === 'en' ? 'Offer received — your response is required' : 'Вам надійшла пропозиція — потрібна ваша відповідь або узгодження'}
+          title={t('trades.badges.yourTurnTooltip')}
         >
           <span className="role-dot role-dot-needed" />
           <span>{t('trades.badges.yourTurn')}</span>
@@ -39,7 +39,7 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
       <span
         className={`trade-role-badge role-waiting ${className}`}
         style={style}
-        title={language === 'en' ? 'Offer sent — awaiting partner response' : 'Ви надіслали пропозицію — очікується відповідь партнера'}
+        title={t('trades.badges.partnerTurnTooltip')}
       >
         <span className="role-dot role-dot-waiting" />
         <span>{t('trades.badges.partnerTurn')}</span>
@@ -56,10 +56,10 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
         <span
           className={`trade-role-badge role-action-needed ${className}`}
           style={style}
-          title={language === 'en' ? 'Partner confirmed handover. Confirm your books received!' : 'Партнер уже підтвердив передачу книг. Підтвердьте отримання своїх!'}
+          title={t('trades.badges.confirmReceivedTooltip')}
         >
           <span className="role-dot role-dot-needed" />
-          <span>{language === 'en' ? 'Confirm received' : 'Підтвердьте отримання'}</span>
+          <span>{t('trades.badges.confirmReceivedShort')}</span>
         </span>
       );
     }
@@ -68,7 +68,7 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
         <span
           className={`trade-role-badge role-waiting ${className}`}
           style={style}
-          title={language === 'en' ? 'You confirmed receipt. Awaiting partner confirmation.' : 'Ви підтвердили отримання. Очікується підтвердження від партнера.'}
+          title={t('trades.badges.youConfirmedTooltip')}
         >
           <span className="role-dot role-dot-waiting" />
           <span>{t('trades.badges.partnerTurn')}</span>
@@ -79,10 +79,10 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
       <span
         className={`trade-role-badge role-action-needed ${className}`}
         style={style}
-        title={language === 'en' ? 'Meet and confirm trade once books are received' : 'Зустріньтесь та підтвердьте обмін після отримання книг'}
+        title={t('trades.badges.awaitingHandoverTooltip')}
       >
         <span className="role-dot role-dot-needed" />
-        <span>{language === 'en' ? 'Awaiting handover' : 'Очікує особистої зустрічі'}</span>
+        <span>{t('trades.badges.awaitingHandover')}</span>
       </span>
     );
   }
@@ -97,13 +97,13 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
           border: '1px solid #a7f3d0',
           ...style,
         }}
-        title={language === 'en' ? 'Both sides confirmed receipt of books' : 'Обидві сторони підтвердили отримання книг'}
+        title={t('trades.badges.tradeCompletedTooltip')}
       >
         <span
           className="role-dot"
           style={{ background: '#10b981' }}
         />
-        <span>{language === 'en' ? 'Trade completed' : 'Угоду успішно закрито'}</span>
+        <span>{t('trades.badges.tradeCompletedShort')}</span>
       </span>
     );
   }

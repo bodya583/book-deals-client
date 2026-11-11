@@ -2,6 +2,7 @@ import React from 'react';
 import type { Book } from '../../../types/book';
 import { ArrowLeftRightIcon } from '../../../components/icons';
 import { BookCover } from '../../../components/ui';
+import { useTranslation } from '../../../i18n';
 
 interface SteamTradeMatrixProps {
   myBooksToGive: Book[];
@@ -12,10 +13,12 @@ export const SteamTradeMatrix: React.FC<SteamTradeMatrixProps> = ({
   myBooksToGive,
   myBooksToReceive,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="steam-trade-table">
       <div className="steam-table-header">
-        <span className="steam-table-title">Состав обмена</span>
+        <span className="steam-table-title">{t('tradeDetails.matrixTitle')}</span>
       </div>
 
       <div className="steam-matrix-grid">
@@ -23,11 +26,13 @@ export const SteamTradeMatrix: React.FC<SteamTradeMatrixProps> = ({
         <div className="steam-side-box">
           <div className="steam-side-header">
             <span className="steam-side-label" style={{ color: '#dc2626' }}>
-              Вы отдаёте ({myBooksToGive.length})
+              {t('trades.card.youGive')} ({myBooksToGive.length})
             </span>
           </div>
           {myBooksToGive.length === 0 ? (
-            <div className="steam-slot-empty">Ни одной книги</div>
+            <div className="steam-slot-empty">
+              {t('tradeDetails.noBooksLabel')}
+            </div>
           ) : (
             <div className="steam-slots-container">
               {myBooksToGive.map((book) => (
@@ -57,11 +62,13 @@ export const SteamTradeMatrix: React.FC<SteamTradeMatrixProps> = ({
         <div className="steam-side-box">
           <div className="steam-side-header">
             <span className="steam-side-label" style={{ color: '#2d6a4f' }}>
-              Вы получаете ({myBooksToReceive.length})
+              {t('trades.card.youGet')} ({myBooksToReceive.length})
             </span>
           </div>
           {myBooksToReceive.length === 0 ? (
-            <div className="steam-slot-empty">Ни одной книги</div>
+            <div className="steam-slot-empty">
+              {t('tradeDetails.noBooksLabel')}
+            </div>
           ) : (
             <div className="steam-slots-container">
               {myBooksToReceive.map((book) => (

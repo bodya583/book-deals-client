@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
 import { formatBookYear } from '../types/book';
 import { CloseIcon, EditIcon, TrashIcon, BookOpenIcon, CalendarIcon, UserIcon, GlobeIcon, TagIcon, TradeIcon, MapPinIcon } from './icons';
+import { useTranslation } from '../i18n';
 
 interface BookDetailsModalProps {
   book: Book | null;
@@ -22,6 +23,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
   isOwner = true,
 }) => {
   const navigate = useNavigate();
+  const { t, language } = useTranslation();
   const [errorBookId, setErrorBookId] = useState<string | null>(null);
   const imgError = book ? errorBookId === book.id : false;
 
@@ -59,7 +61,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
     if (!dateString) return '';
     try {
       const d = new Date(dateString);
-      return d.toLocaleDateString('ru-RU', {
+      return d.toLocaleDateString(language === 'en' ? 'en-US' : 'uk-UA', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -82,7 +84,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
           type="button"
           className="modal-close-btn"
           onClick={onClose}
-          aria-label="Закрыть"
+          aria-label={t('common.close')}
         >
           <CloseIcon size={20} />
         </button>
@@ -118,13 +120,13 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                     navigate(`/profile/${uId}`);
                   }
                 }}
-                title={`Перейти в профиль пользователя @${book.user.username}`}
+                title={t('bookCard.viewProfileTitle', { username: book.user.username })}
               >
                 <div className="book-popup-owner-avatar">
                   <UserIcon size={14} />
                 </div>
                 <div className="book-popup-owner-info">
-                  <span className="owner-label">Добавил(а):</span>
+                  <span className="owner-label">{t('bookDetails.ownerLabel')}</span>
                   <span className="owner-name" style={{ textDecoration: 'underline text-decoration-color: transparent' }}>
                     @{book.user.username}
                   </span>
@@ -147,19 +149,19 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
               {book.year && (
                 <div className="book-popup-meta-item">
                   <CalendarIcon size={15} />
-                  <span>Год издания: <strong>{formatBookYear(book.year)}</strong></span>
+                  <span>{t('bookDetails.yearLabel')} <strong>{formatBookYear(book.year, language)}</strong></span>
                 </div>
               )}
               {book.createdAt && (
                 <div className="book-popup-meta-item">
                   <CalendarIcon size={15} />
-                  <span>Добавлено: {formatDate(book.createdAt)}</span>
+                  <span>{t('bookDetails.addedLabel')} {formatDate(book.createdAt)}</span>
                 </div>
               )}
               {book.language && (
                 <div className="book-popup-meta-item">
                   <GlobeIcon size={15} />
-                  <span>Язык: <strong>{book.language}</strong></span>
+                  <span>{t('bookDetails.langLabel')} <strong>{book.language}</strong></span>
                 </div>
               )}
             </div>
@@ -168,7 +170,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
             {book.genres && book.genres.length > 0 && (
               <div className="book-popup-genres-box">
                 <h4 className="description-heading">
-                  <TagIcon size={14} /> Жанры
+                  <TagIcon size={14} /> {t('bookDetails.genresLabel')}
                 </h4>
                 <div className="book-popup-genres-list">
                   {book.genres.map((g) => (
@@ -181,12 +183,12 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
             )}
 
             <div className="book-popup-description-box">
-              <h4 className="description-heading">Описание</h4>
+              <h4 className="description-heading">{t('bookDetails.descriptionLabel')}</h4>
               {book.description ? (
                 <p className="book-popup-description-text">{book.description}</p>
               ) : (
                 <p className="book-popup-description-text text-muted">
-                  У этой книги пока нет описания. Вы можете добавить его через форму редактирования.
+                  {t('bookDetails.noDescription')}
                 </p>
               )}
             </div>
@@ -204,7 +206,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                     }}
                   >
                     <EditIcon size={16} />
-                    <span>Редактировать</span>
+                    <span>{t('bookDetails.editBook')}</span>
                   </button>
                   <button
                     type="button"
@@ -215,7 +217,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                     }}
                   >
                     <TrashIcon size={16} />
-                    <span>Удалить</span>
+                    <span>{t('bookDetails.deleteBook')}</span>
                   </button>
                 </>
               )}
@@ -238,7 +240,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                   }}
                 >
                   <TradeIcon size={16} />
-                  <span>Предложить обмен</span>
+                  <span>{t('bookDetails.proposeTrade')}</span>
                 </button>
               )}
               <button
@@ -246,7 +248,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                 className="modal-btn modal-btn-outline"
                 onClick={onClose}
               >
-                Закрыть
+                {t('bookDetails.close')}
               </button>
             </div>
           </div>

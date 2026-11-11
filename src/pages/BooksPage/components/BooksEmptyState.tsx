@@ -27,7 +27,7 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
   onResetFilters,
   onAddBook,
 }) => {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const isAll = scope === 'all';
 
   return (
@@ -41,36 +41,36 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
           <h3 className="empty-title">{t('catalog.emptyCatalogTitle')}</h3>
           <p className="empty-desc">
             {searchQuery && (
-              <span>{language === 'en' ? 'By query ' : 'За запитом '}«<strong>{searchQuery}</strong>» </span>
+              <span>{t('catalog.emptyFilteredByQuery')} «<strong>{searchQuery}</strong>» </span>
             )}
             {selectedGenres.length > 0 && (
               <span>
-                {language === 'en' ? 'by genres ' : 'за жанрами '}
+                {t('catalog.emptyFilteredByGenres')}{' '}
                 <strong>{selectedGenres.join(', ')}</strong>{' '}
                 {selectedGenres.length > 1 && (
-                  <em>({strictGenres ? (language === 'en' ? 'mode: all together' : 'режим: усі одночасно') : (language === 'en' ? 'mode: any' : 'режим: будь-який')})</em>
+                  <em>({strictGenres ? t('catalog.emptyFilteredStrict') : t('catalog.emptyFilteredAny')})</em>
                 )}{' '}
               </span>
             )}
             {selectedLanguages.length > 0 && (
               <span>
-                {language === 'en' ? 'in languages ' : 'мовами '}
+                {t('catalog.emptyFilteredByLanguages')}{' '}
                 <strong>{selectedLanguages.join(', ')}</strong>{' '}
               </span>
             )}
             {(yearFrom || yearTo) && (
               <span>
-                {language === 'en' ? 'published ' : 'за період '}
+                {t('catalog.emptyFilteredByPeriod')}{' '}
                 <strong>
                   {yearFrom && yearTo
                     ? `${yearFrom} – ${yearTo}`
                     : yearFrom
-                    ? `від ${yearFrom}`
-                    : `до ${yearTo}`}
+                    ? t('catalog.emptyFilteredYearFrom', { year: yearFrom })
+                    : t('catalog.emptyFilteredYearTo', { year: yearTo || '' })}
                 </strong>{' '}
               </span>
             )}
-            {language === 'en' ? 'books not found. Try adjusting criteria.' : 'книг не знайдено. Спробуйте змінити критерії пошуку.'}
+            {t('catalog.emptyFilteredSuffix')}
           </p>
           <button
             type="button"
@@ -78,7 +78,7 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
             onClick={onResetFilters}
           >
             <CloseIcon size={16} />
-            <span>{language === 'en' ? 'Reset all filters' : 'Скинути всі фільтри'}</span>
+            <span>{t('catalog.resetAllFilters')}</span>
           </button>
         </>
       ) : isAll ? (

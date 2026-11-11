@@ -4,10 +4,10 @@ import { GlobeIcon } from '../icons';
 import './LanguageSwitcher.css';
 
 export const LanguageSwitcher: React.FC = () => {
-  const { language, setLanguage } = useTranslation();
+  const { language, setLanguage, t } = useTranslation();
 
   return (
-    <div className="lang-switcher" role="group" aria-label="Language selection">
+    <div className="lang-switcher" role="group" aria-label={t('app.langGroupLabel')}>
       <div className="lang-switcher-icon" aria-hidden="true">
         <GlobeIcon size={16} />
       </div>
@@ -15,7 +15,7 @@ export const LanguageSwitcher: React.FC = () => {
         type="button"
         className={`lang-btn ${language === 'uk' ? 'active' : ''}`}
         onClick={() => setLanguage('uk')}
-        title="Перемкнути інтерфейс на українську"
+        title={t('app.switchToUk')}
         aria-pressed={language === 'uk'}
       >
         UA
@@ -25,7 +25,7 @@ export const LanguageSwitcher: React.FC = () => {
         type="button"
         className={`lang-btn ${language === 'en' ? 'active' : ''}`}
         onClick={() => setLanguage('en')}
-        title="Switch interface to English"
+        title={t('app.switchToEn')}
         aria-pressed={language === 'en'}
       >
         EN

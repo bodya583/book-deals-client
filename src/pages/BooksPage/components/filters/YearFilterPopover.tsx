@@ -1,13 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { CalendarIcon, ChevronDownIcon } from '../../../../components/icons';
-
-const YEAR_PRESETS = [
-  { label: 'До 1900 г.', from: '', to: '1900' },
-  { label: '1901 – 1950', from: '1901', to: '1950' },
-  { label: '1951 – 2000', from: '1951', to: '2000' },
-  { label: '2001 – 2019', from: '2001', to: '2019' },
-  { label: 'Новинки (2020+)', from: '2020', to: '' },
-];
+import { useTranslation } from '../../../../i18n';
 
 interface YearFilterPopoverProps {
   isOpen: boolean;
@@ -30,6 +23,19 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
   onSetYearRange,
   onClearYears,
 }) => {
+  const { t } = useTranslation();
+
+  const yearPresets = useMemo(
+    () => [
+      { label: t('filters.years.presetBefore1900'), from: '', to: '1900' },
+      { label: t('filters.years.preset1901_1950'), from: '1901', to: '1950' },
+      { label: t('filters.years.preset1951_2000'), from: '1951', to: '2000' },
+      { label: t('filters.years.preset2001_2019'), from: '2001', to: '2019' },
+      { label: t('filters.years.preset2020Plus'), from: '2020', to: '' },
+    ],
+    [t]
+  );
+
   return (
     <div className="filter-popover-anchor">
       <button
@@ -37,10 +43,10 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
         id="filter-years-button"
         className={`filter-trigger-btn ${yearFrom || yearTo ? 'active' : ''}`}
         onClick={onToggleOpen}
-        title="Фильтр по году издания"
+        title={t('filters.years.title')}
       >
         <CalendarIcon size={15} />
-        <span className="filter-trigger-text">Год издания</span>
+        <span className="filter-trigger-text">{t('filters.years.buttonLabel')}</span>
         <span className="filter-trigger-slot">
           {yearFrom || yearTo ? (
             <span className="filter-count-badge">1</span>
@@ -55,7 +61,7 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
           <div className="popover-header">
             <div className="popover-header-title">
               <CalendarIcon size={15} />
-              <span>Год издания</span>
+              <span>{t('filters.years.title')}</span>
             </div>
             {(yearFrom || yearTo) && (
               <button
@@ -63,7 +69,7 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
                 onClick={onClearYears}
                 className="popover-clear-btn"
               >
-                Сбросить
+                {t('filters.years.clear')}
               </button>
             )}
           </div>
@@ -71,7 +77,7 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
           {/* Range inputs */}
           <div className="year-inputs-row">
             <div className="year-input-col">
-              <label htmlFor="year-from-input">От года</label>
+              <label htmlFor="year-from-input">{t('filters.years.from')}</label>
               <input
                 id="year-from-input"
                 type="number"
@@ -83,7 +89,7 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
             </div>
             <span className="year-separator">—</span>
             <div className="year-input-col">
-              <label htmlFor="year-to-input">До года</label>
+              <label htmlFor="year-to-input">{t('filters.years.to')}</label>
               <input
                 id="year-to-input"
                 type="number"
@@ -97,9 +103,9 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
 
           {/* Quick Presets */}
           <div className="year-presets-section">
-            <span className="year-presets-title">Быстрый период:</span>
+            <span className="year-presets-title">{t('filters.years.quickPeriodTitle')}</span>
             <div className="year-presets-chips">
-              {YEAR_PRESETS.map((preset) => (
+              {yearPresets.map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
@@ -118,3 +124,5 @@ export const YearFilterPopover: React.FC<YearFilterPopoverProps> = ({
     </div>
   );
 };
+
+export default YearFilterPopover;

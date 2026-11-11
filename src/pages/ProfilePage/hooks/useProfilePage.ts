@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../store/authStore';
 import api from '../../../api/axiosInstance';
 import { getMyProfile } from '../../../api/usersApi';
+import { useTranslation } from '../../../i18n';
 
 export const useProfilePage = () => {
   const { user, logout, updateUser } = useAuthStore();
   const navigate = useNavigate();
+  const { t, language } = useTranslation();
 
   // Sync full profile (including lat/lng) from server on mount
   useEffect(() => {
@@ -37,10 +39,10 @@ export const useProfilePage = () => {
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Не указано';
+    if (!dateString) return t('common.notSpecified');
     try {
       const d = new Date(dateString);
-      return d.toLocaleDateString('ru-RU', {
+      return d.toLocaleDateString(language === 'en' ? 'en-US' : 'uk-UA', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
