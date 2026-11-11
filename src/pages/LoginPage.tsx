@@ -4,6 +4,7 @@ import axios from 'axios';
 import api from '../api/axiosInstance';
 import { useAuthStore } from '../store/authStore';
 import { BookOpenIcon } from '../components/icons';
+import { APP_CONFIG } from '../config/app';
 import './auth.css';
 
 const LoginPage = () => {
@@ -38,7 +39,8 @@ const LoginPage = () => {
     <div className="auth-bg">
       <div className="auth-card">
         <div className="auth-logo">
-          <BookOpenIcon size={28} />
+          <BookOpenIcon size={32} />
+          <div className="auth-brand-badge">{APP_CONFIG.name}</div>
         </div>
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-subtitle">Sign in to your account</p>

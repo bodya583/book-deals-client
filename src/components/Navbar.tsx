@@ -5,6 +5,7 @@ import api from '../api/axiosInstance';
 import { BookOpenIcon, UserIcon, LogOutIcon, GlobeIcon, TradeIcon } from './icons';
 import { Avatar } from './ui';
 import { getTradeCounts } from '../api/tradesApi';
+import { APP_CONFIG } from '../config/app';
 import './Navbar.css';
 
 export const Navbar: React.FC = () => {
@@ -43,7 +44,7 @@ export const Navbar: React.FC = () => {
           <div className="navbar-brand-icon">
             <BookOpenIcon size={22} />
           </div>
-          <span className="navbar-brand-text">BookShelf</span>
+          <span className="navbar-brand-text">{APP_CONFIG.name}</span>
         </Link>
 
         {/* Navigation items */}

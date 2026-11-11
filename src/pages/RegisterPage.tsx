@@ -4,6 +4,7 @@ import axios from 'axios';
 import api from '../api/axiosInstance';
 import { useAuthStore } from '../store/authStore';
 import { BookOpenIcon } from '../components/icons';
+import { APP_CONFIG } from '../config/app';
 import './auth.css';
 
 const RegisterPage = () => {
@@ -39,7 +40,8 @@ const RegisterPage = () => {
     <div className="auth-bg">
       <div className="auth-card">
         <div className="auth-logo">
-          <BookOpenIcon size={28} />
+          <BookOpenIcon size={32} />
+          <div className="auth-brand-badge">{APP_CONFIG.name}</div>
         </div>
         <h1 className="auth-title">Create account</h1>
         <p className="auth-subtitle">Join the community</p>
