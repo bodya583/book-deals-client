@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   getTrades,
@@ -11,6 +11,8 @@ import {
 import type { Trade, TradeCounts } from '../../../types/trade';
 import { useAuthStore } from '../../../store/authStore';
 import type { ToastMessage } from '../../../components/Toast';
+import { useQuery } from '../../../hooks/useQuery';
+import { queryClient } from '../../../utils/queryClient';
 
 export type TabType = 'requests' | 'agreed' | 'completed';
 export type SortOption = 'turn' | 'newest' | 'oldest' | 'updated';
@@ -23,20 +25,6 @@ export const useTradesPage = () => {
   const rawTab = searchParams.get('tab');
   const currentTab: TabType = (rawTab === 'agreed' || rawTab === 'completed') ? rawTab : 'requests';
 
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [counts, setCounts] = useState<TradeCounts>({
-    incoming: 0,
-    outgoing: 0,
-    requests: 0,
-    agreed: 0,
-    completed: 0,
-    total: 0,
-  });
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<SortOption>('turn');
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-  const [rejectModalTradeId, setRejectModalTradeId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((text: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -47,26 +35,42 @@ export const useTradesPage = () => {
     setToasts((prev) => prev.filter((t) => t.id !== toastId));
   }, []);
 
-  const fetchTradeData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [tradesData, countsData] = await Promise.all([
-        getTrades(currentTab),
-        getTradeCounts(),
-      ]);
-      setTrades(tradesData);
-      setCounts(countsData);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Не удалось загрузить трейды';
-      addToast(message, 'error');
-    } finally {
-      setLoading(false);
+  // Resilient query hook with AbortController, deduplication, and cache
+  const {
+    data: trades = [],
+    loading: tradesLoading,
+  } = useQuery<Trade[]>(
+    `trades:tab:${currentTab}`,
+    (signal) => getTrades(currentTab, { signal }),
+    {
+      staleTime: 15_000,
+      onError: (err) => addToast(err.message || 'Не удалось загрузить трейды', 'error'),
     }
-  }, [currentTab, addToast]);
+  );
 
-  useEffect(() => {
-    fetchTradeData();
-  }, [fetchTradeData]);
+  const {
+    data: counts = {
+      incoming: 0,
+      outgoing: 0,
+      requests: 0,
+      agreed: 0,
+      completed: 0,
+      total: 0,
+    },
+    loading: countsLoading,
+  } = useQuery<TradeCounts>(
+    'trades:counts',
+    (signal) => getTradeCounts({ signal }),
+    {
+      staleTime: 15_000,
+    }
+  );
+
+  const loading = tradesLoading || countsLoading;
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<SortOption>('turn');
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [rejectModalTradeId, setRejectModalTradeId] = useState<string | null>(null);
 
   const handleTabChange = useCallback((tab: TabType) => {
     setSearchParams({ tab });
@@ -80,7 +84,7 @@ export const useTradesPage = () => {
       setActionLoadingId(tradeId);
       await acceptTrade(tradeId);
       addToast('Обмен успешно согласован! Условия зафиксированы.', 'success');
-      await fetchTradeData();
+      queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ошибка при согласовании трейда';
       addToast(message, 'error');
@@ -101,7 +105,7 @@ export const useTradesPage = () => {
       } else {
         addToast('Вы подтвердили получение книг! Ожидается подтверждение партнёра.', 'info');
       }
-      await fetchTradeData();
+      queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ошибка при завершении трейда';
       addToast(message, 'error');
@@ -121,7 +125,7 @@ export const useTradesPage = () => {
       await rejectTrade(rejectModalTradeId, reason);
       addToast('Предложение обмена отклонено', 'success');
       setRejectModalTradeId(null);
-      await fetchTradeData();
+      queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ошибка при отклонении трейда';
       addToast(message, 'error');
@@ -138,7 +142,7 @@ export const useTradesPage = () => {
       setActionLoadingId(tradeId);
       await cancelTrade(tradeId);
       addToast('Предложение обмена отозвано', 'success');
-      await fetchTradeData();
+      queryClient.invalidate('trades');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ошибка при отмене трейда';
       addToast(message, 'error');

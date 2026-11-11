@@ -7,7 +7,7 @@ import { TradeOfferPartnerHeader } from './components/TradeOfferPartnerHeader';
 import { TradeOfferTable } from './components/TradeOfferTable';
 import { TradeInventoryDrawer } from './components/TradeInventoryDrawer';
 import { TradeOfferFooter } from './components/TradeOfferFooter';
-import '../trades.css';
+import './TradeOfferPage.css';
 
 export { computeBooksHash };
 

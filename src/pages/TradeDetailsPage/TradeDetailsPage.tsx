@@ -7,7 +7,7 @@ import { TradeDetailsHeader } from './components/TradeDetailsHeader';
 import { SteamTradeMatrix } from './components/SteamTradeMatrix';
 import { TradeDetailsFooterActions } from './components/TradeDetailsFooterActions';
 import { TradeChatSection } from './components/TradeChatSection';
-import '../trades.css';
+import './TradeDetailsPage.css';
 
 export const TradeDetailsPage: React.FC = () => {
   const {

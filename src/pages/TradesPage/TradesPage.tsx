@@ -8,7 +8,7 @@ import { TradesSidebar } from './components/TradesSidebar';
 import { TradesToolbar } from './components/TradesToolbar';
 import { TradeCard } from './components/TradeCard';
 import { EmptyState } from '../../components/ui';
-import '../trades.css';
+import './TradesPage.css';
 
 export const TradesPage: React.FC = () => {
   const {

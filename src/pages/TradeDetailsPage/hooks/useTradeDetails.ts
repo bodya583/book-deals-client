@@ -13,6 +13,8 @@ import type { Trade, TradeMessage } from '../../../types/trade';
 import { useAuthStore } from '../../../store/authStore';
 import type { ToastMessage } from '../../../components/Toast';
 import { parseHandoverFromMessages } from '../components/TradeHandoverSection';
+import { useQuery } from '../../../hooks/useQuery';
+import { queryClient } from '../../../utils/queryClient';
 
 export const computeSimpleHash = (str: string): string => {
   let hash = 0;
@@ -28,15 +30,46 @@ export const useTradeDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuthStore();
 
-  const [trade, setTrade] = useState<Trade | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
+
+  const addToast = useCallback((text: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToasts([{ id: String(Date.now()), text, type }]);
+  }, []);
+
+  const removeToast = useCallback((toastId: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  }, []);
+
+  // Resilient queries with AbortController, deduplication, and cache
+  const {
+    data: trade = null,
+    loading,
+    setData: setTrade,
+  } = useQuery<Trade | null>(
+    id ? `trades:${id}` : null,
+    (signal) => (id ? getTradeById(id, { signal }) : Promise.resolve(null)),
+    {
+      staleTime: 10_000,
+      onError: (err) => addToast(err.message || 'Не удалось загрузить данные трейда', 'error'),
+    }
+  );
+
+  const {
+    data: messages = [],
+    loading: messagesLoading,
+    refetch: refetchMessages,
+    setData: setMessages,
+  } = useQuery<TradeMessage[]>(
+    id ? `trades:${id}:messages` : null,
+    (signal) => (id ? getTradeMessages(id, { signal }) : Promise.resolve([])),
+    {
+      staleTime: 5_000,
+    }
+  );
 
   // Chat state
-  const [messages, setMessages] = useState<TradeMessage[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState<boolean>(true);
   const [messageText, setMessageText] = useState<string>('');
   const [sendingMessage, setSendingMessage] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,46 +87,6 @@ export const useTradeDetails = () => {
       .reverse()
       .find((m) => m.text?.includes('Предложение времени встречи:'))?.id;
   }, [messages]);
-
-  const addToast = useCallback((text: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToasts([{ id: String(Date.now()), text, type }]);
-  }, []);
-
-  const removeToast = useCallback((toastId: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== toastId));
-  }, []);
-
-  const fetchTrade = useCallback(async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const data = await getTradeById(id);
-      setTrade(data);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Не удалось загрузить данные трейда';
-      addToast(message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, addToast]);
-
-  const fetchMessages = useCallback(async () => {
-    if (!id) return;
-    try {
-      setMessagesLoading(true);
-      const msgs = await getTradeMessages(id);
-      setMessages(msgs);
-    } catch {
-      // ignore
-    } finally {
-      setMessagesLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetchTrade();
-    fetchMessages();
-  }, [fetchTrade, fetchMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -121,7 +114,7 @@ export const useTradeDetails = () => {
     try {
       setSendingMessage(true);
       const newMsg = await sendTradeMessage(id, text);
-      setMessages((prev) => [...prev, newMsg]);
+      setMessages((prev = []) => [...prev, newMsg]);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Не удалось отправить сообщение';
       addToast(message, 'error');
@@ -146,7 +139,7 @@ export const useTradeDetails = () => {
         createdAt: new Date().toISOString(),
         isSelfOnly: true,
       };
-      setMessages((prev) => [...prev, selfNotice]);
+      setMessages((prev = []) => [...prev, selfNotice]);
       addToast(`Точка передачи уже согласована: ${loc}`, 'info');
       return;
     }
@@ -172,7 +165,7 @@ export const useTradeDetails = () => {
         createdAt: new Date().toISOString(),
         isSelfOnly: true,
       };
-      setMessages((prev) => [...prev, selfNotice]);
+      setMessages((prev = []) => [...prev, selfNotice]);
       addToast(`Время встречи уже согласовано: ${tm}`, 'info');
       return;
     }
@@ -190,7 +183,7 @@ export const useTradeDetails = () => {
     try {
       setSendingMessage(true);
       const newMsg = await sendTradeMessage(id, text);
-      setMessages((prev) => [...prev, newMsg]);
+      setMessages((prev = []) => [...prev, newMsg]);
       setMessageText('');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Не удалось отправить сообщение';
@@ -208,6 +201,7 @@ export const useTradeDetails = () => {
       setActionLoading(true);
       const updated = await acceptTrade(id);
       setTrade(updated);
+      queryClient.invalidate('trades');
       addToast('Обмен успешно согласован! Условия зафиксированы.', 'success');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ошибка при согласовании трейда';
@@ -225,6 +219,7 @@ export const useTradeDetails = () => {
       setActionLoading(true);
       const updated = await completeTrade(id);
       setTrade(updated);
+      queryClient.invalidate('trades');
       if (updated.status === 'COMPLETED') {
         addToast('Обмен успешно завершён обеими сторонами! Книги перешли новым владельцам.', 'success');
       } else {
@@ -249,8 +244,9 @@ export const useTradeDetails = () => {
       const updated = await rejectTrade(id, reason);
       setTrade(updated);
       setRejectModalOpen(false);
+      queryClient.invalidate('trades');
       addToast('Предложение обмена отклонено', 'success');
-      await fetchMessages();
+      await refetchMessages();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ошибка при отклонении трейда';
       addToast(message, 'error');
@@ -267,6 +263,7 @@ export const useTradeDetails = () => {
       setActionLoading(true);
       const updated = await cancelTrade(id);
       setTrade(updated);
+      queryClient.invalidate('trades');
       addToast('Предложение обмена отозвано', 'success');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Ошибка при отмене трейда';
