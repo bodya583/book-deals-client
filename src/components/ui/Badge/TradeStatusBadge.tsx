@@ -66,7 +66,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
             <span>
               {language === 'en'
                 ? `You confirmed (Awaiting ${partnerUsername ? `@${partnerUsername}` : 'partner'})`
-                : `Вы подтвердили получение (Ожидание ${partnerUsername ? `@${partnerUsername}` : 'партнёра'})`}
+                : `Ви підтвердили отримання (Очікування ${partnerUsername ? `@${partnerUsername}` : 'партнера'})`}
             </span>
           </span>
         );
@@ -87,7 +87,7 @@ export const TradeStatusBadge: React.FC<TradeStatusBadgeProps> = ({
             <span>
               {language === 'en'
                 ? `${partnerUsername ? `@${partnerUsername}` : 'Partner'} confirmed books received!`
-                : `${partnerUsername ? `@${partnerUsername}` : 'Партнёр'} подтвердил(а) получение книг!`}
+                : `${partnerUsername ? `@${partnerUsername}` : 'Партнер'} підтвердив(-ла) отримання книг!`}
             </span>
           </span>
         );

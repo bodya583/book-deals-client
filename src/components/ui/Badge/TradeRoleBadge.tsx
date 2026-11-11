@@ -28,7 +28,7 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
         <span
           className={`trade-role-badge role-action-needed ${className}`}
           style={style}
-          title={language === 'en' ? 'Offer received — your response is required' : 'Вам поступило предложение — требуется ваш ответ или согласование'}
+          title={language === 'en' ? 'Offer received — your response is required' : 'Вам надійшла пропозиція — потрібна ваша відповідь або узгодження'}
         >
           <span className="role-dot role-dot-needed" />
           <span>{t('trades.badges.yourTurn')}</span>
@@ -39,7 +39,7 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
       <span
         className={`trade-role-badge role-waiting ${className}`}
         style={style}
-        title={language === 'en' ? 'Offer sent — awaiting partner response' : 'Вы отправили предложение — ожидается ответ партнёра'}
+        title={language === 'en' ? 'Offer sent — awaiting partner response' : 'Ви надіслали пропозицію — очікується відповідь партнера'}
       >
         <span className="role-dot role-dot-waiting" />
         <span>{t('trades.badges.partnerTurn')}</span>
@@ -56,10 +56,10 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
         <span
           className={`trade-role-badge role-action-needed ${className}`}
           style={style}
-          title={language === 'en' ? 'Partner confirmed handover. Confirm your books received!' : 'Партнёр уже подтвердил передачу книг. Подтвердите получение своих!'}
+          title={language === 'en' ? 'Partner confirmed handover. Confirm your books received!' : 'Партнер уже підтвердив передачу книг. Підтвердьте отримання своїх!'}
         >
           <span className="role-dot role-dot-needed" />
-          <span>{language === 'en' ? 'Confirm received' : 'Подтвердите получение'}</span>
+          <span>{language === 'en' ? 'Confirm received' : 'Підтвердьте отримання'}</span>
         </span>
       );
     }
@@ -68,7 +68,7 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
         <span
           className={`trade-role-badge role-waiting ${className}`}
           style={style}
-          title={language === 'en' ? 'You confirmed receipt. Awaiting partner confirmation.' : 'Вы подтвердили передачу. Ожидается подтверждение от партнёра.'}
+          title={language === 'en' ? 'You confirmed receipt. Awaiting partner confirmation.' : 'Ви підтвердили отримання. Очікується підтвердження від партнера.'}
         >
           <span className="role-dot role-dot-waiting" />
           <span>{t('trades.badges.partnerTurn')}</span>
@@ -79,10 +79,10 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
       <span
         className={`trade-role-badge role-action-needed ${className}`}
         style={style}
-        title={language === 'en' ? 'Meet and confirm trade once books are received' : 'Встретьтесь и подтвердите обмен после получения книг'}
+        title={language === 'en' ? 'Meet and confirm trade once books are received' : 'Зустріньтесь та підтвердьте обмін після отримання книг'}
       >
         <span className="role-dot role-dot-needed" />
-        <span>{language === 'en' ? 'Awaiting handover' : 'Ожидает физической встречи'}</span>
+        <span>{language === 'en' ? 'Awaiting handover' : 'Очікує особистої зустрічі'}</span>
       </span>
     );
   }
@@ -97,13 +97,13 @@ export const TradeRoleBadge: React.FC<TradeRoleBadgeProps> = ({
           border: '1px solid #a7f3d0',
           ...style,
         }}
-        title={language === 'en' ? 'Both sides confirmed receipt of books' : 'Обе стороны подтвердили получение книг'}
+        title={language === 'en' ? 'Both sides confirmed receipt of books' : 'Обидві сторони підтвердили отримання книг'}
       >
         <span
           className="role-dot"
           style={{ background: '#10b981' }}
         />
-        <span>{language === 'en' ? 'Trade completed' : 'Сделка успешно закрыта'}</span>
+        <span>{language === 'en' ? 'Trade completed' : 'Угоду успішно закрито'}</span>
       </span>
     );
   }

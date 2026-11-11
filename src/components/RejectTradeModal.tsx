@@ -36,12 +36,12 @@ export const RejectTradeModal: React.FC<RejectTradeModalProps> = ({
       <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: '#64748b', lineHeight: 1.5 }}>
         {language === 'en'
           ? 'You can leave a note for your trade partner explaining the reason. It will appear in the trade chat.'
-          : 'Вы можете оставить комментарий для партнёра с объяснением причины отказа. Он отобразится в чате трейда.'}
+          : 'Ви можете залишити коментар для партнера з поясненням причини відмови. Він зʼявиться у чаті угоди.'}
       </p>
 
       <form onSubmit={handleSubmit}>
         <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>
-          {language === 'en' ? 'Reason (optional):' : 'Причина отклонения (необязательно):'}
+          {language === 'en' ? 'Reason (optional):' : 'Причина відхилення (необов’язково):'}
         </label>
         <textarea
           value={reason}

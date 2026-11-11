@@ -13,12 +13,12 @@ export const LanguageSwitcher: React.FC = () => {
       </div>
       <button
         type="button"
-        className={`lang-btn ${language === 'ru' ? 'active' : ''}`}
-        onClick={() => setLanguage('ru')}
-        title="Переключить интерфейс на русский"
-        aria-pressed={language === 'ru'}
+        className={`lang-btn ${language === 'uk' ? 'active' : ''}`}
+        onClick={() => setLanguage('uk')}
+        title="Перемкнути інтерфейс на українську"
+        aria-pressed={language === 'uk'}
       >
-        RU
+        UA
       </button>
       <span className="lang-divider" aria-hidden="true">/</span>
       <button

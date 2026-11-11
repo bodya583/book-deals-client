@@ -66,7 +66,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         {/* User Info */}
         <div className="profile-hero-info">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <h1 className="profile-username">@{user?.username || (language === 'en' ? 'User' : 'Пользователь')}</h1>
+            <h1 className="profile-username">@{user?.username || (language === 'en' ? 'User' : 'Користувач')}</h1>
             {isOtherUser && (
               <span
                 style={{
@@ -78,7 +78,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                   fontWeight: 600,
                 }}
               >
-                {language === 'en' ? `${APP_CONFIG.name} Member` : `Читатель ${APP_CONFIG.name}`}
+                {language === 'en' ? `${APP_CONFIG.name} Member` : `Читач ${APP_CONFIG.name}`}
               </span>
             )}
           </div>

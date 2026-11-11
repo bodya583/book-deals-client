@@ -185,7 +185,7 @@ export const BookCard: React.FC<BookCardProps> = ({
                 if (uId) navigate(`/profile/${uId}`);
               }}
             >
-              <span className="creator-label">{language === 'en' ? 'by' : 'от'}</span>
+              <span className="creator-label">{language === 'en' ? 'by' : 'від'}</span>
               <span className="creator-name">@{book.user.username}</span>
             </span>
           </div>

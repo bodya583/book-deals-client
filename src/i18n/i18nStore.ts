@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import type { SupportedLanguage, TranslationDictionary } from './types';
-import { ru } from './locales/ru';
+import { uk } from './locales/uk';
 import { en } from './locales/en';
 
 const dictionaries: Record<SupportedLanguage, TranslationDictionary> = {
-  ru,
+  uk,
   en,
 };
 
@@ -13,7 +13,7 @@ const STORAGE_KEY = 'bookswap_lang';
 const getInitialLanguage = (): SupportedLanguage => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'ru' || saved === 'en') {
+    if (saved === 'uk' || saved === 'en') {
       return saved;
     }
     const navLang = navigator.language?.toLowerCase();
@@ -23,7 +23,7 @@ const getInitialLanguage = (): SupportedLanguage => {
   } catch {
     // ignore localStorage errors
   }
-  return 'ru';
+  return 'uk';
 };
 
 interface I18nState {
@@ -47,14 +47,14 @@ export const useI18nStore = create<I18nState>((set, get) => ({
   },
 
   toggleLanguage: () => {
-    const next = get().language === 'ru' ? 'en' : 'ru';
+    const next = get().language === 'uk' ? 'en' : 'uk';
     get().setLanguage(next);
   },
 
   t: (path: string, params?: Record<string, string | number>): string => {
     const { language } = get();
-    const dict = dictionaries[language] || dictionaries.ru;
-    const fallbackDict = dictionaries.ru;
+    const dict = dictionaries[language] || dictionaries.uk;
+    const fallbackDict = dictionaries.uk;
 
     const resolve = (obj: any, keys: string[]): string | undefined => {
       let current = obj;

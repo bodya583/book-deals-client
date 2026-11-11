@@ -56,18 +56,18 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         </div>
 
         <h3 className="delete-modal-title">
-          {language === 'en' ? 'Delete book?' : 'Удалить книгу?'}
+          {language === 'en' ? 'Delete book?' : 'Видалити книгу?'}
         </h3>
 
         <p className="delete-modal-text">
-          {language === 'en' ? 'Are you sure you want to delete ' : 'Вы действительно хотите удалить книгу '}
+          {language === 'en' ? 'Are you sure you want to delete ' : 'Ви дійсно бажаєте видалити книгу '}
           <strong className="delete-highlight">«{book.title}»</strong> ({book.author})?
         </p>
 
         <p className="delete-modal-warning">
           {language === 'en'
             ? 'This action cannot be undone. The book will be permanently removed from your library.'
-            : 'Это действие нельзя будет отменить. Книга навсегда удалится из вашей библиотеки.'}
+            : 'Цю дію не можна скасувати. Книгу буде назавжди видалено з вашої бібліотеки.'}
         </p>
 
         {error && <div className="modal-error-banner">{error}</div>}

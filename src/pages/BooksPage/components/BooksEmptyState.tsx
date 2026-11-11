@@ -41,36 +41,36 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
           <h3 className="empty-title">{t('catalog.emptyCatalogTitle')}</h3>
           <p className="empty-desc">
             {searchQuery && (
-              <span>По запросу «<strong>{searchQuery}</strong>» </span>
+              <span>{language === 'en' ? 'By query ' : 'За запитом '}«<strong>{searchQuery}</strong>» </span>
             )}
             {selectedGenres.length > 0 && (
               <span>
-                по {selectedGenres.length === 1 ? 'жанру' : 'жанрам'}{' '}
+                {language === 'en' ? 'by genres ' : 'за жанрами '}
                 <strong>{selectedGenres.join(', ')}</strong>{' '}
                 {selectedGenres.length > 1 && (
-                  <em>({strictGenres ? 'режим: все одновременно' : 'режим: любой из них'})</em>
+                  <em>({strictGenres ? (language === 'en' ? 'mode: all together' : 'режим: усі одночасно') : (language === 'en' ? 'mode: any' : 'режим: будь-який')})</em>
                 )}{' '}
               </span>
             )}
             {selectedLanguages.length > 0 && (
               <span>
-                на {selectedLanguages.length === 1 ? 'языке' : 'языках'}{' '}
+                {language === 'en' ? 'in languages ' : 'мовами '}
                 <strong>{selectedLanguages.join(', ')}</strong>{' '}
               </span>
             )}
             {(yearFrom || yearTo) && (
               <span>
-                за период{' '}
+                {language === 'en' ? 'published ' : 'за період '}
                 <strong>
                   {yearFrom && yearTo
-                    ? `${yearFrom} – ${yearTo} гг.`
+                    ? `${yearFrom} – ${yearTo}`
                     : yearFrom
-                    ? `с ${yearFrom} г.`
-                    : `до ${yearTo} г.`}
+                    ? `від ${yearFrom}`
+                    : `до ${yearTo}`}
                 </strong>{' '}
               </span>
             )}
-            книг не найдено. Попробуйте изменить параметры или сбросить фильтры.
+            {language === 'en' ? 'books not found. Try adjusting criteria.' : 'книг не знайдено. Спробуйте змінити критерії пошуку.'}
           </p>
           <button
             type="button"
@@ -78,7 +78,7 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
             onClick={onResetFilters}
           >
             <CloseIcon size={16} />
-            <span>{language === 'en' ? 'Reset all filters' : 'Сбросить все фильтры'}</span>
+            <span>{language === 'en' ? 'Reset all filters' : 'Скинути всі фільтри'}</span>
           </button>
         </>
       ) : isAll ? (
