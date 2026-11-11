@@ -1,23 +1,23 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import type { Trade, TradeStatus } from '../../../types/trade';
-import type { User } from '../../../store/authStore';
+import type { Trade } from '../../../types/trade';
 import {
+  MapPinIcon,
+  MessageSquareIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
-  MessageSquareIcon,
-  MapPinIcon,
 } from '../../../components/icons';
 import { TradeExchangeMatrix } from './TradeExchangeMatrix';
+import { Avatar, TradeStatusBadge, TradeRoleBadge } from '../../../components/ui';
 
 interface TradeCardProps {
   trade: Trade;
-  currentUser: User | null;
+  currentUser: { id: string; username?: string } | null;
   currentTab: string;
   badgeCount: number;
   actionLoading: boolean;
-  formatDate: (date: string) => string;
+  formatDate: (dateStr?: string) => string;
   onAccept: (tradeId: string) => void;
   onComplete: (tradeId: string) => void;
   onReject: (tradeId: string) => void;
@@ -52,153 +52,19 @@ export const TradeCard: React.FC<TradeCardProps> = ({
   const myBooksToGive = (isSender ? trade.offeredBooks : trade.requestedBooks) || [];
   const myBooksToReceive = (isSender ? trade.requestedBooks : trade.offeredBooks) || [];
 
-  const renderRoleBadge = () => {
-    if (currentTab === 'requests' || trade.status === 'PENDING') {
-      if (!isSender) {
-        return (
-          <span
-            className="trade-role-badge role-action-needed"
-            title="Вам поступило предложение — требуется ваш ответ или согласование"
-          >
-            <span className="role-dot role-dot-needed" />
-            <span>Требует вашего ответа</span>
-          </span>
-        );
-      }
-      return (
-        <span
-          className="trade-role-badge role-waiting"
-          title="Вы отправили предложение — ожидается ответ партнёра"
-        >
-          <span className="role-dot role-dot-waiting" />
-          <span>Ожидание партнёра</span>
-        </span>
-      );
-    }
-
-    if (currentTab === 'agreed' || trade.status === 'AGREED' || trade.status === 'ACCEPTED') {
-      const iAmConfirmed = isSender ? trade.senderCompleted : trade.receiverCompleted;
-      const partnerConfirmed = isSender ? trade.receiverCompleted : trade.senderCompleted;
-
-      if (partnerConfirmed && !iAmConfirmed) {
-        return (
-          <span
-            className="trade-role-badge role-action-needed"
-            title="Партнёр уже подтвердил передачу книг. Подтвердите получение своих!"
-          >
-            <span className="role-dot role-dot-needed" />
-            <span>Подтвердите получение</span>
-          </span>
-        );
-      }
-      if (iAmConfirmed && !partnerConfirmed) {
-        return (
-          <span
-            className="trade-role-badge role-waiting"
-            title="Вы подтвердили передачу. Ожидается подтверждение от партнёра."
-          >
-            <span className="role-dot role-dot-waiting" />
-            <span>Ожидание партнёра</span>
-          </span>
-        );
-      }
-    }
-
-    return null;
-  };
-
-  const renderStatusBadge = (status: TradeStatus) => {
-    switch (status) {
-      case 'PENDING':
-        return (
-          <span className="trade-status-pill status-pending" title="Обмен активен, возможны изменения или встречные предложения">
-            <ClockIcon size={14} />
-            <span>Ожидает ответа (Возможны изменения)</span>
-          </span>
-        );
-      case 'AGREED':
-      case 'ACCEPTED': {
-        const iAmConfirmed = isSender ? trade.senderCompleted : trade.receiverCompleted;
-        const partnerConfirmed = isSender ? trade.receiverCompleted : trade.senderCompleted;
-
-        if (iAmConfirmed && !partnerConfirmed) {
-          return (
-            <span
-              className="trade-status-pill status-partial"
-              style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}
-              title="Вы подтвердили получение книг, ожидается подтверждение от партнёра"
-            >
-              <ClockIcon size={14} />
-              <span>Ожидается подтверждение партнёра</span>
-            </span>
-          );
-        }
-        if (!iAmConfirmed && partnerConfirmed) {
-          return (
-            <span
-              className="trade-status-pill status-partner-ready"
-              style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}
-              title="Партнёр уже подтвердил получение ваших книг. Подтвердите получение своих!"
-            >
-              <CheckCircleIcon size={14} />
-              <span>Партнёр подтвердил получение!</span>
-            </span>
-          );
-        }
-        return (
-          <span
-            className="trade-status-pill status-accepted"
-            style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}
-            title="Условия обмена зафиксированы обеими сторонами, ожидается передача книг"
-          >
-            <CheckCircleIcon size={14} />
-            <span>Согласован (Зафиксирован)</span>
-          </span>
-        );
-      }
-      case 'COMPLETED':
-        return (
-          <span
-            className="trade-status-pill status-completed"
-            style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}
-            title="Обмен успешно завершён, книги получены"
-          >
-            <CheckCircleIcon size={14} />
-            <span>Завершён (Книги получены)</span>
-          </span>
-        );
-      case 'REJECTED':
-        return (
-          <span className="trade-status-pill status-rejected">
-            <XCircleIcon size={14} />
-            <span>Отклонён</span>
-          </span>
-        );
-      case 'CANCELLED':
-        return (
-          <span className="trade-status-pill status-cancelled">
-            <XCircleIcon size={14} />
-            <span>Отозван</span>
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <article
-      className="trade-card trade-card-clickable"
+      className="trade-card"
+      style={{ cursor: 'pointer', position: 'relative' }}
       onClick={() => navigate(`/trades/${trade.id}`)}
-      tabIndex={0}
-      role="button"
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
           navigate(`/trades/${trade.id}`);
         }
       }}
       title="Нажмите, чтобы открыть подробности сделки и чат согласования"
+      tabIndex={0}
+      role="button"
     >
       {/* Top-Right Notification Counter Badge */}
       {badgeCount > 0 && (
@@ -219,13 +85,11 @@ export const TradeCard: React.FC<TradeCardProps> = ({
           style={{ textDecoration: 'none', color: 'inherit' }}
           title={`Перейти в профиль пользователя @${partner?.username}`}
         >
-          <div className="trade-user-avatar">
-            {partner?.photoURL ? (
-              <img src={partner.photoURL} alt={partner.username} />
-            ) : (
-              <span>{(partner?.username || 'П').slice(0, 2).toUpperCase()}</span>
-            )}
-          </div>
+          <Avatar
+            photoURL={partner?.photoURL}
+            username={partner?.username}
+            size={40}
+          />
           <div className="trade-user-meta">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span className="trade-user-name">
@@ -251,8 +115,21 @@ export const TradeCard: React.FC<TradeCardProps> = ({
         </Link>
 
         <div className="trade-card-header-badges">
-          {renderRoleBadge()}
-          {renderStatusBadge(trade.status)}
+          <TradeRoleBadge
+            status={trade.status}
+            isSender={Boolean(isSender)}
+            senderCompleted={trade.senderCompleted}
+            receiverCompleted={trade.receiverCompleted}
+            currentTab={currentTab}
+          />
+          <TradeStatusBadge
+            status={trade.status}
+            isSender={Boolean(isSender)}
+            senderCompleted={trade.senderCompleted}
+            receiverCompleted={trade.receiverCompleted}
+            partnerUsername={partner?.username}
+            size="sm"
+          />
         </div>
       </div>
 

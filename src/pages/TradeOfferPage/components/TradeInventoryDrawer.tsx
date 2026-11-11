@@ -2,6 +2,7 @@ import React from 'react';
 import { UserIcon, BookOpenIcon, SearchIcon, CheckIcon } from '../../../components/icons';
 import type { Book } from '../../../types/book';
 import type { TradePartner } from '../../../types/trade';
+import { BookCover, EmptyState } from '../../../components/ui';
 
 interface TradeInventoryDrawerProps {
   inventoryTab: 'my' | 'partner';
@@ -85,11 +86,16 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
           Загрузка книг...
         </div>
       ) : filteredInventoryBooks.length === 0 ? (
-        <div style={{ padding: '3rem', textAlign: 'center', color: '#888880' }}>
-          {inventoryTab === 'my'
-            ? 'В вашей библиотеке нет доступных книг для обмена. Добавьте книги в каталоге или откройте их для обмена в профиле.'
-            : 'У этого партнера пока нет книг для обмена.'}
-        </div>
+        <EmptyState
+          compact
+          icon={<BookOpenIcon size={32} />}
+          title={inventoryTab === 'my' ? 'Нет доступных книг' : 'Нет доступных книг у партнёра'}
+          description={
+            inventoryTab === 'my'
+              ? 'В вашей библиотеке нет доступных книг для обмена. Добавьте книги в каталоге или откройте их для обмена в профиле.'
+              : 'У этого партнера пока нет книг для обмена.'
+          }
+        />
       ) : (
         <div className="inventory-grid">
           {filteredInventoryBooks.map((book) => {
@@ -119,13 +125,12 @@ export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
                   </span>
                 )}
 
-                {book.coverURL ? (
-                  <img src={book.coverURL} alt={book.title} className="inventory-card-cover" />
-                ) : (
-                  <div className="inventory-card-cover">
-                    <BookOpenIcon size={32} />
-                  </div>
-                )}
+                <BookCover
+                  coverURL={book.coverURL}
+                  title={book.title}
+                  className="inventory-card-cover"
+                  iconSize={32}
+                />
 
                 <h4 className="inventory-card-title">{book.title}</h4>
                 <p className="inventory-card-author">{book.author}</p>

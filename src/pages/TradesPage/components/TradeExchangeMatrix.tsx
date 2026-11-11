@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Book } from '../../../types/book';
-import { BookOpenIcon, ArrowLeftRightIcon } from '../../../components/icons';
+import { ArrowLeftRightIcon } from '../../../components/icons';
+import { BookCover } from '../../../components/ui';
 
 interface TradeExchangeMatrixProps {
   myBooksToGive: Book[];
@@ -27,13 +28,14 @@ export const TradeExchangeMatrix: React.FC<TradeExchangeMatrixProps> = ({
           ) : (
             myBooksToGive.map((book) => (
               <div key={book.id} className="trade-mini-book" title={`${book.title} — ${book.author}`}>
-                {book.coverURL ? (
-                  <img src={book.coverURL} alt={book.title} className="trade-mini-cover" />
-                ) : (
-                  <div className="trade-mini-cover">
-                    <BookOpenIcon size={14} />
-                  </div>
-                )}
+                <BookCover
+                  coverURL={book.coverURL}
+                  title={book.title}
+                  width={32}
+                  height={44}
+                  iconSize={14}
+                  className="trade-mini-cover"
+                />
                 <div className="trade-mini-info">
                   <span className="trade-mini-title">{book.title}</span>
                   <span className="trade-mini-author">{book.author}</span>
@@ -63,13 +65,14 @@ export const TradeExchangeMatrix: React.FC<TradeExchangeMatrixProps> = ({
           ) : (
             myBooksToReceive.map((book) => (
               <div key={book.id} className="trade-mini-book" title={`${book.title} — ${book.author}`}>
-                {book.coverURL ? (
-                  <img src={book.coverURL} alt={book.title} className="trade-mini-cover" />
-                ) : (
-                  <div className="trade-mini-cover">
-                    <BookOpenIcon size={14} />
-                  </div>
-                )}
+                <BookCover
+                  coverURL={book.coverURL}
+                  title={book.title}
+                  width={32}
+                  height={44}
+                  iconSize={14}
+                  className="trade-mini-cover"
+                />
                 <div className="trade-mini-info">
                   <span className="trade-mini-title">{book.title}</span>
                   <span className="trade-mini-author">{book.author}</span>

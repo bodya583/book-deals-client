@@ -2,6 +2,7 @@ import React from 'react';
 import { TradeIcon, ArrowLeftRightIcon, BookOpenIcon } from '../../../components/icons';
 import type { Book } from '../../../types/book';
 import type { TradePartner } from '../../../types/trade';
+import { BookCover } from '../../../components/ui';
 
 interface TradeOfferTableProps {
   selectedPartner: TradePartner | null;
@@ -56,16 +57,12 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
                   <div className="steam-remove-overlay">
                     <span>Убрать</span>
                   </div>
-                  {book.coverURL ? (
-                    <img src={book.coverURL} alt={book.title} className="steam-slot-cover" />
-                  ) : (
-                    <div
-                      className="steam-slot-cover"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      <BookOpenIcon size={24} color="#64748b" />
-                    </div>
-                  )}
+                  <BookCover
+                    coverURL={book.coverURL}
+                    title={book.title}
+                    className="steam-slot-cover"
+                    iconSize={24}
+                  />
                   <span className="steam-slot-title">{book.title}</span>
                 </div>
               ))}
@@ -108,16 +105,12 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
                   <div className="steam-remove-overlay">
                     <span>Убрать</span>
                   </div>
-                  {book.coverURL ? (
-                    <img src={book.coverURL} alt={book.title} className="steam-slot-cover" />
-                  ) : (
-                    <div
-                      className="steam-slot-cover"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      <BookOpenIcon size={24} color="#64748b" />
-                    </div>
-                  )}
+                  <BookCover
+                    coverURL={book.coverURL}
+                    title={book.title}
+                    className="steam-slot-cover"
+                    iconSize={24}
+                  />
                   <span className="steam-slot-title">{book.title}</span>
                 </div>
               ))}

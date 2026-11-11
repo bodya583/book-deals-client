@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPinIcon } from '../../../components/icons';
 import type { TradePartner } from '../../../types/trade';
+import { Avatar } from '../../../components/ui';
 
 interface TradeOfferPartnerHeaderProps {
   selectedPartner: TradePartner | null;
@@ -14,13 +15,11 @@ export const TradeOfferPartnerHeader: React.FC<TradeOfferPartnerHeaderProps> = (
   return (
     <div className="trade-partner-card">
       <div className="partner-card-left">
-        <div className="trade-user-avatar" style={{ width: 44, height: 44 }}>
-          {selectedPartner?.photoURL ? (
-            <img src={selectedPartner.photoURL} alt={selectedPartner.username} />
-          ) : (
-            <span>{(selectedPartner?.username || 'П').slice(0, 2).toUpperCase()}</span>
-          )}
-        </div>
+        <Avatar
+          photoURL={selectedPartner?.photoURL}
+          username={selectedPartner?.username}
+          size={44}
+        />
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '1.05rem', fontWeight: 700 }}>
@@ -49,3 +48,5 @@ export const TradeOfferPartnerHeader: React.FC<TradeOfferPartnerHeaderProps> = (
     </div>
   );
 };
+
+export default TradeOfferPartnerHeader;

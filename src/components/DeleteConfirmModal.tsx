@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Book } from '../types/book';
-import { CloseIcon, TrashIcon } from './icons';
+import { TrashIcon } from './icons';
+import { Modal } from './ui';
 
 interface DeleteConfirmModalProps {
   book: Book | null;
@@ -19,36 +20,10 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   const [error, setError] = useState('');
 
   const handleClose = () => {
+    if (loading) return;
     setError('');
     onClose();
   };
-
-  // Handle ESC key press & body scroll locking
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !loading) {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
-    };
-  }, [isOpen, loading, onClose]);
 
   if (!isOpen || !book) return null;
 
@@ -67,69 +42,50 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   };
 
   return (
-    <div className="modal-backdrop" onClick={() => !loading && handleClose()} role="dialog" aria-modal="true">
-      <div
-        className="modal-container modal-delete"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          className="modal-close-btn"
-          onClick={handleClose}
-          disabled={loading}
-          aria-label="Закрыть"
-        >
-          <CloseIcon size={20} />
-        </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      showCloseButton={!loading}
+      maxWidth={440}
+    >
+      <div className="delete-modal-content">
+        <div className="delete-modal-icon">
+          <TrashIcon size={28} />
+        </div>
 
-        <div className="delete-modal-content">
-          <div className="delete-modal-icon">
-            <TrashIcon size={28} />
-          </div>
+        <h3 className="delete-modal-title">Удалить книгу?</h3>
 
-          <h3 className="delete-modal-title">Удалить книгу?</h3>
-          
-          <p className="delete-modal-text">
-            Вы действительно хотите удалить книгу <strong className="delete-highlight">«{book.title}»</strong> ({book.author})?
-          </p>
-          
-          <p className="delete-modal-warning">
-            Это действие нельзя будет отменить. Книга навсегда удалится из вашей библиотеки.
-          </p>
+        <p className="delete-modal-text">
+          Вы действительно хотите удалить книгу <strong className="delete-highlight">«{book.title}»</strong> ({book.author})?
+        </p>
 
-          {error && <div className="modal-error-banner">{error}</div>}
+        <p className="delete-modal-warning">
+          Это действие нельзя будет отменить. Книга навсегда удалится из вашей библиотеки.
+        </p>
 
-          <div className="delete-modal-actions">
-            <button
-              type="button"
-              className="modal-btn modal-btn-outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              Отмена
-            </button>
-            <button
-              type="button"
-              className="modal-btn modal-btn-danger"
-              onClick={handleDelete}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className="spinner-small" />
-                  <span>Удаление...</span>
-                </>
-              ) : (
-                <>
-                  <TrashIcon size={16} />
-                  <span>Да, удалить</span>
-                </>
-              )}
-            </button>
-          </div>
+        {error && <div className="modal-error-banner">{error}</div>}
+
+        <div className="delete-modal-actions">
+          <button
+            type="button"
+            className="btn-cancel"
+            onClick={handleClose}
+            disabled={loading}
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            className="btn-delete-confirm"
+            onClick={handleDelete}
+            disabled={loading}
+          >
+            <TrashIcon size={16} />
+            <span>{loading ? 'Удаление...' : 'Да, удалить'}</span>
+          </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

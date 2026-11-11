@@ -7,6 +7,7 @@ import {
   renderProposalBubbleContent,
   type HandoverAgreement,
 } from './TradeHandoverSection';
+import { Avatar, EmptyState } from '../../../components/ui';
 
 export interface TradeChatSectionProps {
   partner?: TradePartner;
@@ -70,13 +71,12 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
             Загрузка сообщений...
           </div>
         ) : messages.length === 0 ? (
-          <div className="trade-chat-empty">
-            <MessageSquareIcon size={28} />
-            <span>Пока нет сообщений в этом трейде</span>
-            <span style={{ fontSize: '0.8rem', color: '#999990' }}>
-              Напишите сообщение или предложите время и точку передачи книг
-            </span>
-          </div>
+          <EmptyState
+            compact
+            icon={<MessageSquareIcon size={28} />}
+            title="Пока нет сообщений в этом трейде"
+            description="Напишите сообщение или предложите время и точку передачи книг"
+          />
         ) : (
           messages.map((msg) => {
             if (msg.isSelfOnly) {
@@ -100,13 +100,12 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
                 className={`trade-chat-bubble-row ${isMine ? 'mine' : 'theirs'}`}
               >
                 {!isMine && (
-                  <div className="trade-chat-avatar">
-                    {msg.sender?.photoURL ? (
-                      <img src={msg.sender.photoURL} alt={msg.sender.username} />
-                    ) : (
-                      <span>{(msg.sender?.username || 'П').slice(0, 2).toUpperCase()}</span>
-                    )}
-                  </div>
+                  <Avatar
+                    photoURL={msg.sender?.photoURL}
+                    username={msg.sender?.username}
+                    size={36}
+                    className="trade-chat-avatar"
+                  />
                 )}
                 <div className={`trade-chat-bubble ${isMine ? 'mine' : 'theirs'}`}>
                   <div className="trade-chat-meta">
@@ -158,3 +157,5 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
     </div>
   );
 };
+
+export default TradeChatSection;

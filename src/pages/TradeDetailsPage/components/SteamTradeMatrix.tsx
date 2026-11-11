@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Book } from '../../../types/book';
-import { BookOpenIcon, ArrowLeftRightIcon } from '../../../components/icons';
+import { ArrowLeftRightIcon } from '../../../components/icons';
+import { BookCover } from '../../../components/ui';
 
 interface SteamTradeMatrixProps {
   myBooksToGive: Book[];
@@ -31,13 +32,12 @@ export const SteamTradeMatrix: React.FC<SteamTradeMatrixProps> = ({
             <div className="steam-slots-container">
               {myBooksToGive.map((book) => (
                 <div key={book.id} className="steam-slot-item" style={{ cursor: 'default' }}>
-                  {book.coverURL ? (
-                    <img src={book.coverURL} alt={book.title} className="steam-slot-cover" />
-                  ) : (
-                    <div className="steam-slot-cover" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <BookOpenIcon size={24} color="#64748b" />
-                    </div>
-                  )}
+                  <BookCover
+                    coverURL={book.coverURL}
+                    title={book.title}
+                    className="steam-slot-cover"
+                    iconSize={24}
+                  />
                   <span className="steam-slot-title">{book.title}</span>
                   <span style={{ fontSize: '0.72rem', color: '#666660' }}>{book.author}</span>
                 </div>
@@ -66,13 +66,12 @@ export const SteamTradeMatrix: React.FC<SteamTradeMatrixProps> = ({
             <div className="steam-slots-container">
               {myBooksToReceive.map((book) => (
                 <div key={book.id} className="steam-slot-item" style={{ cursor: 'default' }}>
-                  {book.coverURL ? (
-                    <img src={book.coverURL} alt={book.title} className="steam-slot-cover" />
-                  ) : (
-                    <div className="steam-slot-cover" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <BookOpenIcon size={24} color="#64748b" />
-                    </div>
-                  )}
+                  <BookCover
+                    coverURL={book.coverURL}
+                    title={book.title}
+                    className="steam-slot-cover"
+                    iconSize={24}
+                  />
                   <span className="steam-slot-title">{book.title}</span>
                   <span style={{ fontSize: '0.72rem', color: '#666660' }}>{book.author}</span>
                 </div>

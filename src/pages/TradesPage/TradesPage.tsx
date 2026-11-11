@@ -7,6 +7,7 @@ import { useTradesPage } from './hooks/useTradesPage';
 import { TradesSidebar } from './components/TradesSidebar';
 import { TradesToolbar } from './components/TradesToolbar';
 import { TradeCard } from './components/TradeCard';
+import { EmptyState } from '../../components/ui';
 import '../trades.css';
 
 export const TradesPage: React.FC = () => {
@@ -87,29 +88,29 @@ export const TradesPage: React.FC = () => {
                 Загрузка предложений обмена...
               </div>
             ) : filteredTrades.length === 0 ? (
-              <div className="trades-empty-state">
-                <div className="empty-state-icon">
-                  <TradeIcon size={32} />
-                </div>
-                <h3 className="empty-state-title">
-                  {currentTab === 'requests'
+              <EmptyState
+                icon={<TradeIcon size={32} />}
+                title={
+                  currentTab === 'requests'
                     ? 'Нет активных запросов на обмен'
                     : currentTab === 'agreed'
                     ? 'Пока нет согласованных обменов'
-                    : 'Пока нет завершённых обменов'}
-                </h3>
-                <p className="empty-state-text">
-                  {currentTab === 'requests'
+                    : 'Пока нет завершённых обменов'
+                }
+                description={
+                  currentTab === 'requests'
                     ? 'Здесь будут отображаться входящие и исходящие предложения обмена на стадии переговоров.'
                     : currentTab === 'agreed'
                     ? 'Здесь находятся сделки, условия которых зафиксированы, в ожидании передачи книг.'
-                    : 'Здесь сохраняется архив успешно проведённых сделок, в которых книги получены.'}
-                </p>
-                <Link to="/books" className="btn-new-trade" style={{ marginTop: '0.5rem' }}>
-                  <BookOpenIcon size={18} />
-                  <span>Выбрать книги в каталоге</span>
-                </Link>
-              </div>
+                    : 'Здесь сохраняется архив успешно проведённых сделок, в которых книги получены.'
+                }
+                action={
+                  <Link to="/books" className="btn-new-trade">
+                    <BookOpenIcon size={18} />
+                    <span>Выбрать книги в каталоге</span>
+                  </Link>
+                }
+              />
             ) : (
               <div className="trades-list">
                 {filteredTrades.map((trade) => (

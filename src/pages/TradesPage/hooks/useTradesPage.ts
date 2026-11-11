@@ -175,7 +175,8 @@ export const useTradesPage = () => {
     }
   }, []);
 
-  const formatDate = useCallback((dateStr: string) => {
+  const formatDate = useCallback((dateStr?: string) => {
+    if (!dateStr) return '';
     try {
       const d = new Date(dateStr);
       return d.toLocaleDateString('ru-RU', {

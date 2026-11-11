@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import api from '../api/axiosInstance';
 import { BookOpenIcon, UserIcon, LogOutIcon, GlobeIcon, TradeIcon } from './icons';
+import { Avatar } from './ui';
 import { getTradeCounts } from '../api/tradesApi';
 import './Navbar.css';
 
@@ -32,11 +33,6 @@ export const Navbar: React.FC = () => {
       logout();
       navigate('/login');
     }
-  };
-
-  const getInitials = (name?: string) => {
-    if (!name) return 'U';
-    return name.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -84,12 +80,7 @@ export const Navbar: React.FC = () => {
         {/* Actions & User menu */}
         <div className="navbar-actions">
           <div className="navbar-user-chip" onClick={() => navigate('/profile')} title="Перейти в профиль">
-            <div className="navbar-avatar">
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt={user.username} onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
-              ) : null}
-              <span className="navbar-avatar-initials">{getInitials(user?.username)}</span>
-            </div>
+            <Avatar photoURL={user?.photoURL} username={user?.username} size={32} />
             <span className="navbar-username">{user?.username || 'Пользователь'}</span>
           </div>
 
