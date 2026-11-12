@@ -41,17 +41,8 @@ function computeClusters(
   locations: UserLocationGroup[],
   zoom: number
 ): ClusterGroup[] {
-  if (zoom >= 10) {
-    return locations.map((loc) => ({
-      centerLat: loc.cloakedLat,
-      centerLng: loc.cloakedLng,
-      locations: [loc],
-      totalBooks: loc.books.length,
-    }));
-  }
-
   const clusters: ClusterGroup[] = [];
-  const clusterDist = 45;
+  const clusterDistPx = 48;
 
   for (const loc of locations) {
     const pLoc = map.project([loc.cloakedLat, loc.cloakedLng], zoom);
@@ -61,7 +52,7 @@ function computeClusters(
     for (const cluster of clusters) {
       const pCluster = map.project([cluster.centerLat, cluster.centerLng], zoom);
       const d = Math.hypot(pLoc.x - pCluster.x, pLoc.y - pCluster.y);
-      if (d < clusterDist && d < minDist) {
+      if (d < clusterDistPx && d < minDist) {
         minDist = d;
         bestCluster = cluster;
       }
@@ -250,21 +241,21 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
 
           clusterMarker.on('click', () => {
             const zoomNow = map.getZoom();
-            if (zoomNow < 15) {
-              const bounds = L.latLngBounds(
-                cluster.locations.map((loc) => [loc.cloakedLat, loc.cloakedLng])
-              );
-              if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
-                map.setView(
-                  [cluster.centerLat, cluster.centerLng],
-                  Math.max(11, zoomNow + 3),
-                  { animate: true }
-                );
-              } else {
-                map.fitBounds(bounds.pad(0.35), { maxZoom: 14, animate: true });
-              }
-            } else {
+            const bounds = L.latLngBounds(
+              cluster.locations.map((loc) => [loc.cloakedLat, loc.cloakedLng])
+            );
+            const isSinglePoint = bounds.getNorthEast().equals(bounds.getSouthWest());
+
+            if (zoomNow >= 15 || (isSinglePoint && zoomNow >= 13)) {
               clusterMarker.openPopup();
+            } else if (isSinglePoint) {
+              map.setView(
+                [cluster.centerLat, cluster.centerLng],
+                Math.min(map.getMaxZoom(), zoomNow + 2),
+                { animate: true }
+              );
+            } else {
+              map.fitBounds(bounds.pad(0.35), { maxZoom: 16, animate: true });
             }
           });
 
