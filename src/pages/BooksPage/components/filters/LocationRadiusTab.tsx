@@ -39,7 +39,10 @@ export const LocationRadiusTab: React.FC<LocationRadiusTabProps> = ({
             <span>{t('filters.location.myGpsLocation')}</span>
           </button>
 
-          {availableSettlements.slice(0, 5).map((s) => (
+          {availableSettlements
+            .filter((s) => s.name !== 'Unspecified')
+            .slice(0, 5)
+            .map((s) => (
             <button
               key={s.name}
               type="button"

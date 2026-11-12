@@ -24,7 +24,10 @@ export interface GetBooksParams {
   cities?: string[];
 }
 
-export const getBooks = async (params?: GetBooksParams): Promise<BooksResponse> => {
+export const getBooks = async (
+  params?: GetBooksParams,
+  options?: { signal?: AbortSignal }
+): Promise<BooksResponse> => {
   const queryParams: Record<string, any> = { ...params };
 
   if (Array.isArray(params?.genres)) {
@@ -37,7 +40,10 @@ export const getBooks = async (params?: GetBooksParams): Promise<BooksResponse> 
     queryParams.cities = params.cities.join(',');
   }
 
-  const response = await api.get<BooksResponse>('/books', { params: queryParams });
+  const response = await api.get<BooksResponse>('/books', {
+    params: queryParams,
+    signal: options?.signal,
+  });
   return response.data;
 };
 

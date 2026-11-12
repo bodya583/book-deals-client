@@ -41,31 +41,31 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
 
   return (
     <section className="books-toolbar-section" aria-label={t('filters.title')} ref={containerRef}>
-      <div className="books-toolbar-row">
-        <div className="books-toolbar-left">
-          <div className="books-search-wrapper">
-            <SearchIcon size={16} className="books-search-icon" />
-            <input
-              type="text"
-              id="books-search-input"
-              className="books-search-input"
-              placeholder={t('catalog.searchPlaceholder')}
-              value={filters.search.query}
-              onChange={(e) => filters.search.setQuery(e.target.value)}
-              aria-label={t('catalog.searchPlaceholder')}
-            />
-            {filters.search.query && (
-              <button
-                type="button"
-                className="books-search-clear"
-                onClick={() => filters.search.setQuery('')}
-                aria-label={t('common.close')}
-              >
-                <CloseIcon size={14} />
-              </button>
-            )}
-          </div>
+      <div className="books-toolbar">
+        <div className="books-search-wrapper">
+          <SearchIcon size={16} className="books-search-icon" />
+          <input
+            type="text"
+            id="books-search-input"
+            className="books-search-input"
+            placeholder={t('catalog.searchPlaceholder')}
+            value={filters.search.query}
+            onChange={(e) => filters.search.setQuery(e.target.value)}
+            aria-label={t('catalog.searchPlaceholder')}
+          />
+          {filters.search.query && (
+            <button
+              type="button"
+              className="books-search-clear"
+              onClick={() => filters.search.setQuery('')}
+              aria-label={t('common.close')}
+            >
+              <CloseIcon size={14} />
+            </button>
+          )}
+        </div>
 
+        <div className="books-filters-group">
           <GenreFilterPopover
             isOpen={openDropdown === 'genres'}
             onToggleOpen={() => toggleDropdown('genres')}

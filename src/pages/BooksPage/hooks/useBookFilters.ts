@@ -150,5 +150,8 @@ export const useBookFilters = (): BookFiltersController => {
     [sortBy, viewMode]
   );
 
-  return { search, genres, languages, year, location, display, hasActiveFilters, reset };
+  return useMemo(
+    () => ({ search, genres, languages, year, location, display, hasActiveFilters, reset }),
+    [search, genres, languages, year, location, display, hasActiveFilters, reset]
+  );
 };
