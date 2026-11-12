@@ -1,4 +1,4 @@
-/* Trades Page Modular Stylesheet Entrypoint */
+
 @import './styles/tradesLayout.css';
 @import './styles/tradeCard.css';
 @import './styles/tradeCardActions.css';

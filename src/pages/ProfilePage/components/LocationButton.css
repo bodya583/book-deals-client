@@ -1,6 +1,3 @@
-/* =========================================================
-   LOCATION SECTION — Profile Page (Bookstore Design System)
-   ========================================================= */
 
 .profile-hero-actions {
   display: flex;
@@ -95,7 +92,6 @@
   transform: none !important;
 }
 
-/* "Share location" button — primary site button styling */
 .location-btn--set {
   background: #2d6a4f;
   color: #ffffff;
@@ -114,7 +110,6 @@
   transform: translateY(0);
 }
 
-/* "Update" button — clean secondary button styling */
 .location-btn--update {
   background: #ffffff;
   color: #1a1a1a;
@@ -133,7 +128,6 @@
   transform: translateY(0);
 }
 
-/* "Delete" button — danger-outline button styling */
 .location-btn--remove {
   background: transparent;
   color: #c0392b;

@@ -1,6 +1,3 @@
-/* =========================================================
-   LOCATION & SETTLEMENTS POPOVER (BooksToolbar)
-   ========================================================= */
 
 .filter-popover-location {
   width: 330px !important;
@@ -9,7 +6,6 @@
   overflow: hidden;
 }
 
-/* Tabs switcher: [ By Cities ] [ By Distance ] */
 .location-popover-tabs {
   display: flex;
   background: #f7f7f4;
@@ -85,7 +81,6 @@
   border-top: 1px solid #f0f0eb;
 }
 
-/* Tab 2: Distance Content */
 .location-radius-content {
   gap: 0.85rem;
 }

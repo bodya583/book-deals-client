@@ -17,7 +17,6 @@ export const TradeExchangeMatrix: React.FC<TradeExchangeMatrixProps> = ({
 
   return (
     <div className="trade-exchange-row">
-      {/* Left: What I Give */}
       <div className="trade-exchange-side">
         <div className="trade-side-label" style={{ color: '#b91c1c' }}>
           <span>{t('trades.card.youGive')}</span>
@@ -49,12 +48,10 @@ export const TradeExchangeMatrix: React.FC<TradeExchangeMatrixProps> = ({
         </div>
       </div>
 
-      {/* Center: Exchange Icon */}
       <div className="trade-direction-divider" title={t('trades.card.exchangeTooltip')}>
         <ArrowLeftRightIcon size={20} />
       </div>
 
-      {/* Right: What I Receive */}
       <div className="trade-exchange-side">
         <div className="trade-side-label" style={{ color: '#15803d' }}>
           <span>{t('trades.card.youGet')}</span>

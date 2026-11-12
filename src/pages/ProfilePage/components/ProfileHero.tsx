@@ -48,7 +48,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   return (
     <section className="profile-hero-card">
       <div className="profile-hero-main">
-        {/* Avatar */}
         <div className="profile-large-avatar">
           {user?.photoURL ? (
             <img
@@ -62,7 +61,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           <span className="profile-avatar-letters">{initials}</span>
         </div>
 
-        {/* User Info */}
         <div className="profile-hero-info">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             <h1 className="profile-username">@{user?.username || t('common.user')}</h1>
@@ -103,7 +101,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         </div>
       </div>
 
-      {/* Profile Actions */}
       {user && (
         <div className="profile-hero-actions">
           {isOtherUser ? (
@@ -137,4 +134,3 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 };
 
 export default ProfileHero;
-

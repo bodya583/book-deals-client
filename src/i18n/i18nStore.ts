@@ -16,7 +16,6 @@ const getInitialLanguage = (): SupportedLanguage => {
     if (saved === 'uk' || saved === 'en') {
       return saved;
     }
-    // Automatically detect primary language from browser
     const candidateLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
     for (const lang of candidateLanguages) {
       if (!lang) continue;
@@ -29,7 +28,6 @@ const getInitialLanguage = (): SupportedLanguage => {
       }
     }
   } catch {
-    // ignore localStorage errors
   }
   return 'uk';
 };
@@ -44,7 +42,6 @@ const syncDomLocale = (lang: SupportedLanguage) => {
       metaDesc.setAttribute('content', dict.app.description);
     }
   } catch {
-    // ignore SSR / test env errors
   }
 };
 
@@ -94,7 +91,6 @@ export const useI18nStore = create<I18nState>((set, get) => ({
     try {
       localStorage.setItem(STORAGE_KEY, lang);
     } catch {
-      // ignore
     }
     syncDomLocale(lang);
     set({ language: lang });

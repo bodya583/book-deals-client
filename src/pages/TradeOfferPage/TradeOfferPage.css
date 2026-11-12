@@ -1,4 +1,4 @@
-/* Trade Offer Modular Stylesheet Entrypoint */
+
 @import './styles/tradeOfferMatrix.css';
 @import '../TradeDetailsPage/styles/tradeChat.css';
 @import './styles/tradeInventory.css';

@@ -62,7 +62,6 @@ export const useTradeDetails = () => {
           })
         );
       } catch {
-        // ignore localStorage errors
       }
     }
   }, [id, tradeData?.updatedAt, tradeData?.createdAt, chat.messages.length]);

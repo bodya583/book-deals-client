@@ -1,4 +1,4 @@
-/* Popover search & checklist */
+
 .popover-search-box {
   width: 100%;
 }
@@ -94,7 +94,6 @@
   color: #888882;
 }
 
-/* Year Filter Popover Elements */
 .year-inputs-row {
   display: flex;
   align-items: center;

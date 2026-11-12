@@ -1,4 +1,4 @@
-/* Modal Form (Add & Edit Book) */
+
 .modal-form {
   max-width: 800px;
   width: 100%;
@@ -107,7 +107,6 @@
   gap: 1rem;
 }
 
-/* Form Live Preview & Upload Column */
 .modal-form-preview-col {
   display: flex;
   flex-direction: column;
@@ -187,14 +186,12 @@
   border-top: 1px solid #ecece8;
 }
 
-/* Two columns form row */
 .form-row-two-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-/* Preview year pill */
 .preview-year-pill {
   display: inline-flex;
   align-items: center;

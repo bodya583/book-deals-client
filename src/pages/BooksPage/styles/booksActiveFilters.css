@@ -1,4 +1,4 @@
-/* Active filters bar */
+
 .books-active-filters-bar {
   display: flex;
   align-items: center;
@@ -95,7 +95,6 @@
   border-color: #fde68a;
 }
 
-/* Active tags in filter bar */
 .active-settlement-tag {
   background: #f4f8f5;
   color: #1b4332;

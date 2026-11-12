@@ -22,7 +22,6 @@ export const SteamTradeMatrix: React.FC<SteamTradeMatrixProps> = ({
       </div>
 
       <div className="steam-matrix-grid">
-        {/* What I give */}
         <div className="steam-side-box">
           <div className="steam-side-header">
             <span className="steam-side-label" style={{ color: '#dc2626' }}>
@@ -51,14 +50,12 @@ export const SteamTradeMatrix: React.FC<SteamTradeMatrixProps> = ({
           )}
         </div>
 
-        {/* Center */}
         <div className="steam-matrix-divider">
           <div className="steam-exchange-bubble">
             <ArrowLeftRightIcon size={22} />
           </div>
         </div>
 
-        {/* What I receive */}
         <div className="steam-side-box">
           <div className="steam-side-header">
             <span className="steam-side-label" style={{ color: '#2d6a4f' }}>

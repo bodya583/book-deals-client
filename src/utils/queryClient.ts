@@ -79,7 +79,6 @@ class QueryClient {
       return existing.promise as Promise<T>;
     }
 
-    // Shared in-flight controller must survive individual StrictMode cleanup unmounts
     const controller = new AbortController();
     const promise = fetcher(controller.signal)
       .then((data) => {
@@ -110,7 +109,6 @@ class QueryClient {
       try {
         listener(event);
       } catch {
-        // ignore listener errors
       }
     });
   }

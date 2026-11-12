@@ -36,7 +36,6 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
       </div>
 
       <div className="steam-matrix-grid">
-        {/* Left Box: Your items to give */}
         <div className="steam-side-box">
           <div className="steam-side-header">
             <span className="steam-side-label">{t('offer.yourSideLabel')}</span>
@@ -73,14 +72,12 @@ export const TradeOfferTable: React.FC<TradeOfferTableProps> = ({
           )}
         </div>
 
-        {/* Center: Direction exchange indicator */}
         <div className="steam-matrix-divider">
           <div className="steam-exchange-bubble">
             <ArrowLeftRightIcon size={22} />
           </div>
         </div>
 
-        {/* Right Box: Partner's items to receive */}
         <div className="steam-side-box">
           <div className="steam-side-header">
             <span className="steam-side-label">

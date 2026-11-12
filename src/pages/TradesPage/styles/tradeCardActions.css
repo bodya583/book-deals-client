@@ -1,4 +1,4 @@
-/* Card Actions */
+
 .trade-card-actions {
   display: flex;
   align-items: center;
@@ -87,7 +87,6 @@
   color: #1a1a1a;
 }
 
-/* Empty State */
 .trades-empty-state {
   display: flex;
   flex-direction: column;
@@ -126,7 +125,6 @@
   margin: 0;
 }
 
-/* Header Badges & Role Turn Indicator */
 .trade-card-header-badges {
   display: flex;
   align-items: center;

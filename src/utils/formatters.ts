@@ -1,9 +1,5 @@
 import { translate, type SupportedLanguage } from '../i18n';
 
-/**
- * Formats a publication year into user-friendly localized text.
- * Handles historical BC dates and standard modern years using i18n locale keys.
- */
 export function formatBookYear(
   year: number | string | null | undefined,
   lang?: string

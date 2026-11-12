@@ -23,7 +23,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupRef = useRef<L.FeatureGroup | null>(null);
 
-  // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
@@ -52,7 +51,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
     };
   }, []);
 
-  // Update Markers & Fuzzy Zones when books, userCoords, or language change
   useEffect(() => {
     const map = mapInstanceRef.current;
     const featureGroup = layerGroupRef.current;
@@ -60,7 +58,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
 
     featureGroup.clearLayers();
 
-    // 1. Add current user marker if coordinates are available
     if (userCoords?.latitude && userCoords?.longitude) {
       const userMarker = L.marker([userCoords.latitude, userCoords.longitude], {
         icon: L.divIcon({
@@ -75,7 +72,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
       featureGroup.addLayer(userMarker);
     }
 
-    // 2. Group books by base coordinates to avoid overlapping markers
     const locationGroups = new Map<string, Book[]>();
     books.forEach((book) => {
       const baseCoords = resolveBookBaseCoordinates(book.user);
@@ -86,7 +82,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
       locationGroups.set(key, arr);
     });
 
-    // 3. Render each book with Spatial Cloaking & Golden Angle Neighborhood Dispersion
     locationGroups.forEach((groupBooks) => {
       groupBooks.forEach((book, indexInGroup) => {
         const baseCoords = resolveBookBaseCoordinates(book.user);
@@ -189,7 +184,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
       try {
         map.fitBounds(featureGroup.getBounds().pad(0.12));
       } catch {
-        // Fallback
       }
     }
   }, [books, userCoords, onViewBook, t, language]);
@@ -209,7 +203,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
           animate: true,
         });
       } catch {
-        // ignore
       }
     }
   };

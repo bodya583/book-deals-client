@@ -26,7 +26,6 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
 
   return (
     <>
-      {/* Navigation Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <Link to="/trades" className="trade-back-btn">
           <ChevronLeftIcon size={16} />
@@ -85,7 +84,6 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
         </div>
       </div>
 
-      {/* Message quote if any */}
       {trade.message && (
         <div className="trade-card-message" style={{ fontSize: '0.95rem', padding: '1rem' }}>
           <span style={{ flexShrink: 0, marginTop: '2px', color: '#2d6a4f', display: 'inline-flex' }}>

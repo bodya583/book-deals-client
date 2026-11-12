@@ -69,7 +69,6 @@ export const useProfileBooks = (routeUserId?: string, currentUserId?: string) =>
         const books = booksRes.data.books || booksRes.data || [];
         setOtherBooks(books.filter((b: Book) => b.isForTrade !== false));
       } catch {
-        // Fallback handled gracefully
       } finally {
         setLoading(false);
       }
@@ -96,7 +95,6 @@ export const useProfileBooks = (routeUserId?: string, currentUserId?: string) =>
         prev.map((b) => (b.id === book.id ? { ...b, isForTrade: nextStatus } : b))
       );
     } catch {
-      // ignore
     } finally {
       setTogglingBookId(null);
     }

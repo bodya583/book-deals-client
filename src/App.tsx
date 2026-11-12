@@ -23,7 +23,6 @@ function App() {
         setAuth(data.user, data.accessToken);
       })
       .catch(() => {
-        // No valid cookie — stay unauthenticated
       })
       .finally(() => {
         setChecking(false);
@@ -59,11 +58,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public auth routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected user routes with AppLayout */}
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<BooksPage scope="all" />} />
@@ -78,7 +75,6 @@ function App() {
           </Route>
         </Route>
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

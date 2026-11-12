@@ -1,4 +1,4 @@
-/* Empty & Loading States */
+
 .books-loading-state {
   display: flex;
   flex-direction: column;
@@ -95,7 +95,6 @@
   cursor: pointer;
 }
 
-/* Toast Notifications Container */
 .toast-container {
   position: fixed;
   bottom: 1.5rem;

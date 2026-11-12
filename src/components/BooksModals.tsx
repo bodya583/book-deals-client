@@ -47,7 +47,6 @@ export const BooksModals: React.FC<BooksModalsProps> = ({
 
   return (
     <>
-      {/* Book Details Modal Popup */}
       <BookDetailsModal
         book={state.selectedBook}
         isOpen={Boolean(state.selectedBook)}
@@ -57,7 +56,6 @@ export const BooksModals: React.FC<BooksModalsProps> = ({
         onDelete={actions.openDelete}
       />
 
-      {/* Book Add / Edit Modal */}
       <BookFormModal
         isOpen={state.formModal.isOpen}
         mode={state.formModal.mode}
@@ -66,7 +64,6 @@ export const BooksModals: React.FC<BooksModalsProps> = ({
         onSubmit={actions.submitForm}
       />
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         book={state.deletingBook}
         isOpen={Boolean(state.deletingBook)}
@@ -74,7 +71,6 @@ export const BooksModals: React.FC<BooksModalsProps> = ({
         onConfirm={actions.confirmDelete}
       />
 
-      {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={onRemoveToast} />
     </>
   );

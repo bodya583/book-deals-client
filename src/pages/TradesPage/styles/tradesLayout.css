@@ -1,6 +1,3 @@
-/* ==========================================================================
-   Trades Hub & Steam-Like Trade Offer Styles
-   ========================================================================== */
 
 .trades-page {
   min-height: calc(100vh - 65px);
@@ -19,7 +16,6 @@
   gap: 1.75rem;
 }
 
-/* Header Section */
 .trades-header {
   display: flex;
   align-items: center;
@@ -82,7 +78,6 @@
   box-shadow: 0 6px 16px rgba(45, 106, 79, 0.28);
 }
 
-/* Tabs Bar */
 .trades-tabs-nav {
   display: flex;
   align-items: center;

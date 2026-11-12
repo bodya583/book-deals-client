@@ -1,4 +1,4 @@
-/* Modals & Popups (Details, Form, Delete) */
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -64,7 +64,6 @@
   transform: rotate(90deg);
 }
 
-/* Modal Buttons Common */
 .modal-btn {
   display: inline-flex;
   align-items: center;
@@ -126,7 +125,6 @@
   cursor: not-allowed;
 }
 
-/* Modal Delete Confirmation */
 .modal-delete {
   max-width: 440px;
   padding: 2.25rem;

@@ -1,4 +1,4 @@
-/* BookFormModal Fields */
+
 .label-with-icon {
   display: flex;
   align-items: center;
@@ -140,7 +140,6 @@
   font-weight: 600;
 }
 
-/* Preview badges on live card */
 .preview-meta-badges {
   position: absolute;
   bottom: 0.6rem;
@@ -166,7 +165,6 @@
   font-weight: 500;
 }
 
-/* Cover Upload Section in Form */
 .cover-upload-section {
   display: flex;
   flex-direction: column;

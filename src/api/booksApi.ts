@@ -16,11 +16,9 @@ export interface GetBooksParams {
   page?: number;
   limit?: number;
   sortBy?: BookSortOption;
-  // Proximity filter
   nearLat?: number;
   nearLng?: number;
-  radius?: number; // km
-  // Settlement filter
+  radius?: number;
   city?: string;
   cities?: string[];
 }

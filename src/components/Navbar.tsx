@@ -30,7 +30,6 @@ export const Navbar: React.FC = () => {
           if (active) setIncomingCount(data.incoming || 0);
         })
         .catch(() => {
-          // ignore
         });
     };
 
@@ -58,7 +57,6 @@ export const Navbar: React.FC = () => {
     try {
       await api.post('/auth/logout');
     } catch {
-      // ignore
     } finally {
       logout();
       navigate('/login');
@@ -68,7 +66,6 @@ export const Navbar: React.FC = () => {
   return (
     <header className="navbar">
       <div className="navbar-container">
-        {/* Brand */}
         <Link to="/catalog" className="navbar-brand">
           <div className="navbar-brand-icon">
             <BookOpenIcon size={22} />
@@ -76,7 +73,6 @@ export const Navbar: React.FC = () => {
           <span className="navbar-brand-text">{APP_CONFIG.name}</span>
         </Link>
 
-        {/* Navigation items */}
         <nav className="navbar-nav">
           <Link
             to="/catalog"
@@ -107,7 +103,6 @@ export const Navbar: React.FC = () => {
           </Link>
         </nav>
 
-        {/* Actions & User menu */}
         <div className="navbar-actions">
           <LanguageSwitcher />
 

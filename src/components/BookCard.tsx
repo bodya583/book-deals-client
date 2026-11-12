@@ -28,9 +28,7 @@ export const BookCard: React.FC<BookCardProps> = ({
 
   return (
     <article className="book-card" onClick={() => onView(book)}>
-      {/* Light podium with floating book cover */}
       <div className="book-card-podium">
-        {/* Podium Top Header: Language & Year Badges (above cover, clean contrast) */}
         <div className="book-card-podium-header">
           {book.language ? (
             <span className="book-card-lang-tag" title={t('bookCard.langTitle', { lang: tBookLanguage(book.language) })}>
@@ -48,7 +46,6 @@ export const BookCard: React.FC<BookCardProps> = ({
           )}
         </div>
 
-        {/* Floating Book Cover (Vertical 2:3 with soft drop-shadow) */}
         <div className="book-card-floating-cover">
           {book.coverURL && !imgError ? (
             <img
@@ -66,7 +63,6 @@ export const BookCard: React.FC<BookCardProps> = ({
             </div>
           )}
 
-          {/* Hover hint */}
           <div className="book-card-overlay">
             <span className="book-card-hover-hint">
               <EyeIcon size={13} />
@@ -76,21 +72,17 @@ export const BookCard: React.FC<BookCardProps> = ({
         </div>
       </div>
 
-      {/* Book details */}
       <div className="book-card-content">
-        {/* Author */}
         <div className="book-card-meta">
           <span className="book-card-author" title={book.author}>
             {book.author}
           </span>
         </div>
 
-        {/* Title */}
         <h3 className="book-card-title" title={book.title}>
           {book.title}
         </h3>
 
-        {/* Location */}
         {book.user?.city && (
           <div className="book-card-location">
             <span className="book-card-city" title={t('bookCard.cityTitle', { city: tCity(book.user.city) })}>
@@ -100,12 +92,10 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
 
-        {/* Short description with 2-line ellipsis */}
         <p className="book-card-description" title={book.description || undefined}>
           {book.description ? book.description : <span className="book-card-description-empty">{t('bookCard.noDescription')}</span>}
         </p>
 
-        {/* Genres row */}
         {book.genres && book.genres.length > 0 && (
           <div className="book-card-genres">
             {book.genres.slice(0, 2).map((genre) => (
@@ -125,7 +115,6 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
 
-        {/* Action bar with owner controls OR guest trade bar OR subtle creator tag */}
         {isOwner ? (
           <div className="book-card-actions" onClick={(e) => e.stopPropagation()}>
             <div className="book-card-owner-actions">

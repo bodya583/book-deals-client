@@ -1,4 +1,4 @@
-/* Modal Details (Book Details Popup) */
+
 .modal-details {
   max-width: 720px;
   padding: 2.5rem;
@@ -187,7 +187,6 @@
   flex-wrap: wrap;
 }
 
-/* BookDetailsModal Genres */
 .book-popup-genres-box {
   background: #fafaf8;
   border: 1px solid #ebebe5;

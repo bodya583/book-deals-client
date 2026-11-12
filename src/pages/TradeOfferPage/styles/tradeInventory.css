@@ -1,4 +1,4 @@
-/* Steam Inventory Drawer */
+
 .steam-inventory-box {
   background: #ffffff;
   border-radius: 16px;
@@ -79,7 +79,6 @@
   box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
 }
 
-/* Inventory Cards Grid */
 .inventory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -161,7 +160,6 @@
   text-overflow: ellipsis;
 }
 
-/* Steam-Style Action Summary Bar */
 .steam-action-footer {
   background: #ffffff;
   border-radius: 14px;

@@ -10,7 +10,6 @@ export const useProfilePage = () => {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
 
-  // Sync full profile (including lat/lng) from server on mount
   useEffect(() => {
     if (!user) return;
     getMyProfile()
@@ -22,7 +21,6 @@ export const useProfilePage = () => {
         });
       })
       .catch(() => {
-        // silently ignore — user still sees cached data
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -31,7 +29,6 @@ export const useProfilePage = () => {
     try {
       await api.post('/auth/logout');
     } catch {
-      // ignore
     } finally {
       logout();
       navigate('/login');

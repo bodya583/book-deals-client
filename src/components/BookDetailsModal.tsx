@@ -27,11 +27,9 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
   const [errorBookId, setErrorBookId] = useState<string | null>(null);
   const imgError = book ? errorBookId === book.id : false;
 
-  // Handle ESC key press
   useEffect(() => {
     if (!isOpen) return;
 
-    // Lock body scroll and compensate scrollbar width to prevent layout shift
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     const prevOverflow = document.body.style.overflow;
     const prevPaddingRight = document.body.style.paddingRight;
@@ -79,7 +77,6 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
         className="modal-container modal-details"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
           type="button"
           className="modal-close-btn"
@@ -90,7 +87,6 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
         </button>
 
         <div className="book-popup-layout">
-          {/* Cover Section */}
           <div className="book-popup-cover-col">
             <div className="book-popup-cover-box">
               {book.coverURL && !imgError ? (
@@ -108,7 +104,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
                 </div>
               )}
             </div>
-            
+
             {book.user?.username && (
               <div
                 className="book-popup-owner-card"
@@ -141,7 +137,6 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
             )}
           </div>
 
-          {/* Details Section */}
           <div className="book-popup-info-col">
             <div className="book-popup-header">
               <span className="book-popup-author-badge">{book.author}</span>
@@ -166,7 +161,6 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
               )}
             </div>
 
-            {/* Genres Section */}
             {book.genres && book.genres.length > 0 && (
               <div className="book-popup-genres-box">
                 <h4 className="description-heading">
@@ -193,7 +187,6 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
               )}
             </div>
 
-            {/* Action buttons */}
             <div className="book-popup-actions">
               {isOwner && (
                 <>

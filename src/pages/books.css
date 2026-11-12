@@ -1,4 +1,4 @@
-/* Books & Catalog Modular Stylesheet Entrypoint */
+
 @import './BooksPage/styles/booksLayout.css';
 @import './BooksPage/styles/bookCard.css';
 @import './BooksPage/styles/bookCardMeta.css';
