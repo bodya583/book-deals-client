@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BookOpenIcon, SearchIcon, TradeIcon } from '../../../components/icons';
+import { useNavigate } from 'react-router-dom';
+import { BookOpenIcon, SearchIcon, TradeIcon, PlusIcon } from '../../../components/icons';
 import BookCard from '../../../components/BookCard';
 import { useTranslation } from '../../../i18n';
 import type { Book } from '../../../types/book';
@@ -15,7 +15,6 @@ interface ProfileBooksState {
   availableGenres: string[];
   togglingBookId: string | null;
   toggleTradeStatus: (book: Book) => void;
-  setSelectedBook: (book: Book | null) => void;
 }
 
 interface ProfileBooksSectionProps {
@@ -24,6 +23,8 @@ interface ProfileBooksSectionProps {
   loading: boolean;
   books: ProfileBooksState;
   filters: ProfileBooksFiltersController;
+  onSelectBook: (book: Book) => void;
+  onAddBook: () => void;
 }
 
 export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
@@ -32,6 +33,8 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
   loading,
   books,
   filters,
+  onSelectBook,
+  onAddBook,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -39,7 +42,7 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
   return (
     <section className={isOtherUser ? 'profile-books-section' : 'profile-books-section--own'}>
       <div className="profile-books-header">
-        <div>
+        <div className="profile-books-header-info">
           <h2 className="profile-books-title">
             {isOtherUser
               ? t('profile.userBooksTitle', { count: books.source.length })
@@ -53,7 +56,7 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
         {isOtherUser && activeUser ? (
           <button
             type="button"
-            className="btn-new-trade"
+            className="btn-new-trade profile-books-header-action"
             style={{ background: '#2d6a4f' }}
             onClick={() => navigate(`/trades/new?partnerId=${activeUser.id}`)}
           >
@@ -61,9 +64,14 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
             <span>{t('profile.proposeTradeWithUser')}</span>
           </button>
         ) : !isOtherUser ? (
-          <Link to="/catalog" className="btn-new-trade" style={{ background: '#2d6a4f' }}>
+          <button
+            type="button"
+            className="btn-primary-action profile-books-header-action"
+            onClick={onAddBook}
+          >
+            <PlusIcon size={18} />
             <span>{t('profile.addBookBtn')}</span>
-          </Link>
+          </button>
         ) : null}
       </div>
 
@@ -78,6 +86,17 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
           <p className="empty-state-text">
             {isOtherUser ? t('profile.userNoBooksText') : t('profile.myNoBooksText')}
           </p>
+          {!isOtherUser && (
+            <button
+              type="button"
+              className="btn-primary-action"
+              onClick={onAddBook}
+              style={{ marginTop: '0.75rem' }}
+            >
+              <PlusIcon size={18} />
+              <span>{t('profile.addBookBtn')}</span>
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -122,7 +141,7 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
                         : null),
                   }}
                   isOwner={false}
-                  onView={books.setSelectedBook}
+                  onView={onSelectBook}
                   onTrade={(b) => navigate(`/trades/new?partnerId=${activeUser?.id}&bookId=${b.id}`)}
                 />
               ))}
@@ -134,7 +153,7 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
                   key={book.id}
                   book={book}
                   toggling={books.togglingBookId === book.id}
-                  onView={books.setSelectedBook}
+                  onView={onSelectBook}
                   onToggleTradeStatus={books.toggleTradeStatus}
                 />
               ))}

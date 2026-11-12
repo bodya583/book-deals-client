@@ -147,8 +147,25 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.25rem;
+}
+
+.profile-books-header-info {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.profile-books-header-action {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .profile-books-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
 }
 
 .profile-books-title {

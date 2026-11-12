@@ -6,7 +6,7 @@ import ProfileHero from './components/ProfileHero';
 import { ProfileBooksSection } from './components/ProfileBooksSection';
 import { useAuthStore } from '../../store/authStore';
 import { ChevronLeftIcon } from '../../components/icons';
-import BookDetailsModal from '../../components/BookDetailsModal';
+import BooksModals from '../../components/BooksModals';
 import { useTranslation } from '../../i18n';
 import '../books.css';
 import '../trades.css';
@@ -19,7 +19,7 @@ export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
 
   const { user: myUser, formatDate, getInitials } = useProfilePage();
-  const { isOtherUser, otherUser, loading, books, filters } = useProfileBooks(
+  const { isOtherUser, otherUser, loading, books, filters, modals, toasts } = useProfileBooks(
     routeUserId,
     currentUser?.id
   );
@@ -58,15 +58,16 @@ export const ProfilePage: React.FC = () => {
         loading={loading}
         books={books}
         filters={filters}
+        onSelectBook={modals.actions.openDetails}
+        onAddBook={modals.actions.openCreate}
       />
 
-      <BookDetailsModal
-        book={books.selectedBook}
-        isOpen={Boolean(books.selectedBook)}
-        onClose={() => books.setSelectedBook(null)}
-        onEdit={() => {}}
-        onDelete={() => {}}
-        isOwner={false}
+      <BooksModals
+        state={modals.state}
+        actions={modals.actions}
+        currentUserId={currentUser?.id}
+        toasts={toasts.items}
+        onRemoveToast={toasts.remove}
       />
     </div>
   );
