@@ -162,5 +162,7 @@ export interface BooksSchema {
     clusterTooltip: string;
     userBooksCount: string;
     viewBook: string;
+    clickPinHint: string;
+    clusterPopupHeader: string;
   };
 }

@@ -36,7 +36,12 @@ interface ClusterGroup {
   totalBooks: number;
 }
 
-const CLUSTER_DISTANCE_PX = 52;
+function getClusterDistancePx(zoom: number): number {
+  if (zoom >= 16) return 8;
+  if (zoom >= 14) return 20;
+  if (zoom >= 11) return 36;
+  return 52;
+}
 
 function computeClusters(
   map: L.Map,
@@ -44,6 +49,7 @@ function computeClusters(
   zoom: number
 ): ClusterGroup[] {
   const clusters: ClusterGroup[] = [];
+  const clusterDist = getClusterDistancePx(zoom);
 
   for (const loc of locations) {
     const pLoc = map.project([loc.cloakedLat, loc.cloakedLng], zoom);
@@ -53,7 +59,7 @@ function computeClusters(
     for (const cluster of clusters) {
       const pCluster = map.project([cluster.centerLat, cluster.centerLng], zoom);
       const d = Math.hypot(pLoc.x - pCluster.x, pLoc.y - pCluster.y);
-      if (d < CLUSTER_DISTANCE_PX && d < minDist) {
+      if (d < clusterDist && d < minDist) {
         minDist = d;
         bestCluster = cluster;
       }
@@ -183,26 +189,80 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
               className: 'book-cluster-div-icon',
               html: `
                 <div class="book-map-cluster-marker" title="${t('map.clusterTooltip', { count: cluster.totalBooks })}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;margin-right:2px;vertical-align:-1px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                   <span class="cluster-count">${cluster.totalBooks}</span>
                 </div>
               `,
-              iconSize: [44, 44],
-              iconAnchor: [22, 22],
+              iconSize: [46, 46],
+              iconAnchor: [23, 23],
             }),
           });
 
+          const clusterPopupDiv = document.createElement('div');
+          clusterPopupDiv.className = 'book-popup-card multi-books-popup';
+          clusterPopupDiv.innerHTML = `
+            <div class="multi-popup-header">
+              <div class="multi-popup-user">
+                <span class="multi-popup-username">${t('map.clusterPopupHeader', { count: cluster.totalBooks, users: cluster.locations.length })}</span>
+              </div>
+              <div class="multi-popup-badges">
+                <span class="multi-popup-count-badge">${t('map.userBooksCount', { count: cluster.totalBooks })}</span>
+              </div>
+            </div>
+            <div class="multi-popup-list"></div>
+          `;
+
+          const clusterListContainer = clusterPopupDiv.querySelector('.multi-popup-list')!;
+          const allClusterBooks = cluster.locations.flatMap((l) => l.books);
+
+          allClusterBooks.slice(0, 30).forEach((b) => {
+            const item = document.createElement('div');
+            item.className = 'multi-popup-item';
+            item.innerHTML = `
+              ${
+                b.coverURL
+                  ? `<img src="${b.coverURL}" class="multi-popup-thumb" alt="${b.title}" onerror="this.style.display='none'" />`
+                  : `<div class="multi-popup-thumb-placeholder"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`
+              }
+              <div class="multi-popup-item-info">
+                <span class="multi-popup-item-title" title="${b.title}">${b.title}</span>
+                <span class="multi-popup-item-author" title="${b.author}">${b.author}</span>
+              </div>
+            `;
+            const itemBtn = document.createElement('button');
+            itemBtn.className = 'multi-popup-item-btn';
+            itemBtn.textContent = t('map.viewBook');
+            itemBtn.onclick = () => onViewBook(b);
+            item.appendChild(itemBtn);
+            clusterListContainer.appendChild(item);
+          });
+
+          const clusterPopup = L.popup({
+            minWidth: 290,
+            maxWidth: 320,
+            autoPan: true,
+            autoPanPadding: [20, 85],
+          }).setContent(clusterPopupDiv);
+
+          clusterMarker.bindPopup(clusterPopup);
+
           clusterMarker.on('click', () => {
-            const bounds = L.latLngBounds(
-              cluster.locations.map((loc) => [loc.cloakedLat, loc.cloakedLng])
-            );
-            if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
-              map.setView(
-                [cluster.centerLat, cluster.centerLng],
-                Math.min(map.getMaxZoom(), map.getZoom() + 2),
-                { animate: true }
+            const zoomNow = map.getZoom();
+            if (zoomNow < 15) {
+              const bounds = L.latLngBounds(
+                cluster.locations.map((loc) => [loc.cloakedLat, loc.cloakedLng])
               );
+              if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+                map.setView(
+                  [cluster.centerLat, cluster.centerLng],
+                  Math.min(map.getMaxZoom(), zoomNow + 2),
+                  { animate: true }
+                );
+              } else {
+                map.fitBounds(bounds.pad(0.35), { maxZoom: 16, animate: true });
+              }
             } else {
-              map.fitBounds(bounds.pad(0.35), { maxZoom: 16, animate: true });
+              clusterMarker.openPopup();
             }
           });
 
@@ -233,11 +293,11 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
 
           const markerHtml =
             loc.books.length > 1
-              ? `<div class="book-map-marker has-count" title="@${loc.username} — ${t('map.userBooksCount', { count: loc.books.length })}">
+              ? `<div class="book-map-marker has-count" title="@${loc.username} — ${t('map.userBooksCount', { count: loc.books.length })} (${t('map.clickPinHint')})">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                   <span class="marker-count-badge">${loc.books.length}</span>
                 </div>`
-              : `<div class="book-map-marker" title="${loc.books[0].title} — ${loc.books[0].author}">
+              : `<div class="book-map-marker" title="${loc.books[0].title} — ${loc.books[0].author} (${t('map.clickPinHint')})">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                 </div>`;
 
@@ -249,17 +309,6 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
               iconSize: loc.books.length > 1 ? [40, 40] : [36, 36],
               iconAnchor: loc.books.length > 1 ? [20, 20] : [18, 18],
             }),
-          });
-
-          marker.on('click', () => {
-            map.setView([loc.cloakedLat, loc.cloakedLng], Math.max(map.getZoom(), 12), {
-              animate: true,
-            });
-          });
-          circle.on('click', () => {
-            map.setView([loc.cloakedLat, loc.cloakedLng], Math.max(map.getZoom(), 12), {
-              animate: true,
-            });
           });
 
           marker.on('mouseover', () => circle.setStyle({ weight: 2.5, fillOpacity: 0.25 }));
@@ -303,6 +352,9 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
 
             marker.bindPopup(popup);
             circle.bindPopup(popup);
+
+            marker.on('click', () => marker.openPopup());
+            circle.on('click', () => marker.openPopup());
           } else {
             popupDiv.className = 'book-popup-card multi-books-popup';
             popupDiv.innerHTML = `
@@ -353,6 +405,9 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
 
             marker.bindPopup(popup);
             circle.bindPopup(popup);
+
+            marker.on('click', () => marker.openPopup());
+            circle.on('click', () => marker.openPopup());
           }
 
           featureGroup.addLayer(circle);
@@ -404,6 +459,7 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
             <span className="map-privacy-strong">{t('map.privacyBannerStrong')}</span>
             {t('map.privacyBannerText')}
           </span>
+          <span className="map-privacy-hint-pill">{t('map.clickPinHint')}</span>
         </div>
 
         <div className="map-controls-group">

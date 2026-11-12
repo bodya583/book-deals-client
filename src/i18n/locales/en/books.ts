@@ -161,8 +161,10 @@ export const books: BooksSchema = {
     centerOnMeBtn: 'I am here',
     fitAllTitle: 'Show all books on map',
     fitAllBtn: 'Show all',
-    clusterTooltip: '{{count}} books in this area (click to zoom in)',
+    clusterTooltip: '{{count}} books in this area (click to zoom in or view)',
     userBooksCount: '{{count}} books',
     viewBook: 'Details',
+    clickPinHint: 'Click on any marker to view books',
+    clusterPopupHeader: 'In this area: {{count}} books ({{users}} readers)',
   },
 };

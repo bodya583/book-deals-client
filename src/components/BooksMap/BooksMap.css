@@ -54,6 +54,21 @@
   color: #14532d;
 }
 
+.map-privacy-hint-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  border: 1px solid #bbf7d0;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+}
+
 .map-controls-group {
   display: flex;
   align-items: center;
