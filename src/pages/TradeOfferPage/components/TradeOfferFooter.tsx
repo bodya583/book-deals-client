@@ -50,6 +50,21 @@ export const TradeOfferFooter: React.FC<TradeOfferFooterProps> = ({
           <span className="summary-pill pill-get">
             {t('offer.getBooksCount', { count: targetCount })}
           </span>
+          {(offeredCount === 0 || targetCount === 0) && (
+            <span
+              style={{
+                fontSize: '0.825rem',
+                color: '#b45309',
+                background: '#fef3c7',
+                border: '1px solid #fde68a',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '8px',
+                fontWeight: 500,
+              }}
+            >
+              {t('offer.errSelectBoth')}
+            </span>
+          )}
           {isTradeUnchanged && (
             <span
               style={{
@@ -70,7 +85,7 @@ export const TradeOfferFooter: React.FC<TradeOfferFooterProps> = ({
         <button
           type="submit"
           className="btn-steam-submit"
-          disabled={submitting || (offeredCount === 0 && targetCount === 0) || isTradeUnchanged}
+          disabled={submitting || offeredCount === 0 || targetCount === 0 || isTradeUnchanged}
           style={
             counterTradeId
               ? isTradeUnchanged

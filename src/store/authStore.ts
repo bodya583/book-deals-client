@@ -28,7 +28,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
 
   setAuth: (user, accessToken) =>
-    set({ user, accessToken, isAuthenticated: true }),
+    set((state) => {
+      if (state.user?.id && state.user.id !== user.id) {
+        queryClient.clear();
+      }
+      return { user, accessToken, isAuthenticated: true };
+    }),
 
   setAccessToken: (accessToken) =>
     set({ accessToken }),

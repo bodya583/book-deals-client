@@ -66,6 +66,8 @@ export const common: CommonSchema = {
     joinSubtitle: 'Join our book lover community',
     email: 'Email address',
     password: 'Password',
+    confirmPassword: 'Confirm password',
+    passwordsMismatch: 'Passwords do not match',
     username: 'Username',
     signInBtn: 'Sign In',
     signUpBtn: 'Create Account',

@@ -64,6 +64,8 @@ export interface CommonSchema {
     joinSubtitle: string;
     email: string;
     password: string;
+    confirmPassword: string;
+    passwordsMismatch: string;
     username: string;
     signInBtn: string;
     signUpBtn: string;

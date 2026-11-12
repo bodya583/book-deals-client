@@ -52,6 +52,10 @@ export const data: DataSchema = {
       Unspecified: 'Unspecified',
     },
     serverErrors: {
+      'Trade requires at least one book offered and one book requested': 'Please select at least one book from each side',
+      'At least one book must be offered': 'At least one book must be offered',
+      'At least one book must be requested': 'At least one book must be requested',
+      'Passwords do not match': 'Passwords do not match',
       ERR_OFFERED_NOT_FOUND: 'Offered book was not found',
       ERR_OFFERED_NOT_OWNED: 'You do not own the offered book',
       ERR_TARGET_NOT_FOUND: 'Requested book was not found',

@@ -16,15 +16,25 @@ const RegisterPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError(t('auth.passwordsMismatch'));
+      return;
+    }
     setError('');
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/register', { username, email, password });
+      const { data } = await api.post('/auth/register', {
+        username,
+        email,
+        password,
+        confirmPassword,
+      });
       setAuth(data.user, data.accessToken);
       navigate('/');
     } catch (err: unknown) {
@@ -58,7 +68,33 @@ const RegisterPage = () => {
           </div>
           <div className="auth-field">
             <label>{t('auth.password')}</label>
-            <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required />
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError('');
+              }}
+              minLength={6}
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          <div className="auth-field">
+            <label>{t('auth.confirmPassword')}</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (error) setError('');
+              }}
+              minLength={6}
+              autoComplete="new-password"
+              required
+            />
           </div>
           {error && <p className="auth-error">{error}</p>}
           <button type="submit" className="auth-btn" disabled={loading}>

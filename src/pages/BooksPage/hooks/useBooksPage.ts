@@ -120,6 +120,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
       const data = await getBooks(
         {
           userId: scope === 'my' ? userId : undefined,
+          isForTrade: scope === 'my' ? undefined : true,
           search: debouncedSearch.trim() || undefined,
           genres: selectedGenres.length > 0 ? selectedGenres : undefined,
           strictGenres: strictGenres || undefined,

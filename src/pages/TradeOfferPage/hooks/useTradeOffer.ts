@@ -120,8 +120,8 @@ export const useTradeOffer = () => {
     if (counterTradeId && isTradeUnchanged) {
       return addToast(t('offer.unchangedTitle'), 'error');
     }
-    if (offeredBookIds.length === 0 && targetBookIds.length === 0) {
-      return addToast(t('offer.errNoBooks'), 'error');
+    if (offeredBookIds.length === 0 || targetBookIds.length === 0) {
+      return addToast(t('offer.errSelectBoth'), 'error');
     }
 
     try {

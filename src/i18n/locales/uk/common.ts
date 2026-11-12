@@ -66,6 +66,8 @@ export const common: CommonSchema = {
     joinSubtitle: 'Приєднуйтесь до спільноти читачів',
     email: 'Електронна пошта',
     password: 'Пароль',
+    confirmPassword: 'Повторіть пароль',
+    passwordsMismatch: 'Паролі не збігаються',
     username: "Ім'я користувача",
     signInBtn: 'Увійти',
     signUpBtn: 'Зареєструватися',

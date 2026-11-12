@@ -3,6 +3,7 @@ import type { Book, BooksResponse, BookFormData, Genre, Settlement, BookSortOpti
 
 export interface GetBooksParams {
   userId?: string;
+  isForTrade?: boolean;
   search?: string;
   genre?: string;
   genres?: string[];
