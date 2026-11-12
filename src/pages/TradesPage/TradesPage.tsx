@@ -13,83 +13,53 @@ import './TradesPage.css';
 
 export const TradesPage: React.FC = () => {
   const { t } = useTranslation();
-  const {
-    currentUser,
-    currentTab,
-    handleTabChange,
-    filteredTrades,
-    counts,
-    loading,
-    searchQuery,
-    setSearchQuery,
-    sortBy,
-    setSortBy,
-    actionLoadingId,
-    rejectModalTradeId,
-    setRejectModalTradeId,
-    toasts,
-    removeToast,
-    handleAccept,
-    handleComplete,
-    handleReject,
-    handleConfirmReject,
-    handleCancel,
-    getTradeBadgeCount,
-    formatDate,
-  } = useTradesPage();
+  const { currentUser, navigation, list, actions, toasts } = useTradesPage();
+  const { currentTab } = navigation;
 
   return (
     <div className="trades-page">
-      <Toast toasts={toasts} onRemove={removeToast} />
+      <Toast toasts={toasts.items} onRemove={toasts.remove} />
 
       <div className="trades-container">
-        {/* Header */}
         <div className="trades-header">
           <div className="trades-header-left">
             <h1 className="trades-header-title">
               <TradeIcon size={28} />
               <span>{t('trades.title')}</span>
             </h1>
-            <p className="trades-header-subtitle">
-              {t('trades.subtitle')}
-            </p>
+            <p className="trades-header-subtitle">{t('trades.subtitle')}</p>
           </div>
         </div>
 
-        {/* Gmail-style Two-Column Workspace */}
         <div className="trades-workspace-layout">
           <TradesSidebar
             currentTab={currentTab}
-            counts={counts}
-            onTabChange={handleTabChange}
+            counts={list.counts}
+            onTabChange={navigation.changeTab}
           />
 
           <main className="trades-main-area">
             <TradesToolbar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
+              searchQuery={list.searchQuery}
+              onSearchChange={list.setSearchQuery}
+              sortBy={list.sortBy}
+              onSortChange={list.setSortBy}
             />
 
-            {/* Category Heading */}
             <div className="trades-section-heading">
               <h2 className="trades-section-title">
                 {currentTab === 'requests' && t('trades.tabs.requests')}
                 {currentTab === 'agreed' && t('trades.tabs.agreed')}
                 {currentTab === 'completed' && t('trades.tabs.completed')}
               </h2>
-              <span className="trades-section-counter">
-                {filteredTrades.length}
-              </span>
+              <span className="trades-section-counter">{list.filtered.length}</span>
             </div>
 
-            {/* Trade Cards List */}
-            {loading ? (
+            {list.loading ? (
               <div style={{ padding: '3rem', textAlign: 'center', color: '#666660' }}>
                 {t('common.loading')}
               </div>
-            ) : filteredTrades.length === 0 ? (
+            ) : list.filtered.length === 0 ? (
               <EmptyState
                 icon={<TradeIcon size={32} />}
                 title={
@@ -115,19 +85,16 @@ export const TradesPage: React.FC = () => {
               />
             ) : (
               <div className="trades-list">
-                {filteredTrades.map((trade) => (
+                {list.filtered.map((trade) => (
                   <TradeCard
                     key={trade.id}
                     trade={trade}
                     currentUser={currentUser}
                     currentTab={currentTab}
-                    badgeCount={getTradeBadgeCount(trade)}
-                    actionLoading={actionLoadingId === trade.id}
-                    formatDate={formatDate}
-                    onAccept={handleAccept}
-                    onComplete={handleComplete}
-                    onReject={handleReject}
-                    onCancel={handleCancel}
+                    badgeCount={actions.getBadgeCount(trade)}
+                    actionLoading={actions.loadingId === trade.id}
+                    formatDate={actions.formatDate}
+                    actions={actions}
                   />
                 ))}
               </div>
@@ -137,10 +104,10 @@ export const TradesPage: React.FC = () => {
       </div>
 
       <RejectTradeModal
-        isOpen={Boolean(rejectModalTradeId)}
-        onClose={() => setRejectModalTradeId(null)}
-        onConfirm={handleConfirmReject}
-        loading={Boolean(actionLoadingId)}
+        isOpen={Boolean(actions.rejectModalTradeId)}
+        onClose={() => actions.setRejectModalTradeId(null)}
+        onConfirm={actions.confirmReject}
+        loading={Boolean(actions.loadingId)}
       />
     </div>
   );

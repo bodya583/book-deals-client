@@ -1,26 +1,34 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../../../api/axiosInstance';
-import { createTrade, counterTrade, getTradeById, getTradePartners } from '../../../api/tradesApi';
-import { getUserProfileById } from '../../../api/usersApi';
-import type { TradePartner } from '../../../types/trade';
+import { createTrade, counterTrade } from '../../../api/tradesApi';
 import type { Book } from '../../../types/book';
+import type { TradePartner } from '../../../types/trade';
 import type { ToastMessage } from '../../../components/Toast';
 import { useAuthStore } from '../../../store/authStore';
 import { useTranslation } from '../../../i18n';
+import { useTradeOfferData, computeBooksHash } from './useTradeOfferData';
 
-// Sort book IDs alphabetically and compute a hash so that selection order does not matter
-export const computeBooksHash = (offeredIds: string[], targetIds: string[]): string => {
-  const sortedOffered = [...offeredIds].sort().join(',');
-  const sortedTarget = [...targetIds].sort().join(',');
-  const rawKey = `give:[${sortedOffered}]|get:[${sortedTarget}]`;
-  let hash = 0;
-  for (let i = 0; i < rawKey.length; i++) {
-    hash = (hash << 5) - hash + rawKey.charCodeAt(i);
-    hash |= 0;
-  }
-  return `bh_${Math.abs(hash)}`;
-};
+export { computeBooksHash };
+
+export interface TradeOfferBooksController {
+  myCount: number;
+  partnerCount: number;
+  offeredIds: string[];
+  targetIds: string[];
+  stagedOffered: Book[];
+  stagedTarget: Book[];
+  toggleOffered: (bookId: string) => void;
+  toggleTarget: (bookId: string) => void;
+}
+
+export interface TradeOfferInventoryController {
+  tab: 'my' | 'partner';
+  setTab: (tab: 'my' | 'partner') => void;
+  searchFilter: string;
+  setSearchFilter: (q: string) => void;
+  filtered: Book[];
+  loading: boolean;
+}
 
 export const useTradeOffer = () => {
   const [searchParams] = useSearchParams();
@@ -32,26 +40,13 @@ export const useTradeOffer = () => {
   const preselectedBookId = searchParams.get('bookId') || '';
   const counterTradeId = searchParams.get('counterTradeId') || '';
 
-  // State
-  const [partners, setPartners] = useState<TradePartner[]>([]);
-  const [selectedPartnerId, setSelectedPartnerId] = useState<string>(preselectedPartnerId);
-  const [myBooks, setMyBooks] = useState<Book[]>([]);
-  const [partnerBooks, setPartnerBooks] = useState<Book[]>([]);
-
-  // Staging items (offered by me, requested from partner)
   const [offeredBookIds, setOfferedBookIds] = useState<string[]>([]);
   const [targetBookIds, setTargetBookIds] = useState<string[]>([]);
-  const [message, setMessage] = useState<string>('');
-
-  // Initial books hash cache (pre-sorted before hashing so selection order does not matter)
-  const [initialBooksHash, setInitialBooksHash] = useState<string>('');
-
-  // Inventory tab: 'my' or 'partner'
+  const [message, setMessage] = useState('');
+  const [initialBooksHash, setInitialBooksHash] = useState('');
   const [inventoryTab, setInventoryTab] = useState<'my' | 'partner'>('my');
-  const [searchFilter, setSearchFilter] = useState<string>('');
-
-  const [loading, setLoading] = useState<boolean>(true);
-  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [searchFilter, setSearchFilter] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((text: string, type: 'success' | 'error' = 'success') => {
@@ -59,206 +54,92 @@ export const useTradeOffer = () => {
   }, []);
 
   const removeToast = useCallback((toastId: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== toastId));
+    setToasts((prev) => prev.filter((item) => item.id !== toastId));
   }, []);
 
-  // Load partners and my books on mount
-  useEffect(() => {
-    const initData = async () => {
-      try {
-        setLoading(true);
-        const myBooksParams: Record<string, any> = { limit: 100 };
-        if (currentUser?.id) {
-          myBooksParams.userId = currentUser.id;
-        }
+  const {
+    partners,
+    selectedPartnerId,
+    setSelectedPartnerId,
+    myBooks,
+    partnerBooks,
+    loading,
+  } = useTradeOfferData({
+    currentUserId: currentUser?.id,
+    preselectedPartnerId,
+    preselectedBookId,
+    counterTradeId,
+    addToast,
+    setOfferedBookIds,
+    setTargetBookIds,
+    setInitialBooksHash,
+    setInventoryTab,
+    setMessage,
+  });
 
-        const [partnersData, myBooksRes] = await Promise.all([
-          getTradePartners(),
-          api.get('/books', { params: myBooksParams }),
-        ]);
+  const selectedPartner: TradePartner | null = useMemo(
+    () => partners.find((p) => p.id === selectedPartnerId) || null,
+    [partners, selectedPartnerId]
+  );
 
-        let finalPartners = [...partnersData];
-        setMyBooks(myBooksRes.data.books || myBooksRes.data || []);
+  const stagedOffered = useMemo(
+    () => myBooks.filter((b) => offeredBookIds.includes(b.id)),
+    [myBooks, offeredBookIds]
+  );
 
-        // If counter-offering on an existing trade
-        if (counterTradeId) {
-          try {
-            const originalTrade = await getTradeById(counterTradeId);
-            const partnerId =
-              originalTrade.senderId === currentUser?.id
-                ? originalTrade.receiverId
-                : originalTrade.senderId;
-            const partnerUser =
-              originalTrade.senderId === currentUser?.id
-                ? originalTrade.receiver
-                : originalTrade.sender;
+  const stagedTarget = useMemo(
+    () => partnerBooks.filter((b) => targetBookIds.includes(b.id)),
+    [partnerBooks, targetBookIds]
+  );
 
-            setSelectedPartnerId(partnerId);
-            if (partnerUser && !finalPartners.some((p) => p.id === partnerId)) {
-              finalPartners.unshift(partnerUser);
-            }
-
-            const origOffered = (
-              originalTrade.senderId === currentUser?.id
-                ? originalTrade.offeredBooks || []
-                : originalTrade.requestedBooks || []
-            ).map((b) => b.id);
-            const origTarget = (
-              originalTrade.senderId === currentUser?.id
-                ? originalTrade.requestedBooks || []
-                : originalTrade.offeredBooks || []
-            ).map((b) => b.id);
-
-            setOfferedBookIds(origOffered);
-            setTargetBookIds(origTarget);
-
-            setInitialBooksHash(computeBooksHash(origOffered, origTarget));
-            setMessage('');
-          } catch {
-            addToast(t('offer.errLoadOriginal'), 'error');
-          }
-        } else {
-          if (preselectedPartnerId) {
-            if (!finalPartners.some((p) => p.id === preselectedPartnerId)) {
-              try {
-                const partnerProfile = await getUserProfileById(preselectedPartnerId);
-                finalPartners.unshift({
-                  id: partnerProfile.id,
-                  username: partnerProfile.username,
-                  photoURL: partnerProfile.photoURL,
-                  city: partnerProfile.city,
-                });
-              } catch (e) {
-                console.error('Could not load target partner profile', e);
-              }
-            }
-            setSelectedPartnerId(preselectedPartnerId);
-          } else if (finalPartners.length > 0) {
-            setSelectedPartnerId(finalPartners[0].id);
-          }
-
-          if (preselectedBookId) {
-            setTargetBookIds([preselectedBookId]);
-            setInventoryTab('my');
-          }
-        }
-
-        setPartners(finalPartners);
-      } catch (err: unknown) {
-        const errorMsg =
-          err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message
-            ? (err as any).response.data.message
-            : t('offer.errLoadData');
-        addToast(tApiError(errorMsg), 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initData();
-  }, [preselectedPartnerId, preselectedBookId, counterTradeId, currentUser?.id, addToast, t]);
-
-  // Load partner's books whenever selectedPartner changes
-  useEffect(() => {
-    if (!selectedPartnerId) {
-      setPartnerBooks([]);
-      return;
-    }
-
-    const fetchPartnerBooks = async () => {
-      try {
-        const res = await api.get('/books', {
-          params: { userId: selectedPartnerId, limit: 100 },
-        });
-        const allBooks = res.data.books || res.data || [];
-        setPartnerBooks(allBooks.filter((b: Book) => b.isForTrade !== false));
-      } catch {
-        setPartnerBooks([]);
-      }
-    };
-
-    fetchPartnerBooks();
-  }, [selectedPartnerId]);
-
-  const selectedPartner = useMemo(() => {
-    return partners.find((p) => p.id === selectedPartnerId) || null;
-  }, [partners, selectedPartnerId]);
-
-  const stagedOfferedBooks = useMemo(() => {
-    return myBooks.filter((b) => offeredBookIds.includes(b.id));
-  }, [myBooks, offeredBookIds]);
-
-  const stagedTargetBooks = useMemo(() => {
-    return partnerBooks.filter((b) => targetBookIds.includes(b.id));
-  }, [partnerBooks, targetBookIds]);
-
-  const toggleOfferedBook = useCallback((bookId: string) => {
+  const toggleOffered = useCallback((bookId: string) => {
     setOfferedBookIds((prev) =>
       prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
     );
   }, []);
 
-  const toggleTargetBook = useCallback((bookId: string) => {
+  const toggleTarget = useCallback((bookId: string) => {
     setTargetBookIds((prev) =>
       prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
     );
   }, []);
 
-  const currentBooksHash = useMemo(() => {
-    return computeBooksHash(offeredBookIds, targetBookIds);
-  }, [offeredBookIds, targetBookIds]);
+  const currentBooksHash = useMemo(
+    () => computeBooksHash(offeredBookIds, targetBookIds),
+    [offeredBookIds, targetBookIds]
+  );
 
-  const isTradeUnchanged = useMemo(() => {
-    if (!counterTradeId || !initialBooksHash) return false;
-    return currentBooksHash === initialBooksHash;
-  }, [counterTradeId, initialBooksHash, currentBooksHash]);
+  const isTradeUnchanged = Boolean(counterTradeId && initialBooksHash && currentBooksHash === initialBooksHash);
 
-  const handleSubmitTrade = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedPartnerId) {
-      addToast(t('offer.errSelectPartner'), 'error');
-      return;
-    }
-
+    if (!selectedPartnerId) return addToast(t('offer.errSelectPartner'), 'error');
     if (currentUser?.id && selectedPartnerId === currentUser.id) {
-      addToast(t('offer.errSelfTrade'), 'error');
-      return;
+      return addToast(t('offer.errSelfTrade'), 'error');
     }
-
     if (counterTradeId && isTradeUnchanged) {
-      addToast(t('offer.unchangedTitle'), 'error');
-      return;
+      return addToast(t('offer.unchangedTitle'), 'error');
     }
-
     if (offeredBookIds.length === 0 && targetBookIds.length === 0) {
-      addToast(t('offer.errNoBooks'), 'error');
-      return;
+      return addToast(t('offer.errNoBooks'), 'error');
     }
 
     try {
       setSubmitting(true);
+      const payload = {
+        receiverId: selectedPartnerId,
+        offerBookIds: offeredBookIds,
+        targetBookIds,
+        message,
+      };
       if (counterTradeId) {
-        await counterTrade(counterTradeId, {
-          receiverId: selectedPartnerId,
-          offerBookIds: offeredBookIds,
-          targetBookIds: targetBookIds,
-          message,
-        });
+        await counterTrade(counterTradeId, payload);
         addToast(t('offer.successCounter'), 'success');
       } else {
-        await createTrade({
-          receiverId: selectedPartnerId,
-          offerBookIds: offeredBookIds,
-          targetBookIds: targetBookIds,
-          message,
-        });
+        await createTrade(payload);
         addToast(t('offer.successCreated'), 'success');
       }
-
-      setTimeout(() => {
-        navigate('/trades?tab=requests');
-      }, 800);
+      setTimeout(() => navigate('/trades?tab=requests'), 800);
     } catch (err: unknown) {
       const errorMsg =
         err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message
@@ -269,40 +150,41 @@ export const useTradeOffer = () => {
     }
   };
 
-  const activeInventoryBooks = inventoryTab === 'my' ? myBooks : partnerBooks;
-  const filteredInventoryBooks = useMemo(() => {
-    if (!searchFilter.trim()) return activeInventoryBooks;
+  const activeBooks = inventoryTab === 'my' ? myBooks : partnerBooks;
+  const filtered = useMemo(() => {
+    if (!searchFilter.trim()) return activeBooks;
     const q = searchFilter.toLowerCase().trim();
-    return activeInventoryBooks.filter(
+    return activeBooks.filter(
       (b) => b.title?.toLowerCase().includes(q) || b.author?.toLowerCase().includes(q)
     );
-  }, [activeInventoryBooks, searchFilter]);
+  }, [activeBooks, searchFilter]);
 
-  return {
-    counterTradeId,
-    selectedPartner,
-    partners,
-    setSelectedPartnerId,
-    partnerBooks,
-    myBooks,
-    offeredBookIds,
-    targetBookIds,
-    stagedOfferedBooks,
-    stagedTargetBooks,
-    toggleOfferedBook,
-    toggleTargetBook,
-    inventoryTab,
-    setInventoryTab,
+  const books: TradeOfferBooksController = {
+    myCount: myBooks.length,
+    partnerCount: partnerBooks.length,
+    offeredIds: offeredBookIds,
+    targetIds: targetBookIds,
+    stagedOffered,
+    stagedTarget,
+    toggleOffered,
+    toggleTarget,
+  };
+
+  const inventory: TradeOfferInventoryController = {
+    tab: inventoryTab,
+    setTab: setInventoryTab,
     searchFilter,
     setSearchFilter,
-    filteredInventoryBooks,
-    message,
-    setMessage,
-    isTradeUnchanged,
+    filtered,
     loading,
-    submitting,
-    toasts,
-    removeToast,
-    handleSubmitTrade,
+  };
+
+  return {
+    meta: { counterTradeId, loading, submitting, isTradeUnchanged },
+    partner: { selected: selectedPartner, list: partners, select: setSelectedPartnerId },
+    books,
+    inventory,
+    composer: { message, setMessage, submit },
+    toasts: { items: toasts, remove: removeToast },
   };
 };

@@ -1,0 +1,185 @@
+/* ==========================================================================
+   TRADE DETAILS PAGE
+   ========================================================================== */
+
+.trade-details-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e4e4e0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.trade-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f0f0eb;
+}
+
+.trade-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #666660;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: color 0.15s ease;
+}
+
+.trade-back-btn:hover {
+  color: #1a1a1a;
+}
+
+/* Responsive adjustments */
+@media (max-width: 860px) {
+  .steam-matrix-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .steam-matrix-divider {
+    transform: rotate(90deg);
+    padding: 0.5rem 0;
+  }
+  
+  .trade-exchange-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .trade-direction-divider {
+    margin: 0 auto;
+    transform: rotate(90deg);
+  }
+}
+
+/* ==========================================================================
+   HANDOVER COORDINATION WIDGET & CHAT PROPOSALS
+   ========================================================================== */
+
+.trade-handover-widget {
+  background: #f8faf8;
+  border: 1px solid #d1fae5;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.trade-handover-widget.all-agreed {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.handover-widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.handover-widget-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #166534;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.handover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 680px) {
+  .handover-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.handover-cell {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.handover-cell.agreed {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.handover-cell.pending {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.handover-cell-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.handover-cell-value {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: #1e293b;
+  word-break: break-word;
+}
+
+.handover-cell-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+}
+
+.handover-cell-status.status-agreed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.handover-cell-status.status-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.handover-cell-status.status-empty {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.handover-celebration-banner {
+  background: #15803d;
+  color: #ffffff;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

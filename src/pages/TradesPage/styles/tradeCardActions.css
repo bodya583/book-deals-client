@@ -1,0 +1,204 @@
+/* Card Actions */
+.trade-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-trade-accept {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #2d6a4f;
+  color: #ffffff;
+  padding: 0.6rem 1.15rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-trade-accept:hover {
+  background: #1b4332;
+}
+
+.btn-trade-reject {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  color: #c0392b;
+  border: 1px solid #fecaca;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-trade-reject:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+}
+
+.btn-trade-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-trade-cancel:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.btn-trade-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f0f0eb;
+  color: #333330;
+  border: 1px solid #e0e0db;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-trade-details:hover {
+  background: #e4e4de;
+  color: #1a1a1a;
+}
+
+/* Empty State */
+.trades-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px dashed #d8d8d2;
+  text-align: center;
+  gap: 1rem;
+}
+
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f0f4f1;
+  color: #2d6a4f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.empty-state-text {
+  font-size: 0.95rem;
+  color: #666660;
+  max-width: 440px;
+  margin: 0;
+}
+
+/* Header Badges & Role Turn Indicator */
+.trade-card-header-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.trade-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 0.28rem 0.75rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.trade-role-badge.role-action-needed {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.trade-role-badge.role-waiting {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.role-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.role-dot-needed {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+}
+
+.role-dot-waiting {
+  background: #94a3b8;
+}
+
+.trades-search-box {
+  width: 100%;
+  max-width: 100% !important;
+  flex: 1;
+}
+
+.trades-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e4e4e0;
+  padding-bottom: 0.75rem;
+}
+
+.trades-section-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.trades-section-counter {
+  font-size: 0.85rem;
+  color: #666660;
+  font-weight: 500;
+}

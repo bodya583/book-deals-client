@@ -12,38 +12,9 @@ import './TradeDetailsPage.css';
 
 export const TradeDetailsPage: React.FC = () => {
   const { t } = useTranslation();
-  const {
-    trade,
-    loading,
-    actionLoading,
-    toasts,
-    removeToast,
-    rejectModalOpen,
-    setRejectModalOpen,
-    currentUser,
-    messages,
-    messagesLoading,
-    messageText,
-    setMessageText,
-    sendingMessage,
-    messagesEndRef,
-    handover,
-    lastLocationProposalId,
-    lastTimeProposalId,
-    handleSendMessage,
-    handleSendCustomMessage,
-    handleAcceptLocation,
-    handleAcceptTime,
-    handleAccept,
-    handleComplete,
-    handleReject,
-    handleConfirmReject,
-    handleCancel,
-    formatDate,
-    formatMessageTime,
-  } = useTradeDetails();
+  const { currentUser, trade, chat, handover, actions, toasts } = useTradeDetails();
 
-  if (loading) {
+  if (trade.loading) {
     return (
       <div className="trades-page-container">
         <div style={{ textAlign: 'center', padding: '4rem', color: '#666660' }}>
@@ -53,7 +24,7 @@ export const TradeDetailsPage: React.FC = () => {
     );
   }
 
-  if (!trade) {
+  if (!trade.data) {
     return (
       <div className="trades-page-container">
         <div style={{ textAlign: 'center', padding: '4rem', color: '#666660' }}>
@@ -66,18 +37,22 @@ export const TradeDetailsPage: React.FC = () => {
     );
   }
 
-  const partner = trade.isSender ? trade.receiver : trade.sender;
-  const myBooksToGive = trade.isSender ? trade.offeredBooks : trade.requestedBooks;
-  const myBooksToReceive = trade.isSender ? trade.requestedBooks : trade.offeredBooks;
+  const tradeItem = trade.data;
+  const partner = tradeItem.isSender ? tradeItem.receiver : tradeItem.sender;
+  const myBooksToGive = tradeItem.isSender ? tradeItem.offeredBooks : tradeItem.requestedBooks;
+  const myBooksToReceive = tradeItem.isSender ? tradeItem.requestedBooks : tradeItem.offeredBooks;
 
   return (
     <div className="trades-page-container">
-      <Toast toasts={toasts} onRemove={removeToast} />
+      <Toast toasts={toasts.items} onRemove={toasts.remove} />
 
       <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        {/* Main Trade Details Card */}
         <div className="trade-card" style={{ padding: '2rem' }}>
-          <TradeDetailsHeader trade={trade} partner={partner} formatDate={formatDate} />
+          <TradeDetailsHeader
+            trade={tradeItem}
+            partner={partner}
+            formatDate={trade.formatDate}
+          />
 
           <SteamTradeMatrix
             myBooksToGive={myBooksToGive}
@@ -85,42 +60,30 @@ export const TradeDetailsPage: React.FC = () => {
           />
 
           <TradeDetailsFooterActions
-            trade={trade}
+            trade={tradeItem}
             partner={partner}
-            actionLoading={actionLoading}
-            onAccept={handleAccept}
-            onReject={handleReject}
-            onComplete={handleComplete}
-            onCancel={handleCancel}
+            actionLoading={trade.actionLoading}
+            onAccept={actions.accept}
+            onReject={actions.openReject}
+            onComplete={actions.complete}
+            onCancel={actions.cancel}
           />
         </div>
 
-        {/* Trade Chat Section */}
         <TradeChatSection
           partner={partner}
-          handover={handover}
-          messages={messages}
-          messagesLoading={messagesLoading}
           currentUser={currentUser}
-          lastLocationProposalId={lastLocationProposalId}
-          lastTimeProposalId={lastTimeProposalId}
-          messagesEndRef={messagesEndRef}
-          sendingMessage={sendingMessage}
-          messageText={messageText}
-          setMessageText={setMessageText}
-          handleSendMessage={handleSendMessage}
-          handleSendCustomMessage={handleSendCustomMessage}
-          handleAcceptLocation={handleAcceptLocation}
-          handleAcceptTime={handleAcceptTime}
-          formatMessageTime={formatMessageTime}
+          chat={chat}
+          handover={handover}
+          formatMessageTime={trade.formatMessageTime}
         />
       </div>
 
       <RejectTradeModal
-        isOpen={rejectModalOpen}
-        onClose={() => setRejectModalOpen(false)}
-        onConfirm={handleConfirmReject}
-        loading={actionLoading}
+        isOpen={actions.rejectModalOpen}
+        onClose={() => actions.setRejectModalOpen(false)}
+        onConfirm={actions.confirmReject}
+        loading={trade.actionLoading}
       />
     </div>
   );

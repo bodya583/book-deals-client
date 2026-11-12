@@ -1,50 +1,26 @@
 import React from 'react';
 import { MessageSquareIcon, TradeIcon } from '../../../components/icons';
-import type { TradePartner, TradeMessage } from '../../../types/trade';
-import {
-  HandoverBanner,
-  HandoverToolbar,
-  renderProposalBubbleContent,
-  type HandoverAgreement,
-} from './TradeHandoverSection';
+import type { TradePartner } from '../../../types/trade';
+import { HandoverBanner } from './HandoverBanner';
+import { HandoverToolbar } from './HandoverToolbar';
+import { ProposalBubbleContent } from './ProposalBubbleContent';
 import { Avatar, EmptyState } from '../../../components/ui';
 import { useTranslation } from '../../../i18n';
+import type { TradeChatController, TradeHandoverController } from '../hooks/useTradeChat';
 
 export interface TradeChatSectionProps {
   partner?: TradePartner;
-  handover: HandoverAgreement;
-  messages: TradeMessage[];
-  messagesLoading: boolean;
   currentUser: { id: string; username?: string; photoURL?: string | null } | null;
-  lastLocationProposalId?: string;
-  lastTimeProposalId?: string;
-  messagesEndRef: React.RefObject<HTMLDivElement | null>;
-  sendingMessage: boolean;
-  messageText: string;
-  setMessageText: (val: string) => void;
-  handleSendMessage: (e: React.FormEvent) => void;
-  handleSendCustomMessage: (text: string) => Promise<void>;
-  handleAcceptLocation: (text: string) => Promise<void>;
-  handleAcceptTime: (text: string) => Promise<void>;
+  chat: TradeChatController;
+  handover: TradeHandoverController;
   formatMessageTime: (isoString?: string) => string;
 }
 
 export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
   partner,
-  handover,
-  messages,
-  messagesLoading,
   currentUser,
-  lastLocationProposalId,
-  lastTimeProposalId,
-  messagesEndRef,
-  sendingMessage,
-  messageText,
-  setMessageText,
-  handleSendMessage,
-  handleSendCustomMessage,
-  handleAcceptLocation,
-  handleAcceptTime,
+  chat,
+  handover,
   formatMessageTime,
 }) => {
   const { t } = useTranslation();
@@ -65,15 +41,14 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
         </div>
       </div>
 
-      {/* Handover Agreement Status Banner */}
-      <HandoverBanner handover={handover} partner={partner} />
+      <HandoverBanner handover={handover.agreement} partner={partner} />
 
       <div className="trade-chat-messages">
-        {messagesLoading ? (
+        {chat.loading ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#888880' }}>
             {t('common.loading')}
           </div>
-        ) : messages.length === 0 ? (
+        ) : chat.messages.length === 0 ? (
           <EmptyState
             compact
             icon={<MessageSquareIcon size={28} />}
@@ -81,14 +56,12 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
             description={t('tradeDetails.emptyChatDesc')}
           />
         ) : (
-          messages.map((msg) => {
+          chat.messages.map((msg) => {
             if (msg.isSelfOnly) {
               return (
                 <div key={msg.id} className="trade-chat-self-notice-row">
                   <div className="trade-chat-self-notice-pill">
-                    <span className="self-notice-badge">
-                      {t('tradeDetails.onlyForYouBadge')}
-                    </span>
+                    <span className="self-notice-badge">{t('tradeDetails.onlyForYouBadge')}</span>
                     <span className="self-notice-text">{msg.text}</span>
                   </div>
                 </div>
@@ -96,14 +69,9 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
             }
 
             const isMine = msg.senderId === currentUser?.id;
-            const isLatestLocation = msg.id === lastLocationProposalId;
-            const isLatestTime = msg.id === lastTimeProposalId;
 
             return (
-              <div
-                key={msg.id}
-                className={`trade-chat-bubble-row ${isMine ? 'mine' : 'theirs'}`}
-              >
+              <div key={msg.id} className={`trade-chat-bubble-row ${isMine ? 'mine' : 'theirs'}`}>
                 {!isMine && (
                   <Avatar
                     photoURL={msg.sender?.photoURL}
@@ -118,45 +86,41 @@ export const TradeChatSection: React.FC<TradeChatSectionProps> = ({
                       {isMine ? t('common.you') : `@${msg.sender?.username}`}
                     </span>
                   </div>
-                  {renderProposalBubbleContent(
-                    msg,
-                    isMine,
-                    isLatestLocation,
-                    isLatestTime,
-                    handleAcceptLocation,
-                    handleAcceptTime
-                  )}
+                  <ProposalBubbleContent
+                    msg={msg}
+                    isMine={isMine}
+                    isLatestLocation={msg.id === handover.lastLocationProposalId}
+                    isLatestTime={msg.id === handover.lastTimeProposalId}
+                    onAcceptLocation={handover.acceptLocation}
+                    onAcceptTime={handover.acceptTime}
+                  />
                   <span className="trade-chat-time">{formatMessageTime(msg.createdAt)}</span>
                 </div>
               </div>
             );
           })
         )}
-        <div ref={messagesEndRef} />
+        <div ref={chat.endRef} />
       </div>
 
-      {/* Handover Toolbar (Propose location/time) */}
-      <HandoverToolbar
-        onSendProposal={handleSendCustomMessage}
-        disabled={sendingMessage}
-      />
+      <HandoverToolbar onSendProposal={chat.sendCustomMessage} disabled={chat.sending} />
 
-      <form onSubmit={handleSendMessage} className="trade-chat-form">
+      <form onSubmit={chat.sendMessage} className="trade-chat-form">
         <input
           type="text"
           className="trade-chat-input"
           placeholder={t('tradeDetails.chatPlaceholder')}
-          value={messageText}
-          onChange={(e) => setMessageText(e.target.value)}
-          disabled={sendingMessage}
+          value={chat.text}
+          onChange={(e) => chat.setText(e.target.value)}
+          disabled={chat.sending}
         />
         <button
           type="submit"
           className="btn-chat-send"
-          disabled={!messageText.trim() || sendingMessage}
+          disabled={!chat.text.trim() || chat.sending}
         >
           <TradeIcon size={16} />
-          <span>{sendingMessage ? t('common.loading') : t('tradeDetails.sendBtn')}</span>
+          <span>{chat.sending ? t('common.loading') : t('tradeDetails.sendBtn')}</span>
         </button>
       </form>
     </div>

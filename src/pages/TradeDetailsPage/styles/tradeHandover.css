@@ -1,0 +1,169 @@
+/* Handover Action Bar (above chat input) */
+.handover-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.btn-handover-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-handover-action:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.btn-handover-action.active {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+/* Inline Handover Forms */
+.handover-inline-form {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0.5rem;
+}
+
+.handover-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.handover-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.775rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.handover-chip:hover {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+/* Chat Proposal Bubble Styling */
+.chat-proposal-card {
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.chat-proposal-card.loc-card {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.chat-proposal-card.time-card {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.chat-proposal-card.confirm-card {
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  color: #065f46;
+}
+
+.btn-accept-proposal {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-accept-proposal:hover {
+  background: #15803d;
+}
+
+.proposal-superseded-tag {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #94a3b8;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.25rem 0.65rem;
+}
+
+/* Ephemeral Self-Only Notice in Trade Chat */
+.trade-chat-self-notice-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.65rem 0;
+  width: 100%;
+}
+
+.trade-chat-self-notice-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.self-notice-badge {
+  font-size: 0.675rem;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.self-notice-text {
+  line-height: 1.35;
+}

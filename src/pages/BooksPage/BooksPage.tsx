@@ -16,184 +16,81 @@ interface BooksPageProps {
 
 export const BooksPage: React.FC<BooksPageProps> = ({ scope = 'my' }) => {
   const { t } = useTranslation();
-  const {
-    user,
-    userId,
-    books,
-    genres,
-    loading,
-    isFetching,
-    error,
-    // Pagination
-    pagination,
-    changePage,
-    changeLimit,
-    // Search & Filters
-    searchQuery,
-    setSearchQuery,
-    debouncedSearch,
-    selectedGenres,
-    setSelectedGenres,
-    toggleGenre,
-    strictGenres,
-    setStrictGenres,
-    selectedLanguages,
-    setSelectedLanguages,
-    toggleLanguage,
-    yearFrom,
-    setYearFrom,
-    yearTo,
-    setYearTo,
-    setYearRange,
-    settlements,
-    selectedSettlements,
-    toggleSettlement,
-    clearSettlements,
-    nearMe,
-    setNearMe,
-    radius,
-    setRadius,
-    nearCenter,
-    setNearCenter,
-    sortBy,
-    setSortBy,
-    viewMode,
-    setViewMode,
-    resetFilters,
-    hasActiveFilters,
-    handleManualRefresh,
-    modalsState,
-    modalsActions,
-    toasts,
-    removeToast,
-  } = useBooksPage({ scope });
+  const { auth, catalog, pagination, filters, modals, toasts } = useBooksPage({ scope });
+  const { viewMode } = filters.display;
+  const userCoords = {
+    latitude: auth.user?.latitude ?? null,
+    longitude: auth.user?.longitude ?? null,
+  };
 
   return (
     <div className="books-main-container">
-      {/* 1. Header with Add Book Action */}
-      <BooksHeader
-        scope={scope}
-        onAddBook={modalsActions.openCreate}
-      />
+      <BooksHeader scope={scope} onAddBook={modals.actions.openCreate} />
 
-      {/* 2. Toolbar (Search, Multi-Genres with strict toggle, Multi-Languages, Year Range, Settlements & Distance, Stats) */}
       <BooksToolbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedGenres={selectedGenres}
-        onToggleGenre={toggleGenre}
-        onClearGenres={() => setSelectedGenres([])}
-        strictGenres={strictGenres}
-        onStrictGenresChange={setStrictGenres}
-        availableGenres={genres}
-        selectedLanguages={selectedLanguages}
-        onToggleLanguage={toggleLanguage}
-        onClearLanguages={() => setSelectedLanguages([])}
-        yearFrom={yearFrom}
-        onYearFromChange={setYearFrom}
-        yearTo={yearTo}
-        onYearToChange={setYearTo}
-        onSetYearRange={setYearRange}
-        onClearYears={() => setYearRange('', '')}
-        availableSettlements={settlements}
-        selectedSettlements={selectedSettlements}
-        onToggleSettlement={toggleSettlement}
-        onClearSettlements={clearSettlements}
-        nearMe={nearMe}
-        onNearMeChange={setNearMe}
-        radius={radius}
-        onRadiusChange={setRadius}
-        nearCenter={nearCenter}
-        onNearCenterChange={setNearCenter}
-        userCoords={{ latitude: user?.latitude ?? null, longitude: user?.longitude ?? null }}
-        onResetFilters={resetFilters}
-        hasActiveFilters={hasActiveFilters}
+        filters={filters}
+        availableGenres={catalog.genres}
+        availableSettlements={catalog.settlements}
+        userCoords={userCoords}
       />
 
-      {/* 3. Error Banner */}
-      {error && (
+      {catalog.error && (
         <div className="books-error-card">
-          <p>{error}</p>
-          <button type="button" onClick={handleManualRefresh} className="btn-retry">
+          <p>{catalog.error}</p>
+          <button type="button" onClick={catalog.refresh} className="btn-retry">
             {t('common.tryAgain')}
           </button>
         </div>
       )}
 
-      {/* 4. Top Pagination (Pages selector & limit on page & view switcher) */}
-      {!loading && (books.length > 0 || isFetching) && (
+      {!catalog.loading && (catalog.books.length > 0 || catalog.isFetching) && (
         <BooksPagination
           pagination={pagination}
-          onPageChange={changePage}
-          onLimitChange={changeLimit}
+          display={filters.display}
           variant="top"
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
         />
       )}
 
-      {/* 5. Content Area (Loading / Empty / Map / Grid) */}
-      {loading ? (
+      {catalog.loading ? (
         <div className="books-loading-state">
           <div className="books-spinner" />
           <p>{scope === 'all' ? t('catalog.loadingCatalog') : t('catalog.loadingMyBooks')}</p>
         </div>
-      ) : books.length === 0 ? (
-        <BooksEmptyState
-          scope={scope}
-          isFiltered={hasActiveFilters}
-          searchQuery={debouncedSearch}
-          selectedGenres={selectedGenres}
-          strictGenres={strictGenres}
-          selectedLanguages={selectedLanguages}
-          yearFrom={yearFrom}
-          yearTo={yearTo}
-          onResetFilters={resetFilters}
-          onAddBook={modalsActions.openCreate}
-        />
+      ) : catalog.books.length === 0 ? (
+        <BooksEmptyState scope={scope} filters={filters} onAddBook={modals.actions.openCreate} />
       ) : viewMode === 'map' ? (
         <div className="books-map-section" style={{ margin: '1rem 0' }}>
           <BooksMap
-            books={books}
-            userCoords={{ latitude: user?.latitude ?? null, longitude: user?.longitude ?? null }}
-            onViewBook={modalsActions.openDetails}
+            books={catalog.books}
+            userCoords={userCoords}
+            onViewBook={modals.actions.openDetails}
           />
         </div>
       ) : (
-        <div className={`books-grid ${isFetching ? 'is-fetching' : ''}`}>
-          {books.map((book) => (
+        <div className={`books-grid ${catalog.isFetching ? 'is-fetching' : ''}`}>
+          {catalog.books.map((book) => (
             <BookCard
               key={book.id}
               book={book}
-              isOwner={Boolean(userId && book.userId === userId)}
-              onView={modalsActions.openDetails}
-              onEdit={modalsActions.openEdit}
-              onDelete={modalsActions.openDelete}
+              isOwner={Boolean(auth.userId && book.userId === auth.userId)}
+              onView={modals.actions.openDetails}
+              onEdit={modals.actions.openEdit}
+              onDelete={modals.actions.openDelete}
             />
           ))}
         </div>
       )}
 
-      {/* 6. Bottom Pagination (Pages selector & limit on page) */}
-      {viewMode === 'grid' && !loading && (books.length > 0 || isFetching) && (
-        <BooksPagination
-          pagination={pagination}
-          onPageChange={changePage}
-          onLimitChange={changeLimit}
-          variant="bottom"
-          viewMode={viewMode}
-        />
+      {viewMode === 'grid' && !catalog.loading && (catalog.books.length > 0 || catalog.isFetching) && (
+        <BooksPagination pagination={pagination} display={filters.display} variant="bottom" />
       )}
 
-      {/* 7. Modals & Toasts Container */}
       <BooksModals
-        state={modalsState}
-        actions={modalsActions}
-        currentUserId={userId}
-        toasts={toasts}
-        onRemoveToast={removeToast}
+        state={modals.state}
+        actions={modals.actions}
+        currentUserId={auth.userId}
+        toasts={toasts.items}
+        onRemoveToast={toasts.remove}
       />
     </div>
   );

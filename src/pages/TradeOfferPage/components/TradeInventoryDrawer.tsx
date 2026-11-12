@@ -1,124 +1,99 @@
 import React from 'react';
 import { UserIcon, BookOpenIcon, SearchIcon, CheckIcon } from '../../../components/icons';
-import type { Book } from '../../../types/book';
 import type { TradePartner } from '../../../types/trade';
 import { BookCover, EmptyState } from '../../../components/ui';
 import { useTranslation } from '../../../i18n';
+import type {
+  TradeOfferBooksController,
+  TradeOfferInventoryController,
+} from '../hooks/useTradeOffer';
 
 interface TradeInventoryDrawerProps {
-  inventoryTab: 'my' | 'partner';
-  setInventoryTab: (tab: 'my' | 'partner') => void;
-  myBooksCount: number;
-  partnerBooksCount: number;
-  selectedPartner: TradePartner | null;
-  searchFilter: string;
-  setSearchFilter: (query: string) => void;
-  loading: boolean;
-  filteredInventoryBooks: Book[];
-  offeredBookIds: string[];
-  targetBookIds: string[];
-  toggleOfferedBook: (bookId: string) => void;
-  toggleTargetBook: (bookId: string) => void;
+  partner: TradePartner | null;
+  inventory: TradeOfferInventoryController;
+  books: TradeOfferBooksController;
 }
 
 export const TradeInventoryDrawer: React.FC<TradeInventoryDrawerProps> = ({
-  inventoryTab,
-  setInventoryTab,
-  myBooksCount,
-  partnerBooksCount,
-  selectedPartner,
-  searchFilter,
-  setSearchFilter,
-  loading,
-  filteredInventoryBooks,
-  offeredBookIds,
-  targetBookIds,
-  toggleOfferedBook,
-  toggleTargetBook,
+  partner,
+  inventory,
+  books,
 }) => {
   const { t } = useTranslation();
-  const partnerName = selectedPartner?.username || t('common.partner').toLowerCase();
+  const partnerName = partner?.username || t('common.partner').toLowerCase();
 
   return (
     <div className="steam-inventory-box">
       <div className="inventory-tabs">
         <button
           type="button"
-          className={`inventory-tab-btn ${inventoryTab === 'my' ? 'active' : ''}`}
-          onClick={() => setInventoryTab('my')}
+          className={`inventory-tab-btn ${inventory.tab === 'my' ? 'active' : ''}`}
+          onClick={() => inventory.setTab('my')}
         >
           <UserIcon size={18} />
-          <span>{t('offer.drawerYourTab', { count: myBooksCount })}</span>
+          <span>{t('offer.drawerYourTab', { count: books.myCount })}</span>
         </button>
 
         <button
           type="button"
-          className={`inventory-tab-btn ${inventoryTab === 'partner' ? 'active' : ''}`}
-          onClick={() => setInventoryTab('partner')}
+          className={`inventory-tab-btn ${inventory.tab === 'partner' ? 'active' : ''}`}
+          onClick={() => inventory.setTab('partner')}
         >
           <BookOpenIcon size={18} />
           <span>
-            {t('offer.drawerPartnerTab', { username: partnerName, count: partnerBooksCount })}
+            {t('offer.drawerPartnerTab', { username: partnerName, count: books.partnerCount })}
           </span>
         </button>
       </div>
 
-      {/* Search bar inside inventory */}
       <div className="inventory-toolbar">
         <div className="inventory-search-wrap">
           <SearchIcon size={16} className="inventory-search-icon" />
           <input
             type="text"
             placeholder={
-              inventoryTab === 'my'
+              inventory.tab === 'my'
                 ? t('offer.drawerSearchMy')
                 : t('offer.drawerSearchPartner', { username: partnerName })
             }
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
+            value={inventory.searchFilter}
+            onChange={(e) => inventory.setSearchFilter(e.target.value)}
             className="inventory-search-input"
           />
         </div>
-        <span style={{ fontSize: '0.85rem', color: '#666660' }}>
-          {t('offer.drawerHint')}
-        </span>
+        <span style={{ fontSize: '0.85rem', color: '#666660' }}>{t('offer.drawerHint')}</span>
       </div>
 
-      {/* Book Cards Grid */}
-      {loading ? (
+      {inventory.loading ? (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#666660' }}>
           {t('common.loading')}
         </div>
-      ) : filteredInventoryBooks.length === 0 ? (
+      ) : inventory.filtered.length === 0 ? (
         <EmptyState
           compact
           icon={<BookOpenIcon size={32} />}
-          title={inventoryTab === 'my' ? t('offer.drawerEmptyMyTitle') : t('offer.drawerEmptyPartnerTitle')}
+          title={inventory.tab === 'my' ? t('offer.drawerEmptyMyTitle') : t('offer.drawerEmptyPartnerTitle')}
           description={
-            inventoryTab === 'my'
-              ? t('offer.drawerEmptyMyDesc')
-              : t('offer.drawerEmptyPartnerDesc')
+            inventory.tab === 'my' ? t('offer.drawerEmptyMyDesc') : t('offer.drawerEmptyPartnerDesc')
           }
         />
       ) : (
         <div className="inventory-grid">
-          {filteredInventoryBooks.map((book) => {
+          {inventory.filtered.map((book) => {
             const isSelected =
-              inventoryTab === 'my'
-                ? offeredBookIds.includes(book.id)
-                : targetBookIds.includes(book.id);
+              inventory.tab === 'my'
+                ? books.offeredIds.includes(book.id)
+                : books.targetIds.includes(book.id);
 
             return (
               <div
                 key={book.id}
                 className={`inventory-card ${isSelected ? 'in-trade' : ''}`}
-                onClick={() => {
-                  if (inventoryTab === 'my') {
-                    toggleOfferedBook(book.id);
-                  } else {
-                    toggleTargetBook(book.id);
-                  }
-                }}
+                onClick={() =>
+                  inventory.tab === 'my'
+                    ? books.toggleOffered(book.id)
+                    : books.toggleTarget(book.id)
+                }
               >
                 {isSelected && (
                   <span className="inventory-card-badge">

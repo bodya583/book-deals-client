@@ -1,0 +1,190 @@
+/* ==========================================================================
+   Pagination Component Styles (Top & Bottom)
+   ========================================================================== */
+
+.books-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e2e2dc;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.books-pagination:hover {
+  border-color: #d6d6ce;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.books-pagination-top {
+  margin-bottom: -0.5rem;
+  background: #fcfcfb;
+  border: 1px solid #e5e5df;
+  padding: 0.65rem 1.15rem;
+}
+
+.pagination-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+/* Sorting selector */
+.pagination-sort-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.pagination-sort-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #777770;
+  white-space: nowrap;
+}
+
+.pagination-sort-select-box {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pagination-sort-icon {
+  position: absolute;
+  left: 0.65rem;
+  color: #666660;
+  pointer-events: none;
+}
+
+.pagination-sort-select {
+  appearance: none;
+  background: #ffffff;
+  border: 1.5px solid #deded8;
+  border-radius: 9px;
+  padding: 0.38rem 1.4rem 0.38rem 2rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #222220;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.pagination-sort-select:hover {
+  border-color: #2d6a4f;
+  background: #fdfdfd;
+}
+
+.pagination-sort-select:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
+}
+
+/* Quick mini pager for top bar */
+.pagination-top-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ffffff;
+  border: 1px solid #dfdfd7;
+  border-radius: 9px;
+  padding: 0.2rem 0.35rem;
+}
+
+.pagination-btn-mini {
+  height: 28px;
+  width: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #444440;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.pagination-btn-mini:hover:not(:disabled) {
+  background: #f0f0eb;
+  color: #111111;
+}
+
+.pagination-btn-mini:disabled {
+  opacity: 0.45;
+  color: #a5a59e;
+  cursor: not-allowed;
+}
+
+.pagination-mini-counter {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #333330;
+  padding: 0 0.35rem;
+  white-space: nowrap;
+}
+
+/* Compact limit select */
+.pagination-top-limit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pagination-limit-select {
+  appearance: none;
+  background: #ffffff;
+  border: 1.5px solid #deded8;
+  border-radius: 9px;
+  padding: 0.38rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333330;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.18s ease;
+}
+
+.pagination-limit-select:hover {
+  border-color: #2d6a4f;
+}
+
+.pagination-limit-select:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
+}
+
+.books-pagination-bottom {
+  margin-top: 0.5rem;
+}
+
+/* Info indicator */
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  color: #666660;
+  user-select: none;
+}
+
+.pagination-strong {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.pagination-page-indicator {
+  color: #8e8e86;
+  font-size: 0.82rem;
+  padding-left: 0.25rem;
+}

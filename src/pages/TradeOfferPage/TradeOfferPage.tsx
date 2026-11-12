@@ -14,38 +14,13 @@ export { computeBooksHash };
 
 export const TradeOfferPage: React.FC = () => {
   const { t } = useTranslation();
-  const {
-    counterTradeId,
-    selectedPartner,
-    partnerBooks,
-    myBooks,
-    offeredBookIds,
-    targetBookIds,
-    stagedOfferedBooks,
-    stagedTargetBooks,
-    toggleOfferedBook,
-    toggleTargetBook,
-    inventoryTab,
-    setInventoryTab,
-    searchFilter,
-    setSearchFilter,
-    filteredInventoryBooks,
-    message,
-    setMessage,
-    isTradeUnchanged,
-    loading,
-    submitting,
-    toasts,
-    removeToast,
-    handleSubmitTrade,
-  } = useTradeOffer();
+  const { meta, partner, books, inventory, composer, toasts } = useTradeOffer();
 
   return (
     <div className="trades-page">
-      <Toast toasts={toasts} onRemove={removeToast} />
+      <Toast toasts={toasts.items} onRemove={toasts.remove} />
 
       <div className="trades-container">
-        {/* Navigation Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Link to="/trades" className="trade-back-btn">
             <ChevronLeftIcon size={16} />
@@ -53,50 +28,36 @@ export const TradeOfferPage: React.FC = () => {
           </Link>
         </div>
 
-        {/* Partner Info Banner */}
         <TradeOfferPartnerHeader
-          selectedPartner={selectedPartner}
-          partnerBooksCount={partnerBooks.length}
+          selectedPartner={partner.selected}
+          partnerBooksCount={books.partnerCount}
         />
 
-        {/* Trade Table Matrix */}
         <TradeOfferTable
-          selectedPartner={selectedPartner}
-          offeredBookIds={offeredBookIds}
-          targetBookIds={targetBookIds}
-          stagedOfferedBooks={stagedOfferedBooks}
-          stagedTargetBooks={stagedTargetBooks}
-          toggleOfferedBook={toggleOfferedBook}
-          toggleTargetBook={toggleTargetBook}
+          selectedPartner={partner.selected}
+          offeredBookIds={books.offeredIds}
+          targetBookIds={books.targetIds}
+          stagedOfferedBooks={books.stagedOffered}
+          stagedTargetBooks={books.stagedTarget}
+          toggleOfferedBook={books.toggleOffered}
+          toggleTargetBook={books.toggleTarget}
         />
 
-        {/* Inventory Drawer */}
         <TradeInventoryDrawer
-          inventoryTab={inventoryTab}
-          setInventoryTab={setInventoryTab}
-          myBooksCount={myBooks.length}
-          partnerBooksCount={partnerBooks.length}
-          selectedPartner={selectedPartner}
-          searchFilter={searchFilter}
-          setSearchFilter={setSearchFilter}
-          loading={loading}
-          filteredInventoryBooks={filteredInventoryBooks}
-          offeredBookIds={offeredBookIds}
-          targetBookIds={targetBookIds}
-          toggleOfferedBook={toggleOfferedBook}
-          toggleTargetBook={toggleTargetBook}
+          partner={partner.selected}
+          inventory={inventory}
+          books={books}
         />
 
-        {/* Action Footer & Submit */}
         <TradeOfferFooter
-          message={message}
-          setMessage={setMessage}
-          offeredCount={offeredBookIds.length}
-          targetCount={targetBookIds.length}
-          isTradeUnchanged={isTradeUnchanged}
-          submitting={submitting}
-          counterTradeId={counterTradeId}
-          onSubmit={handleSubmitTrade}
+          message={composer.message}
+          setMessage={composer.setMessage}
+          offeredCount={books.offeredIds.length}
+          targetCount={books.targetIds.length}
+          isTradeUnchanged={meta.isTradeUnchanged}
+          submitting={meta.submitting}
+          counterTradeId={meta.counterTradeId}
+          onSubmit={composer.submit}
         />
       </div>
     </div>

@@ -1,0 +1,201 @@
+/* =========================================================
+   LOCATION SECTION — Profile Page (Bookstore Design System)
+   ========================================================= */
+
+.profile-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-width: 440px;
+}
+
+@media (max-width: 900px) {
+  .profile-hero-actions {
+    align-items: flex-start;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e4e4e0;
+  }
+}
+
+.location-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  align-items: flex-end;
+}
+
+@media (max-width: 900px) {
+  .location-section {
+    align-items: flex-start;
+    width: 100%;
+  }
+}
+
+.location-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .location-controls {
+    justify-content: flex-start;
+  }
+}
+
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.location-badge--active {
+  background: #f4f8f5;
+  color: #2d6a4f;
+  border: 1px solid rgba(45, 106, 79, 0.25);
+}
+
+.location-badge--none {
+  background: #f1f1eb;
+  color: #777770;
+  border: 1px solid #e0e0db;
+}
+
+.location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.location-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* "Share location" button — primary site button styling */
+.location-btn--set {
+  background: #2d6a4f;
+  color: #ffffff;
+  border-color: #2d6a4f;
+  box-shadow: 0 4px 14px rgba(45, 106, 79, 0.25);
+}
+
+.location-btn--set:hover:not(:disabled) {
+  background: #1b4332;
+  border-color: #1b4332;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(45, 106, 79, 0.35);
+}
+
+.location-btn--set:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* "Update" button — clean secondary button styling */
+.location-btn--update {
+  background: #ffffff;
+  color: #1a1a1a;
+  border-color: #d8d8d0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.location-btn--update:hover:not(:disabled) {
+  background: #f4f8f5;
+  border-color: #2d6a4f;
+  color: #1b4332;
+  transform: translateY(-1px);
+}
+
+.location-btn--update:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* "Delete" button — danger-outline button styling */
+.location-btn--remove {
+  background: transparent;
+  color: #c0392b;
+  border-color: #fecaca;
+}
+
+.location-btn--remove:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #c0392b;
+  transform: translateY(-1px);
+}
+
+.location-btn--remove:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.location-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: location-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes location-spin {
+  to { transform: rotate(360deg); }
+}
+
+.location-message {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  width: fit-content;
+  margin: 0;
+}
+
+.location-message--success {
+  background: #f4f8f5;
+  color: #1b4332;
+  border: 1px solid rgba(45, 106, 79, 0.25);
+}
+
+.location-message--error {
+  background: #fef2f2;
+  color: #c0392b;
+  border: 1px solid #fecaca;
+}
+
+.location-hint {
+  font-size: 0.78rem;
+  color: #777770;
+  line-height: 1.45;
+  max-width: 400px;
+  margin: 0;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .location-hint {
+    text-align: left;
+  }
+}

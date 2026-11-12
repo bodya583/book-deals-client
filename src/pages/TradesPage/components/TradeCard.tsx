@@ -12,6 +12,13 @@ import { TradeExchangeMatrix } from './TradeExchangeMatrix';
 import { Avatar, TradeStatusBadge, TradeRoleBadge } from '../../../components/ui';
 import { useTranslation } from '../../../i18n';
 
+export interface TradeCardActions {
+  accept: (tradeId: string) => void;
+  complete: (tradeId: string) => void;
+  reject: (tradeId: string) => void;
+  cancel: (tradeId: string) => void;
+}
+
 interface TradeCardProps {
   trade: Trade;
   currentUser: { id: string; username?: string } | null;
@@ -19,10 +26,7 @@ interface TradeCardProps {
   badgeCount: number;
   actionLoading: boolean;
   formatDate: (dateStr?: string) => string;
-  onAccept: (tradeId: string) => void;
-  onComplete: (tradeId: string) => void;
-  onReject: (tradeId: string) => void;
-  onCancel: (tradeId: string) => void;
+  actions: TradeCardActions;
 }
 
 export const TradeCard: React.FC<TradeCardProps> = ({
@@ -32,21 +36,26 @@ export const TradeCard: React.FC<TradeCardProps> = ({
   badgeCount,
   actionLoading,
   formatDate,
-  onAccept,
-  onComplete,
-  onReject,
-  onCancel,
+  actions,
 }) => {
   const navigate = useNavigate();
   const { t, tCity } = useTranslation();
 
-  const isSender = trade.senderId === currentUser?.id || (trade.isSender && trade.receiverId !== currentUser?.id);
+  const isSender =
+    trade.senderId === currentUser?.id || (trade.isSender && trade.receiverId !== currentUser?.id);
   const rawPartner = isSender ? trade.receiver : trade.sender;
-  const partner = rawPartner?.id === currentUser?.id
-    ? (trade.sender?.id === currentUser?.id ? trade.receiver : trade.sender)
-    : rawPartner;
+  const partner =
+    rawPartner?.id === currentUser?.id
+      ? trade.sender?.id === currentUser?.id
+        ? trade.receiver
+        : trade.sender
+      : rawPartner;
 
-  if (trade.senderId === trade.receiverId || trade.sender?.id === trade.receiver?.id || partner?.id === currentUser?.id) {
+  if (
+    trade.senderId === trade.receiverId ||
+    trade.sender?.id === trade.receiver?.id ||
+    partner?.id === currentUser?.id
+  ) {
     return null;
   }
 
@@ -68,7 +77,6 @@ export const TradeCard: React.FC<TradeCardProps> = ({
       tabIndex={0}
       role="button"
     >
-      {/* Top-Right Notification Counter Badge */}
       {badgeCount > 0 && (
         <span
           className="trade-card-badge-circle"
@@ -82,7 +90,6 @@ export const TradeCard: React.FC<TradeCardProps> = ({
         </span>
       )}
 
-      {/* Card Header: Partner info + status */}
       <div className="trade-card-header">
         <Link
           to={partner?.id ? `/profile/${partner.id}` : '#'}
@@ -91,16 +98,10 @@ export const TradeCard: React.FC<TradeCardProps> = ({
           style={{ textDecoration: 'none', color: 'inherit' }}
           title={t('bookCard.viewProfileTitle', { username: partner?.username || '' })}
         >
-          <Avatar
-            photoURL={partner?.photoURL}
-            username={partner?.username}
-            size={40}
-          />
+          <Avatar photoURL={partner?.photoURL} username={partner?.username} size={40} />
           <div className="trade-user-meta">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="trade-user-name">
-                @{partner?.username || t('common.reader')}
-              </span>
+              <span className="trade-user-name">@{partner?.username || t('common.reader')}</span>
               {partner?.city && (
                 <span style={{ fontSize: '0.8rem', color: '#666660', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                   <MapPinIcon size={12} />
@@ -109,11 +110,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               )}
             </div>
             <div className="trade-date-meta">
-              <span>
-                {isPartnerInitiator
-                  ? t('trades.badges.incoming')
-                  : t('trades.badges.outgoing')}
-              </span>
+              <span>{isPartnerInitiator ? t('trades.badges.incoming') : t('trades.badges.outgoing')}</span>
               <span>•</span>
               <span>{formatDate(trade.createdAt)}</span>
             </div>
@@ -139,13 +136,8 @@ export const TradeCard: React.FC<TradeCardProps> = ({
         </div>
       </div>
 
-      {/* Steam-Style Item Exchange Matrix */}
-      <TradeExchangeMatrix
-        myBooksToGive={myBooksToGive}
-        myBooksToReceive={myBooksToReceive}
-      />
+      <TradeExchangeMatrix myBooksToGive={myBooksToGive} myBooksToReceive={myBooksToReceive} />
 
-      {/* Message Quote */}
       {trade.message && (
         <div className="trade-card-message">
           <span style={{ flexShrink: 0, marginTop: '2px', color: '#2d6a4f', display: 'inline-flex' }}>
@@ -155,7 +147,6 @@ export const TradeCard: React.FC<TradeCardProps> = ({
         </div>
       )}
 
-      {/* Card Actions */}
       <div className="trade-card-actions">
         {trade.status === 'PENDING' && trade.isReceiver && !isSender && (
           <>
@@ -165,7 +156,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               disabled={actionLoading}
               onClick={(e) => {
                 e.stopPropagation();
-                onReject(trade.id);
+                actions.reject(trade.id);
               }}
             >
               <XCircleIcon size={16} />
@@ -177,7 +168,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
               disabled={actionLoading}
               onClick={(e) => {
                 e.stopPropagation();
-                onAccept(trade.id);
+                actions.accept(trade.id);
               }}
             >
               <CheckCircleIcon size={16} />
@@ -226,12 +217,14 @@ export const TradeCard: React.FC<TradeCardProps> = ({
                 disabled={actionLoading}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onComplete(trade.id);
+                  actions.complete(trade.id);
                 }}
                 title={t('trades.card.completeBtn')}
               >
                 <CheckCircleIcon size={16} />
-                <span>{partnerConfirmed ? t('trades.card.completeBtnFinish') : t('trades.card.completeBtnReceived')}</span>
+                <span>
+                  {partnerConfirmed ? t('trades.card.completeBtnFinish') : t('trades.card.completeBtnReceived')}
+                </span>
               </button>
             </div>
           );
@@ -251,7 +244,7 @@ export const TradeCard: React.FC<TradeCardProps> = ({
             disabled={actionLoading}
             onClick={(e) => {
               e.stopPropagation();
-              onCancel(trade.id);
+              actions.cancel(trade.id);
             }}
             title={t('trades.card.cancelTooltip')}
           >

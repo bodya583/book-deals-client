@@ -1,34 +1,22 @@
 import React from 'react';
 import { BookOpenIcon, PlusIcon, CloseIcon } from '../../../components/icons';
 import { useTranslation } from '../../../i18n';
+import type { BookFiltersController } from '../hooks/booksPage.types';
 
 interface BooksEmptyStateProps {
   scope?: 'my' | 'all';
-  isFiltered: boolean;
-  searchQuery?: string;
-  selectedGenres?: string[];
-  strictGenres?: boolean;
-  selectedLanguages?: string[];
-  yearFrom?: string;
-  yearTo?: string;
-  onResetFilters: () => void;
+  filters: BookFiltersController;
   onAddBook: () => void;
 }
 
 export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
   scope = 'my',
-  isFiltered,
-  searchQuery,
-  selectedGenres = [],
-  strictGenres = false,
-  selectedLanguages = [],
-  yearFrom,
-  yearTo,
-  onResetFilters,
+  filters,
   onAddBook,
 }) => {
-  const { t } = useTranslation();
+  const { t, tGenre, tBookLanguage } = useTranslation();
   const isAll = scope === 'all';
+  const { search, genres, languages, year, hasActiveFilters, reset } = filters;
 
   return (
     <div className="books-empty-card">
@@ -36,72 +24,58 @@ export const BooksEmptyState: React.FC<BooksEmptyStateProps> = ({
         <BookOpenIcon size={48} />
       </div>
 
-      {isFiltered ? (
+      {hasActiveFilters ? (
         <>
           <h3 className="empty-title">{t('catalog.emptyCatalogTitle')}</h3>
           <p className="empty-desc">
-            {searchQuery && (
-              <span>{t('catalog.emptyFilteredByQuery')} «<strong>{searchQuery}</strong>» </span>
+            {search.debounced && (
+              <span>
+                {t('catalog.emptyFilteredByQuery')} «<strong>{search.debounced}</strong>»{' '}
+              </span>
             )}
-            {selectedGenres.length > 0 && (
+            {genres.selected.length > 0 && (
               <span>
                 {t('catalog.emptyFilteredByGenres')}{' '}
-                <strong>{selectedGenres.join(', ')}</strong>{' '}
-                {selectedGenres.length > 1 && (
-                  <em>({strictGenres ? t('catalog.emptyFilteredStrict') : t('catalog.emptyFilteredAny')})</em>
+                <strong>{genres.selected.map(tGenre).join(', ')}</strong>{' '}
+                {genres.selected.length > 1 && (
+                  <em>
+                    ({genres.strict ? t('catalog.emptyFilteredStrict') : t('catalog.emptyFilteredAny')})
+                  </em>
                 )}{' '}
               </span>
             )}
-            {selectedLanguages.length > 0 && (
+            {languages.selected.length > 0 && (
               <span>
                 {t('catalog.emptyFilteredByLanguages')}{' '}
-                <strong>{selectedLanguages.join(', ')}</strong>{' '}
+                <strong>{languages.selected.map(tBookLanguage).join(', ')}</strong>{' '}
               </span>
             )}
-            {(yearFrom || yearTo) && (
+            {(year.from || year.to) && (
               <span>
                 {t('catalog.emptyFilteredByPeriod')}{' '}
                 <strong>
-                  {yearFrom && yearTo
-                    ? `${yearFrom} – ${yearTo}`
-                    : yearFrom
-                    ? t('catalog.emptyFilteredYearFrom', { year: yearFrom })
-                    : t('catalog.emptyFilteredYearTo', { year: yearTo || '' })}
+                  {year.from && year.to
+                    ? `${year.from} – ${year.to}`
+                    : year.from
+                    ? t('catalog.emptyFilteredYearFrom', { year: year.from })
+                    : t('catalog.emptyFilteredYearTo', { year: year.to || '' })}
                 </strong>{' '}
               </span>
             )}
             {t('catalog.emptyFilteredSuffix')}
           </p>
-          <button
-            type="button"
-            className="btn-secondary-action"
-            onClick={onResetFilters}
-          >
+          <button type="button" className="btn-secondary-action" onClick={reset}>
             <CloseIcon size={16} />
             <span>{t('catalog.resetAllFilters')}</span>
           </button>
         </>
-      ) : isAll ? (
-        <>
-          <h3 className="empty-title">{t('catalog.emptyCatalogTitle')}</h3>
-          <p className="empty-desc">
-            {t('catalog.emptyCatalogText')}
-          </p>
-          <button
-            id="add-first-book-btn"
-            type="button"
-            className="btn-primary-action"
-            onClick={onAddBook}
-          >
-            <PlusIcon size={20} />
-            <span>{t('catalog.addBook')}</span>
-          </button>
-        </>
       ) : (
         <>
-          <h3 className="empty-title">{t('catalog.emptyMyBooksTitle')}</h3>
+          <h3 className="empty-title">
+            {isAll ? t('catalog.emptyCatalogTitle') : t('catalog.emptyMyBooksTitle')}
+          </h3>
           <p className="empty-desc">
-            {t('catalog.emptyMyBooksText')}
+            {isAll ? t('catalog.emptyCatalogText') : t('catalog.emptyMyBooksText')}
           </p>
           <button
             id="add-first-book-btn"

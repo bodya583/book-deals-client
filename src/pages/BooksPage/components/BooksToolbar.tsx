@@ -7,100 +7,42 @@ import { YearFilterPopover } from './filters/YearFilterPopover';
 import { LocationFilterPopover } from './filters/LocationFilterPopover';
 import { ActiveFiltersChips } from './filters/ActiveFiltersChips';
 import { useTranslation } from '../../../i18n';
+import type { BookFiltersController } from '../hooks/booksPage.types';
 
 export interface BooksToolbarProps {
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
-  // Genres filter
-  selectedGenres: string[];
-  onToggleGenre: (genre: string) => void;
-  onClearGenres: () => void;
-  strictGenres: boolean;
-  onStrictGenresChange: (strict: boolean) => void;
+  filters: BookFiltersController;
   availableGenres: Genre[];
-  // Languages filter
-  selectedLanguages: string[];
-  onToggleLanguage: (language: string) => void;
-  onClearLanguages: () => void;
-  // Year filter
-  yearFrom: string;
-  onYearFromChange: (val: string) => void;
-  yearTo: string;
-  onYearToChange: (val: string) => void;
-  onSetYearRange: (from: string, to: string) => void;
-  onClearYears: () => void;
-  // Settlement filter
   availableSettlements: Settlement[];
-  selectedSettlements: string[];
-  onToggleSettlement: (cityName: string) => void;
-  onClearSettlements: () => void;
-  // Proximity / Distance filter
-  nearMe: boolean;
-  onNearMeChange: (val: boolean) => void;
-  radius: number;
-  onRadiusChange: (val: number) => void;
-  nearCenter: { name: string; lat: number; lng: number } | null;
-  onNearCenterChange: (center: { name: string; lat: number; lng: number } | null) => void;
   userCoords?: { latitude: number | null; longitude: number | null };
-  // Global actions
-  onResetFilters: () => void;
-  hasActiveFilters: boolean;
 }
 
 export const BooksToolbar: React.FC<BooksToolbarProps> = ({
-  searchQuery,
-  onSearchChange,
-  selectedGenres,
-  onToggleGenre,
-  onClearGenres,
-  strictGenres,
-  onStrictGenresChange,
+  filters,
   availableGenres,
-  selectedLanguages,
-  onToggleLanguage,
-  onClearLanguages,
-  yearFrom,
-  onYearFromChange,
-  yearTo,
-  onYearToChange,
-  onSetYearRange,
-  onClearYears,
   availableSettlements,
-  selectedSettlements,
-  onToggleSettlement,
-  onClearSettlements,
-  nearMe,
-  onNearMeChange,
-  radius,
-  onRadiusChange,
-  nearCenter,
-  onNearCenterChange,
   userCoords,
-  onResetFilters,
-  hasActiveFilters,
 }) => {
   const { t } = useTranslation();
   const [openDropdown, setOpenDropdown] = useState<'none' | 'genres' | 'languages' | 'year' | 'location'>('none');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpenDropdown('none');
       }
     };
-
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
+  const toggleDropdown = (key: 'genres' | 'languages' | 'year' | 'location') =>
+    setOpenDropdown((prev) => (prev === key ? 'none' : key));
+
   return (
     <section className="books-toolbar-section" aria-label={t('filters.title')} ref={containerRef}>
       <div className="books-toolbar-row">
-        {/* Left-side cluster: Search input + Popover Buttons */}
         <div className="books-toolbar-left">
-          {/* Main Search input */}
           <div className="books-search-wrapper">
             <SearchIcon size={16} className="books-search-icon" />
             <input
@@ -108,15 +50,15 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
               id="books-search-input"
               className="books-search-input"
               placeholder={t('catalog.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
+              value={filters.search.query}
+              onChange={(e) => filters.search.setQuery(e.target.value)}
               aria-label={t('catalog.searchPlaceholder')}
             />
-            {searchQuery && (
+            {filters.search.query && (
               <button
                 type="button"
                 className="books-search-clear"
-                onClick={() => onSearchChange('')}
+                onClick={() => filters.search.setQuery('')}
                 aria-label={t('common.close')}
               >
                 <CloseIcon size={14} />
@@ -124,63 +66,39 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
             )}
           </div>
 
-          {/* 1. Genres Popover */}
           <GenreFilterPopover
             isOpen={openDropdown === 'genres'}
-            onToggleOpen={() => setOpenDropdown(openDropdown === 'genres' ? 'none' : 'genres')}
-            selectedGenres={selectedGenres}
-            onToggleGenre={onToggleGenre}
-            onClearGenres={onClearGenres}
-            strictGenres={strictGenres}
-            onStrictGenresChange={onStrictGenresChange}
+            onToggleOpen={() => toggleDropdown('genres')}
+            filter={filters.genres}
             availableGenres={availableGenres}
           />
 
-          {/* 2. Languages Popover */}
           <LanguageFilterPopover
             isOpen={openDropdown === 'languages'}
-            onToggleOpen={() => setOpenDropdown(openDropdown === 'languages' ? 'none' : 'languages')}
-            selectedLanguages={selectedLanguages}
-            onToggleLanguage={onToggleLanguage}
-            onClearLanguages={onClearLanguages}
+            onToggleOpen={() => toggleDropdown('languages')}
+            filter={filters.languages}
           />
 
-          {/* 3. Year Popover */}
           <YearFilterPopover
             isOpen={openDropdown === 'year'}
-            onToggleOpen={() => setOpenDropdown(openDropdown === 'year' ? 'none' : 'year')}
-            yearFrom={yearFrom}
-            onYearFromChange={onYearFromChange}
-            yearTo={yearTo}
-            onYearToChange={onYearToChange}
-            onSetYearRange={onSetYearRange}
-            onClearYears={onClearYears}
+            onToggleOpen={() => toggleDropdown('year')}
+            filter={filters.year}
           />
 
-          {/* 4. Location Popover */}
           <LocationFilterPopover
             isOpen={openDropdown === 'location'}
-            onToggleOpen={() => setOpenDropdown(openDropdown === 'location' ? 'none' : 'location')}
+            onToggleOpen={() => toggleDropdown('location')}
             availableSettlements={availableSettlements}
-            selectedSettlements={selectedSettlements}
-            onToggleSettlement={onToggleSettlement}
-            onClearSettlements={onClearSettlements}
-            nearMe={nearMe}
-            onNearMeChange={onNearMeChange}
-            radius={radius}
-            onRadiusChange={onRadiusChange}
-            nearCenter={nearCenter}
-            onNearCenterChange={onNearCenterChange}
+            location={filters.location}
             userCoords={userCoords}
           />
         </div>
 
-        {/* Right-side cluster: Reset button */}
-        {hasActiveFilters && (
+        {filters.hasActiveFilters && (
           <div className="books-toolbar-right">
             <button
               type="button"
-              onClick={onResetFilters}
+              onClick={filters.reset}
               className="toolbar-reset-filters-btn"
               title={t('filters.resetAll')}
             >
@@ -191,27 +109,7 @@ export const BooksToolbar: React.FC<BooksToolbarProps> = ({
         )}
       </div>
 
-      {/* Active filters summary bar when filters applied */}
-      {hasActiveFilters && (
-        <ActiveFiltersChips
-          searchQuery={searchQuery}
-          onSearchChange={onSearchChange}
-          selectedGenres={selectedGenres}
-          onToggleGenre={onToggleGenre}
-          strictGenres={strictGenres}
-          selectedLanguages={selectedLanguages}
-          onToggleLanguage={onToggleLanguage}
-          selectedSettlements={selectedSettlements}
-          onToggleSettlement={onToggleSettlement}
-          yearFrom={yearFrom}
-          yearTo={yearTo}
-          onClearYears={onClearYears}
-          nearMe={nearMe}
-          radius={radius}
-          nearCenter={nearCenter}
-          onNearMeChange={onNearMeChange}
-        />
-      )}
+      {filters.hasActiveFilters && <ActiveFiltersChips filters={filters} />}
     </section>
   );
 };

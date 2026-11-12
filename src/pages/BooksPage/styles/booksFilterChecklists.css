@@ -1,0 +1,204 @@
+/* Popover search & checklist */
+.popover-search-box {
+  width: 100%;
+}
+
+.popover-search-input {
+  width: 100%;
+  background: #fafaf8;
+  border: 1px solid #e0e0db;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.825rem;
+  font-family: inherit;
+  outline: none;
+  color: #1a1a1a;
+}
+
+.popover-search-input:focus {
+  border-color: #2d6a4f;
+  background: #ffffff;
+}
+
+.popover-checklist {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.popover-check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #333330;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.popover-check-item:hover {
+  background: #f0f0eb;
+}
+
+.popover-check-item.selected {
+  background: #edf5f0;
+  color: #1b4332;
+  font-weight: 500;
+}
+
+.popover-check-item input[type="checkbox"] {
+  display: none;
+}
+
+.check-custom {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid #c2c2ba;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.popover-check-item.selected .check-custom {
+  background: #2d6a4f;
+  border-color: #2d6a4f;
+}
+
+.check-label-text {
+  flex: 1;
+}
+
+.check-item-count {
+  font-size: 0.725rem;
+  color: #888882;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  padding: 0.1rem 0.4rem;
+}
+
+.popover-empty-list {
+  padding: 1rem 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #888882;
+}
+
+/* Year Filter Popover Elements */
+.year-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.year-input-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.year-input-col label {
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: #777770;
+}
+
+.year-number-input {
+  width: 100%;
+  background: #fafaf8;
+  border: 1.5px solid #e0e0db;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  color: #1a1a1a;
+}
+
+.year-number-input:focus {
+  border-color: #2d6a4f;
+  background: #ffffff;
+}
+
+.year-separator {
+  color: #999990;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+.year-presets-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid #ebebe5;
+}
+
+.year-presets-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #777770;
+}
+
+.year-presets-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.year-preset-btn {
+  background: #f0f0eb;
+  border: 1px solid #dfdfd7;
+  border-radius: 8px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #444440;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.year-preset-btn:hover {
+  background: #e4e4dd;
+  border-color: #c8c8c0;
+}
+
+.year-preset-btn.active {
+  background: #2d6a4f;
+  color: #ffffff;
+  border-color: #2d6a4f;
+  font-weight: 600;
+}
+
+.toolbar-reset-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #fdf2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar-reset-filters-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}

@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { BooksPagination } from '../../../types/book';
+import type { BookPaginationController } from './booksPage.types';
 
-export const useBookPagination = (initialLimit = 12) => {
+export const useBookPagination = (initialLimit = 12): BookPaginationController => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(initialLimit);
-  const [pagination, setPagination] = useState<BooksPagination>({
+  const [meta, setPagination] = useState<BooksPagination>({
     total: 0,
     page: 1,
     limit: initialLimit,
@@ -20,14 +21,16 @@ export const useBookPagination = (initialLimit = 12) => {
     setPage(1);
   }, []);
 
-  return {
-    page,
-    setPage,
-    limit,
-    setLimit,
-    pagination,
-    setPagination,
-    changePage,
-    changeLimit,
-  };
+  return useMemo(
+    () => ({
+      meta,
+      page,
+      limit,
+      setPage,
+      setPagination,
+      changePage,
+      changeLimit,
+    }),
+    [meta, page, limit, changePage, changeLimit]
+  );
 };
