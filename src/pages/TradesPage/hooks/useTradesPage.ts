@@ -49,7 +49,7 @@ export const useTradesPage = () => {
     }
   );
 
-  const { data: counts = DEFAULT_COUNTS, loading: countsLoading } = useQuery<TradeCounts>(
+  const { data: counts = DEFAULT_COUNTS } = useQuery<TradeCounts>(
     'trades:counts',
     (signal) => getTradeCounts({ signal }),
     { staleTime: 15_000 }
@@ -145,7 +145,7 @@ export const useTradesPage = () => {
       trades,
       filtered,
       counts,
-      loading: tradesLoading || countsLoading,
+      loading: tradesLoading,
       searchQuery,
       setSearchQuery,
       sortBy,

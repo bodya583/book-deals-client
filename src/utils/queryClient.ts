@@ -3,10 +3,19 @@ export interface CacheEntry<T = unknown> {
   timestamp: number;
 }
 
+export type QueryEvent =
+  | { type: 'set'; key: string; data: unknown }
+  | { type: 'invalidate'; key: string };
+
+interface InFlightEntry {
+  promise: Promise<unknown>;
+  controller: AbortController;
+}
+
 class QueryClient {
   private cache = new Map<string, CacheEntry>();
-  private inFlight = new Map<string, Promise<unknown>>();
-  private listeners = new Set<(key: string) => void>();
+  private inFlight = new Map<string, InFlightEntry>();
+  private listeners = new Set<(event: QueryEvent) => void>();
 
   get<T>(key: string, maxAgeMs = 15_000): T | undefined {
     const entry = this.cache.get(key);
@@ -20,13 +29,14 @@ class QueryClient {
 
   set<T>(key: string, data: T): void {
     this.cache.set(key, { data, timestamp: Date.now() });
-    this.notify(key);
+    this.notify({ type: 'set', key, data });
   }
 
   invalidate(keyOrPrefix?: string): void {
     if (!keyOrPrefix) {
       this.cache.clear();
-      this.notify('*');
+      this.inFlight.clear();
+      this.notify({ type: 'invalidate', key: '*' });
       return;
     }
     for (const key of this.cache.keys()) {
@@ -34,55 +44,71 @@ class QueryClient {
         this.cache.delete(key);
       }
     }
-    this.notify(keyOrPrefix);
+    for (const [key, entry] of this.inFlight.entries()) {
+      if (key === keyOrPrefix || key.startsWith(keyOrPrefix)) {
+        entry.controller.abort();
+        this.inFlight.delete(key);
+      }
+    }
+    this.notify({ type: 'invalidate', key: keyOrPrefix });
+  }
+
+  clear(): void {
+    this.cache.clear();
+    for (const entry of this.inFlight.values()) {
+      entry.controller.abort();
+    }
+    this.inFlight.clear();
   }
 
   async fetch<T>(
     key: string,
     fetcher: (signal: AbortSignal) => Promise<T>,
-    signal?: AbortSignal,
+    _signal?: AbortSignal,
     staleTimeMs = 15_000
   ): Promise<T> {
-    // 1. Return fresh cached copy if available and not expired
-    const cached = this.get<T>(key, staleTimeMs);
-    if (cached !== undefined) {
-      return cached;
+    if (staleTimeMs > 0) {
+      const cached = this.get<T>(key, staleTimeMs);
+      if (cached !== undefined) {
+        return cached;
+      }
     }
 
-    // 2. Return pending in-flight promise if identical request is already underway
     const existing = this.inFlight.get(key);
     if (existing) {
-      return existing as Promise<T>;
+      return existing.promise as Promise<T>;
     }
 
-    // 3. Initiate request
+    // Shared in-flight controller must survive individual StrictMode cleanup unmounts
     const controller = new AbortController();
-    const activeSignal = signal || controller.signal;
-
-    const promise = fetcher(activeSignal)
+    const promise = fetcher(controller.signal)
       .then((data) => {
-        this.set(key, data);
+        if (!controller.signal.aborted) {
+          this.set(key, data);
+        }
         return data;
       })
       .finally(() => {
-        this.inFlight.delete(key);
+        if (this.inFlight.get(key)?.promise === promise) {
+          this.inFlight.delete(key);
+        }
       });
 
-    this.inFlight.set(key, promise);
+    this.inFlight.set(key, { promise, controller });
     return promise;
   }
 
-  subscribe(listener: (key: string) => void): () => void {
+  subscribe(listener: (event: QueryEvent) => void): () => void {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);
     };
   }
 
-  private notify(key: string): void {
+  private notify(event: QueryEvent): void {
     this.listeners.forEach((listener) => {
       try {
-        listener(key);
+        listener(event);
       } catch {
         // ignore listener errors
       }

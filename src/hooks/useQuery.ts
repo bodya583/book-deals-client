@@ -52,7 +52,6 @@ export function useQuery<T>(
     async (ignoreCache = false) => {
       if (!key || !enabled) return;
 
-      // Abort previous in-flight request if exists
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -86,13 +85,18 @@ export function useQuery<T>(
         }
         return result;
       } catch (err: unknown) {
-        const errorObj = err as { name?: string; message?: string } | undefined;
-        if (!controller.signal.aborted && errorObj?.name !== 'CanceledError' && errorObj?.name !== 'AbortError') {
-          const parsedErr = err instanceof Error ? err : new Error(String(err));
-          setError(parsedErr);
+        if (controller.signal.aborted) return;
+
+        const errorObj = err as { name?: string } | undefined;
+        if (errorObj?.name === 'CanceledError' || errorObj?.name === 'AbortError') {
           setLoading(false);
-          onErrorRef.current?.(parsedErr);
+          return;
         }
+
+        const parsedErr = err instanceof Error ? err : new Error(String(err));
+        setError(parsedErr);
+        setLoading(false);
+        onErrorRef.current?.(parsedErr);
       }
     },
     [key, enabled, staleTime]
@@ -101,9 +105,17 @@ export function useQuery<T>(
   useEffect(() => {
     executeFetch();
 
-    // Subscribe to external cache invalidations
-    const unsubscribe = queryClient.subscribe((invalidatedKey) => {
-      if (key && (invalidatedKey === '*' || invalidatedKey === key || key.startsWith(invalidatedKey))) {
+    const unsubscribe = queryClient.subscribe((event) => {
+      if (!key) return;
+      if (event.type === 'set' && event.key === key) {
+        setData(event.data as T);
+        setLoading(false);
+        return;
+      }
+      if (
+        event.type === 'invalidate' &&
+        (event.key === '*' || event.key === key || key.startsWith(event.key))
+      ) {
         executeFetch(true);
       }
     });

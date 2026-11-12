@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { queryClient } from '../utils/queryClient';
 
 export interface User {
   id: string;
@@ -37,6 +38,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       user: state.user ? { ...state.user, ...updatedFields } : null,
     })),
 
-  logout: () =>
-    set({ user: null, accessToken: null, isAuthenticated: false }),
+  logout: () => {
+    queryClient.clear();
+    set({ user: null, accessToken: null, isAuthenticated: false });
+  },
 }));

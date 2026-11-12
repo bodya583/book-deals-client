@@ -5,6 +5,8 @@ import api from '../api/axiosInstance';
 import { BookOpenIcon, UserIcon, LogOutIcon, GlobeIcon, TradeIcon } from './icons';
 import { Avatar } from './ui';
 import { getTradeCounts } from '../api/tradesApi';
+import type { TradeCounts } from '../types/trade';
+import { queryClient } from '../utils/queryClient';
 import { APP_CONFIG } from '../config/app';
 import { useTranslation } from '../i18n';
 import { LanguageSwitcher } from './LanguageSwitcher/LanguageSwitcher';
@@ -19,13 +21,37 @@ export const Navbar: React.FC = () => {
 
   React.useEffect(() => {
     if (!user) return;
-    getTradeCounts()
-      .then((data) => {
-        setIncomingCount(data.incoming || 0);
-      })
-      .catch(() => {
-        // ignore
-      });
+    let active = true;
+
+    const loadCounts = () => {
+      queryClient
+        .fetch<TradeCounts>('trades:counts', (signal) => getTradeCounts({ signal }), undefined, 15_000)
+        .then((data) => {
+          if (active) setIncomingCount(data.incoming || 0);
+        })
+        .catch(() => {
+          // ignore
+        });
+    };
+
+    loadCounts();
+
+    const unsubscribe = queryClient.subscribe((event) => {
+      if (event.type === 'set' && event.key === 'trades:counts') {
+        const data = event.data as TradeCounts;
+        if (active) setIncomingCount(data.incoming || 0);
+      } else if (
+        event.type === 'invalidate' &&
+        (event.key === '*' || event.key === 'trades' || event.key === 'trades:counts')
+      ) {
+        loadCounts();
+      }
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [user, location.pathname]);
 
   const handleLogout = async () => {
