@@ -159,5 +159,8 @@ export interface BooksSchema {
     centerOnMeBtn: string;
     fitAllTitle: string;
     fitAllBtn: string;
+    clusterTooltip: string;
+    userBooksCount: string;
+    viewBook: string;
   };
 }

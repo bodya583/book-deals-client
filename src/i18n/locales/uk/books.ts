@@ -161,5 +161,8 @@ export const books: BooksSchema = {
     centerOnMeBtn: 'Я тут',
     fitAllTitle: 'Показати всі книги на мапі',
     fitAllBtn: 'Показати всі',
+    clusterTooltip: '{{count}} книг у цій зоні (натисніть для наближення)',
+    userBooksCount: '{{count}} книг',
+    viewBook: 'Детальніше',
   },
 };

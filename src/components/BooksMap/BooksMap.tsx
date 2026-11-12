@@ -3,7 +3,7 @@ import L from 'leaflet';
 import type { Book } from '../../types/book';
 import {
   resolveBookBaseCoordinates,
-  disperseAndCloakCoordinates,
+  cloakCoordinates,
   calculateDistanceKm,
   getDiscreteDistanceLabel,
 } from '../../utils/geoPrivacy';
@@ -15,6 +15,72 @@ interface BooksMapProps {
   books: Book[];
   userCoords?: { latitude: number | null; longitude: number | null };
   onViewBook: (book: Book) => void;
+}
+
+interface UserLocationGroup {
+  key: string;
+  userId: string;
+  username: string;
+  city?: string | null;
+  baseLat: number;
+  baseLng: number;
+  cloakedLat: number;
+  cloakedLng: number;
+  books: Book[];
+}
+
+interface ClusterGroup {
+  centerLat: number;
+  centerLng: number;
+  locations: UserLocationGroup[];
+  totalBooks: number;
+}
+
+const CLUSTER_DISTANCE_PX = 52;
+
+function computeClusters(
+  map: L.Map,
+  locations: UserLocationGroup[],
+  zoom: number
+): ClusterGroup[] {
+  const clusters: ClusterGroup[] = [];
+
+  for (const loc of locations) {
+    const pLoc = map.project([loc.cloakedLat, loc.cloakedLng], zoom);
+    let bestCluster: ClusterGroup | null = null;
+    let minDist = Infinity;
+
+    for (const cluster of clusters) {
+      const pCluster = map.project([cluster.centerLat, cluster.centerLng], zoom);
+      const d = Math.hypot(pLoc.x - pCluster.x, pLoc.y - pCluster.y);
+      if (d < CLUSTER_DISTANCE_PX && d < minDist) {
+        minDist = d;
+        bestCluster = cluster;
+      }
+    }
+
+    if (bestCluster) {
+      bestCluster.locations.push(loc);
+      bestCluster.totalBooks += loc.books.length;
+      let sumLat = 0;
+      let sumLng = 0;
+      for (const l of bestCluster.locations) {
+        sumLat += l.cloakedLat;
+        sumLng += l.cloakedLng;
+      }
+      bestCluster.centerLat = sumLat / bestCluster.locations.length;
+      bestCluster.centerLng = sumLng / bestCluster.locations.length;
+    } else {
+      clusters.push({
+        centerLat: loc.cloakedLat,
+        centerLng: loc.cloakedLng,
+        locations: [loc],
+        totalBooks: loc.books.length,
+      });
+    }
+  }
+
+  return clusters;
 }
 
 export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBook }) => {
@@ -56,129 +122,247 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
     const featureGroup = layerGroupRef.current;
     if (!map || !featureGroup) return;
 
-    featureGroup.clearLayers();
+    const userLocationsMap = new Map<string, UserLocationGroup>();
 
-    if (userCoords?.latitude && userCoords?.longitude) {
-      const userMarker = L.marker([userCoords.latitude, userCoords.longitude], {
-        icon: L.divIcon({
-          className: 'user-map-marker-container',
-          html: `<div class="user-map-marker" title="${t('map.userMarkerTitle')}"></div>`,
-          iconSize: [22, 22],
-          iconAnchor: [11, 11],
-        }),
-        zIndexOffset: 1000,
-      }).bindPopup(`<b>${t('map.youAreHere')}</b><br/><span style="font-size:0.8rem;color:#64748b;">${t('map.youAreHereSubtitle')}</span>`);
-
-      featureGroup.addLayer(userMarker);
-    }
-
-    const locationGroups = new Map<string, Book[]>();
     books.forEach((book) => {
       const baseCoords = resolveBookBaseCoordinates(book.user);
       if (!baseCoords) return;
-      const key = `${baseCoords[0].toFixed(3)}_${baseCoords[1].toFixed(3)}`;
-      const arr = locationGroups.get(key) || [];
-      arr.push(book);
-      locationGroups.set(key, arr);
+
+      const userId = book.user?.id || `${baseCoords[0].toFixed(4)}_${baseCoords[1].toFixed(4)}`;
+      const key = userId;
+
+      let group = userLocationsMap.get(key);
+      if (!group) {
+        const [cloakedLat, cloakedLng] = cloakCoordinates(baseCoords[0], baseCoords[1], key);
+        group = {
+          key,
+          userId,
+          username: book.user?.username || 'reader',
+          city: book.user?.city || null,
+          baseLat: baseCoords[0],
+          baseLng: baseCoords[1],
+          cloakedLat,
+          cloakedLng,
+          books: [],
+        };
+        userLocationsMap.set(key, group);
+      }
+      group.books.push(book);
     });
 
-    locationGroups.forEach((groupBooks) => {
-      groupBooks.forEach((book, indexInGroup) => {
-        const baseCoords = resolveBookBaseCoordinates(book.user);
-        if (!baseCoords) return;
+    const userLocations = Array.from(userLocationsMap.values());
 
-        const [cloakedLat, cloakedLng] = disperseAndCloakCoordinates(
-          baseCoords[0],
-          baseCoords[1],
-          book.id,
-          indexInGroup,
-          groupBooks.length
-        );
+    const renderMarkers = () => {
+      featureGroup.clearLayers();
 
-        let distKm: number | null = null;
-        if (userCoords?.latitude && userCoords?.longitude) {
-          distKm = calculateDistanceKm(
-            userCoords.latitude,
-            userCoords.longitude,
-            baseCoords[0],
-            baseCoords[1]
-          );
-        }
-        const distanceLabel = getDiscreteDistanceLabel(distKm, language);
-
-        const circle = L.circle([cloakedLat, cloakedLng], {
-          radius: 750,
-          color: '#2d6a4f',
-          weight: 1.5,
-          opacity: 0.45,
-          dashArray: '5, 5',
-          fillColor: '#2d6a4f',
-          fillOpacity: 0.12,
-        });
-
-        const marker = L.marker([cloakedLat, cloakedLng], {
-          riseOnHover: true,
+      if (userCoords?.latitude && userCoords?.longitude) {
+        const userMarker = L.marker([userCoords.latitude, userCoords.longitude], {
           icon: L.divIcon({
-            className: 'book-div-icon',
-            html: `<div class="book-map-marker" title="${book.title} — ${book.author}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
+            className: 'user-map-marker-container',
+            html: `<div class="user-map-marker" title="${t('map.userMarkerTitle')}"></div>`,
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
           }),
-        });
+          zIndexOffset: 1000,
+        }).bindPopup(
+          `<b>${t('map.youAreHere')}</b><br/><span style="font-size:0.8rem;color:#64748b;">${t('map.youAreHereSubtitle')}</span>`
+        );
+        featureGroup.addLayer(userMarker);
+      }
 
-        marker.on('click', () => {
-          map.setView([cloakedLat, cloakedLng], Math.max(map.getZoom(), 12), { animate: true });
-        });
-        circle.on('click', () => {
-          map.setView([cloakedLat, cloakedLng], Math.max(map.getZoom(), 12), { animate: true });
-        });
+      if (userLocations.length === 0) return;
 
-        marker.on('mouseover', () => {
-          circle.setStyle({ weight: 2.5, fillOpacity: 0.25 });
-        });
-        marker.on('mouseout', () => {
-          circle.setStyle({ weight: 1.5, fillOpacity: 0.12 });
-        });
-        circle.on('mouseover', () => {
-          circle.setStyle({ weight: 2.5, fillOpacity: 0.25 });
-        });
-        circle.on('mouseout', () => {
-          circle.setStyle({ weight: 1.5, fillOpacity: 0.12 });
-        });
+      const currentZoom = map.getZoom();
+      const clusters = computeClusters(map, userLocations, currentZoom);
 
-        const popupDiv = document.createElement('div');
-        popupDiv.className = 'book-popup-card';
-        popupDiv.innerHTML = `
-          <div class="book-popup-header">
-            ${
-              book.coverURL
-                ? `<img src="${book.coverURL}" class="book-popup-cover" alt="${book.title}" />`
-                : `<div class="book-popup-cover" style="display:flex;align-items:center;justify-content:center;color:#64748b;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`
+      clusters.forEach((cluster) => {
+        if (cluster.locations.length > 1) {
+          const clusterMarker = L.marker([cluster.centerLat, cluster.centerLng], {
+            riseOnHover: true,
+            icon: L.divIcon({
+              className: 'book-cluster-div-icon',
+              html: `
+                <div class="book-map-cluster-marker" title="${t('map.clusterTooltip', { count: cluster.totalBooks })}">
+                  <span class="cluster-count">${cluster.totalBooks}</span>
+                </div>
+              `,
+              iconSize: [44, 44],
+              iconAnchor: [22, 22],
+            }),
+          });
+
+          clusterMarker.on('click', () => {
+            const bounds = L.latLngBounds(
+              cluster.locations.map((loc) => [loc.cloakedLat, loc.cloakedLng])
+            );
+            if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+              map.setView(
+                [cluster.centerLat, cluster.centerLng],
+                Math.min(map.getMaxZoom(), map.getZoom() + 2),
+                { animate: true }
+              );
+            } else {
+              map.fitBounds(bounds.pad(0.35), { maxZoom: 16, animate: true });
             }
-            <div class="book-popup-meta">
-              <h4 class="book-popup-title" title="${book.title}">${book.title}</h4>
-              <span class="book-popup-author" title="${book.author}">${book.author}</span>
-              <span class="book-popup-distance-badge" title="${t('map.distanceBadgeTitle')}">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:3px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
-              </span>
-            </div>
-          </div>
-        `;
+          });
 
-        const viewBtn = document.createElement('button');
-        viewBtn.className = 'book-popup-btn';
-        viewBtn.textContent = t('map.bookDetailsBtn');
-        viewBtn.onclick = () => onViewBook(book);
-        popupDiv.appendChild(viewBtn);
+          featureGroup.addLayer(clusterMarker);
+        } else {
+          const loc = cluster.locations[0];
 
-        const popup = L.popup({ minWidth: 260, autoPan: true, autoPanPadding: [20, 85] }).setContent(popupDiv);
-        marker.bindPopup(popup);
-        circle.bindPopup(popup);
+          let distKm: number | null = null;
+          if (userCoords?.latitude && userCoords?.longitude) {
+            distKm = calculateDistanceKm(
+              userCoords.latitude,
+              userCoords.longitude,
+              loc.baseLat,
+              loc.baseLng
+            );
+          }
+          const distanceLabel = getDiscreteDistanceLabel(distKm, language);
 
-        featureGroup.addLayer(circle);
-        featureGroup.addLayer(marker);
+          const circle = L.circle([loc.cloakedLat, loc.cloakedLng], {
+            radius: 750,
+            color: '#2d6a4f',
+            weight: 1.5,
+            opacity: 0.45,
+            dashArray: '5, 5',
+            fillColor: '#2d6a4f',
+            fillOpacity: 0.12,
+          });
+
+          const markerHtml =
+            loc.books.length > 1
+              ? `<div class="book-map-marker has-count" title="@${loc.username} — ${t('map.userBooksCount', { count: loc.books.length })}">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span class="marker-count-badge">${loc.books.length}</span>
+                </div>`
+              : `<div class="book-map-marker" title="${loc.books[0].title} — ${loc.books[0].author}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>`;
+
+          const marker = L.marker([loc.cloakedLat, loc.cloakedLng], {
+            riseOnHover: true,
+            icon: L.divIcon({
+              className: 'book-div-icon',
+              html: markerHtml,
+              iconSize: loc.books.length > 1 ? [40, 40] : [36, 36],
+              iconAnchor: loc.books.length > 1 ? [20, 20] : [18, 18],
+            }),
+          });
+
+          marker.on('click', () => {
+            map.setView([loc.cloakedLat, loc.cloakedLng], Math.max(map.getZoom(), 12), {
+              animate: true,
+            });
+          });
+          circle.on('click', () => {
+            map.setView([loc.cloakedLat, loc.cloakedLng], Math.max(map.getZoom(), 12), {
+              animate: true,
+            });
+          });
+
+          marker.on('mouseover', () => circle.setStyle({ weight: 2.5, fillOpacity: 0.25 }));
+          marker.on('mouseout', () => circle.setStyle({ weight: 1.5, fillOpacity: 0.12 }));
+          circle.on('mouseover', () => circle.setStyle({ weight: 2.5, fillOpacity: 0.25 }));
+          circle.on('mouseout', () => circle.setStyle({ weight: 1.5, fillOpacity: 0.12 }));
+
+          const popupDiv = document.createElement('div');
+
+          if (loc.books.length === 1) {
+            const singleBook = loc.books[0];
+            popupDiv.className = 'book-popup-card';
+            popupDiv.innerHTML = `
+              <div class="book-popup-header">
+                ${
+                  singleBook.coverURL
+                    ? `<img src="${singleBook.coverURL}" class="book-popup-cover" alt="${singleBook.title}" onerror="this.style.display='none'" />`
+                    : `<div class="book-popup-cover" style="display:flex;align-items:center;justify-content:center;color:#64748b;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`
+                }
+                <div class="book-popup-meta">
+                  <h4 class="book-popup-title" title="${singleBook.title}">${singleBook.title}</h4>
+                  <span class="book-popup-author" title="${singleBook.author}">${singleBook.author}</span>
+                  <span class="book-popup-distance-badge" title="${t('map.distanceBadgeTitle')}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:3px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
+                  </span>
+                </div>
+              </div>
+            `;
+
+            const viewBtn = document.createElement('button');
+            viewBtn.className = 'book-popup-btn';
+            viewBtn.textContent = t('map.bookDetailsBtn');
+            viewBtn.onclick = () => onViewBook(singleBook);
+            popupDiv.appendChild(viewBtn);
+
+            const popup = L.popup({
+              minWidth: 260,
+              autoPan: true,
+              autoPanPadding: [20, 85],
+            }).setContent(popupDiv);
+
+            marker.bindPopup(popup);
+            circle.bindPopup(popup);
+          } else {
+            popupDiv.className = 'book-popup-card multi-books-popup';
+            popupDiv.innerHTML = `
+              <div class="multi-popup-header">
+                <div class="multi-popup-user">
+                  <span class="multi-popup-username">@${loc.username}</span>
+                  ${loc.city ? `<span class="multi-popup-city">• ${loc.city}</span>` : ''}
+                </div>
+                <div class="multi-popup-badges">
+                  <span class="multi-popup-count-badge">${t('map.userBooksCount', { count: loc.books.length })}</span>
+                  <span class="book-popup-distance-badge" title="${t('map.distanceBadgeTitle')}">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
+                  </span>
+                </div>
+              </div>
+              <div class="multi-popup-list"></div>
+            `;
+
+            const listContainer = popupDiv.querySelector('.multi-popup-list')!;
+            loc.books.forEach((b) => {
+              const item = document.createElement('div');
+              item.className = 'multi-popup-item';
+              item.innerHTML = `
+                ${
+                  b.coverURL
+                    ? `<img src="${b.coverURL}" class="multi-popup-thumb" alt="${b.title}" onerror="this.style.display='none'" />`
+                    : `<div class="multi-popup-thumb-placeholder"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`
+                }
+                <div class="multi-popup-item-info">
+                  <span class="multi-popup-item-title" title="${b.title}">${b.title}</span>
+                  <span class="multi-popup-item-author" title="${b.author}">${b.author}</span>
+                </div>
+              `;
+              const itemBtn = document.createElement('button');
+              itemBtn.className = 'multi-popup-item-btn';
+              itemBtn.textContent = t('map.viewBook');
+              itemBtn.onclick = () => onViewBook(b);
+              item.appendChild(itemBtn);
+              listContainer.appendChild(item);
+            });
+
+            const popup = L.popup({
+              minWidth: 290,
+              maxWidth: 320,
+              autoPan: true,
+              autoPanPadding: [20, 85],
+            }).setContent(popupDiv);
+
+            marker.bindPopup(popup);
+            circle.bindPopup(popup);
+          }
+
+          featureGroup.addLayer(circle);
+          featureGroup.addLayer(marker);
+        }
       });
-    });
+    };
+
+    map.on('zoomend', renderMarkers);
+    renderMarkers();
 
     if (featureGroup.getLayers().length > 0) {
       try {
@@ -186,6 +370,10 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
       } catch {
       }
     }
+
+    return () => {
+      map.off('zoomend', renderMarkers);
+    };
   }, [books, userCoords, onViewBook, t, language]);
 
   const handleCenterOnUser = () => {
