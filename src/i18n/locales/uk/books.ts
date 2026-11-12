@@ -166,5 +166,6 @@ export const books: BooksSchema = {
     viewBook: 'Детальніше',
     clickPinHint: 'Натисніть на позначку на мапі, щоб переглянути книги',
     clusterPopupHeader: 'У цій локації: {{count}} книг (читачів: {{users}})',
+    zoneNotice: 'Захисна зона ~750м (читач у межах цієї області)',
   },
 };

@@ -166,5 +166,6 @@ export const books: BooksSchema = {
     viewBook: 'Details',
     clickPinHint: 'Click on any marker to view books',
     clusterPopupHeader: 'In this area: {{count}} books ({{users}} readers)',
+    zoneNotice: 'Protective zone ~750m (reader is within this area)',
   },
 };

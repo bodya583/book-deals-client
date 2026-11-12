@@ -164,5 +164,6 @@ export interface BooksSchema {
     viewBook: string;
     clickPinHint: string;
     clusterPopupHeader: string;
+    zoneNotice: string;
   };
 }

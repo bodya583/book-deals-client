@@ -36,20 +36,22 @@ interface ClusterGroup {
   totalBooks: number;
 }
 
-function getClusterDistancePx(zoom: number): number {
-  if (zoom >= 16) return 8;
-  if (zoom >= 14) return 20;
-  if (zoom >= 11) return 36;
-  return 52;
-}
-
 function computeClusters(
   map: L.Map,
   locations: UserLocationGroup[],
   zoom: number
 ): ClusterGroup[] {
+  if (zoom >= 10) {
+    return locations.map((loc) => ({
+      centerLat: loc.cloakedLat,
+      centerLng: loc.cloakedLng,
+      locations: [loc],
+      totalBooks: loc.books.length,
+    }));
+  }
+
   const clusters: ClusterGroup[] = [];
-  const clusterDist = getClusterDistancePx(zoom);
+  const clusterDist = 45;
 
   for (const loc of locations) {
     const pLoc = map.project([loc.cloakedLat, loc.cloakedLng], zoom);
@@ -255,11 +257,11 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
               if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
                 map.setView(
                   [cluster.centerLat, cluster.centerLng],
-                  Math.min(map.getMaxZoom(), zoomNow + 2),
+                  Math.max(11, zoomNow + 3),
                   { animate: true }
                 );
               } else {
-                map.fitBounds(bounds.pad(0.35), { maxZoom: 16, animate: true });
+                map.fitBounds(bounds.pad(0.35), { maxZoom: 14, animate: true });
               }
             } else {
               clusterMarker.openPopup();
@@ -331,9 +333,14 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
                 <div class="book-popup-meta">
                   <h4 class="book-popup-title" title="${singleBook.title}">${singleBook.title}</h4>
                   <span class="book-popup-author" title="${singleBook.author}">${singleBook.author}</span>
-                  <span class="book-popup-distance-badge" title="${t('map.distanceBadgeTitle')}">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:3px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
-                  </span>
+                  <div class="book-popup-badges-row">
+                    <span class="book-popup-distance-badge" title="${t('map.distanceBadgeTitle')}">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:3px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
+                    </span>
+                    <span class="book-popup-zone-badge" title="${t('map.zoneNotice')}">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>~750m
+                    </span>
+                  </div>
                 </div>
               </div>
             `;
@@ -367,6 +374,9 @@ export const BooksMap: React.FC<BooksMapProps> = ({ books, userCoords, onViewBoo
                   <span class="multi-popup-count-badge">${t('map.userBooksCount', { count: loc.books.length })}</span>
                   <span class="book-popup-distance-badge" title="${t('map.distanceBadgeTitle')}">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${distanceLabel}
+                  </span>
+                  <span class="book-popup-zone-badge" title="${t('map.zoneNotice')}">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>~750m
                   </span>
                 </div>
               </div>
