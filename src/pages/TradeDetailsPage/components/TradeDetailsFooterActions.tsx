@@ -90,13 +90,24 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
 
           if (iAmConfirmed) {
             return (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', padding: '0.65rem 1.15rem', borderRadius: '8px', fontSize: '0.925rem', fontWeight: 600 }}>
-                <ClockIcon size={18} />
-                <span>
-                  {t('tradeDetails.footerConfirmedWaiting', {
-                    username: partner?.username || t('common.partner').toLowerCase(),
-                  })}
-                </span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', padding: '0.65rem 1.15rem', borderRadius: '8px', fontSize: '0.925rem', fontWeight: 600 }}>
+                  <ClockIcon size={18} />
+                  <span>
+                    {t('tradeDetails.footerConfirmedWaiting', {
+                      username: partner?.username || t('common.partner').toLowerCase(),
+                    })}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="btn-trade-reject"
+                  disabled={actionLoading}
+                  onClick={onReject}
+                >
+                  <XCircleIcon size={16} />
+                  <span>{t('trades.card.rejectBtn')}</span>
+                </button>
               </div>
             );
           }
@@ -111,6 +122,15 @@ export const TradeDetailsFooterActions: React.FC<TradeDetailsFooterActionsProps>
                   })}
                 </span>
               )}
+              <button
+                type="button"
+                className="btn-trade-reject"
+                disabled={actionLoading}
+                onClick={onReject}
+              >
+                <XCircleIcon size={16} />
+                <span>{t('trades.card.rejectBtn')}</span>
+              </button>
               <button
                 type="button"
                 className="btn-trade-complete"

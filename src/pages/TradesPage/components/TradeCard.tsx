@@ -183,10 +183,24 @@ export const TradeCard: React.FC<TradeCardProps> = ({
 
           if (iAmConfirmed) {
             return (
-              <span style={{ fontSize: '0.825rem', color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                <ClockIcon size={14} />
-                <span>{t('trades.card.youConfirmedWaitingShort')}</span>
-              </span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span style={{ fontSize: '0.825rem', color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <ClockIcon size={14} />
+                  <span>{t('trades.card.youConfirmedWaitingShort')}</span>
+                </span>
+                <button
+                  type="button"
+                  className="btn-trade-reject"
+                  disabled={actionLoading}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    actions.reject(trade.id);
+                  }}
+                >
+                  <XCircleIcon size={14} />
+                  <span>{t('trades.card.rejectBtn')}</span>
+                </button>
+              </div>
             );
           }
 
@@ -198,6 +212,18 @@ export const TradeCard: React.FC<TradeCardProps> = ({
                   <span>{t('trades.card.partnerConfirmedShort')}</span>
                 </span>
               )}
+              <button
+                type="button"
+                className="btn-trade-reject"
+                disabled={actionLoading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  actions.reject(trade.id);
+                }}
+              >
+                <XCircleIcon size={14} />
+                <span>{t('trades.card.rejectBtn')}</span>
+              </button>
               <button
                 type="button"
                 className="btn-trade-complete"

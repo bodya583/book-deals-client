@@ -65,6 +65,7 @@ export const data: DataSchema = {
       'Only the trade recipient can accept this offer': 'Лише отримувач пропозиції може узгодити обмін',
       'You do not have permission to complete this trade': 'У вас немає прав для завершення цього обміну',
       'Only the recipient can reject a trade': 'Лише отримувач може відхилити обмін',
+      'You do not have permission to reject this trade': 'У вас немає прав для відхилення цього обміну',
       'Only the offer creator can cancel this trade': 'Лише автор пропозиції може скасувати обмін',
       'You do not have permission to modify this trade': 'У вас немає прав для зміни цього обміну',
       'It is not your turn to modify this trade. Wait for partner response or withdraw the offer': 'Зараз не ваша черга змінювати цю пропозицію. Дочекайтеся відповіді партнера або відкличте її',

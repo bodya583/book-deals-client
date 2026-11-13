@@ -62,6 +62,7 @@ export const data: DataSchema = {
       ERR_TARGET_NOT_PARTNER: 'Requested book does not belong to the trade partner',
       ERR_TARGET_CLOSED: 'Requested book is not open for trade by its owner',
       ERR_TRADE_INVALID_STATUS: 'Action is unavailable for the current trade status',
+      'You do not have permission to reject this trade': 'You do not have permission to reject this trade',
       'It is not your turn to modify this trade. Wait for partner response or withdraw the offer': 'It is not your turn to modify this trade offer. Wait for the partner to respond or withdraw the offer',
       ERR_COMPLETE_ONLY_AGREED: 'Only an agreed trade can be completed',
     },
