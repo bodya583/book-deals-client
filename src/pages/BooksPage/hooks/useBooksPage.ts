@@ -54,7 +54,7 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
     );
   }, []);
 
-  const { setPage, setPagination } = pagination;
+  const { changePage, setPagination } = pagination;
   const debouncedSearch = filters.search.debounced;
   const selectedGenres = filters.genres.selected;
   const strictGenres = filters.genres.strict;
@@ -68,11 +68,17 @@ export const useBooksPage = ({ scope = 'my' }: UseBooksPageOptions = {}) => {
   const sortBy = filters.display.sortBy;
   const viewMode = filters.display.viewMode;
 
+  const isInitialFilterMount = useRef(true);
+
   useEffect(() => {
-    setPage(1);
+    if (isInitialFilterMount.current) {
+      isInitialFilterMount.current = false;
+      return;
+    }
+    changePage(1);
   }, [
     scope,
-    setPage,
+    changePage,
     debouncedSearch,
     selectedGenres,
     strictGenres,
