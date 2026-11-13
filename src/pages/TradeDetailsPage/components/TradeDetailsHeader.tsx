@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Trade } from '../../../types/trade';
 import {
-  TradeIcon,
   ChevronLeftIcon,
   MapPinIcon,
   MessageSquareIcon,
@@ -72,18 +71,6 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {trade.status === 'PENDING' && (
-            <button
-              type="button"
-              className="btn-trade-counter-top"
-              onClick={() => navigate(`/trades/new?counterTradeId=${trade.id}`)}
-              title={t('trades.card.counterBtn')}
-            >
-              <TradeIcon size={16} />
-              <span>{t('trades.card.counterBtn')}</span>
-            </button>
-          )}
-
           <TradeStatusBadge
             status={trade.status}
             isSender={trade.isSender}

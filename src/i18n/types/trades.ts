@@ -195,6 +195,7 @@ export interface TradesSchema {
     submitting: string;
     errSelectBoth: string;
     errLoadOriginal: string;
+    errNotYourTurn: string;
     errLoadData: string;
     errSelectPartner: string;
     errSelfTrade: string;

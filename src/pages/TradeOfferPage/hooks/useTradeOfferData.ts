@@ -24,6 +24,7 @@ interface UseTradeOfferDataParams {
   preselectedBookId: string;
   counterTradeId: string;
   addToast: (text: string, type?: 'success' | 'error') => void;
+  onNotYourTurn?: (tradeId: string) => void;
   setOfferedBookIds: (ids: string[]) => void;
   setTargetBookIds: (ids: string[]) => void;
   setInitialBooksHash: (hash: string) => void;
@@ -37,6 +38,7 @@ export const useTradeOfferData = ({
   preselectedBookId,
   counterTradeId,
   addToast,
+  onNotYourTurn,
   setOfferedBookIds,
   setTargetBookIds,
   setInitialBooksHash,
@@ -68,20 +70,24 @@ export const useTradeOfferData = ({
         if (counterTradeId) {
           try {
             const orig = await getTradeById(counterTradeId);
-            const partnerId = orig.senderId === currentUserId ? orig.receiverId : orig.senderId;
-            const partnerUser = orig.senderId === currentUserId ? orig.receiver : orig.sender;
+            if (orig.senderId === currentUserId) {
+              addToast(t('offer.errNotYourTurn'), 'error');
+              if (onNotYourTurn) {
+                onNotYourTurn(orig.id);
+              }
+              return;
+            }
+
+            const partnerId = orig.senderId;
+            const partnerUser = orig.sender;
 
             setSelectedPartnerId(partnerId);
             if (partnerUser && !finalPartners.some((p) => p.id === partnerId)) {
               finalPartners.unshift(partnerUser);
             }
 
-            const origOffered = (
-              orig.senderId === currentUserId ? orig.offeredBooks || [] : orig.requestedBooks || []
-            ).map((b) => b.id);
-            const origTarget = (
-              orig.senderId === currentUserId ? orig.requestedBooks || [] : orig.offeredBooks || []
-            ).map((b) => b.id);
+            const origOffered = (orig.requestedBooks || []).map((b) => b.id);
+            const origTarget = (orig.offeredBooks || []).map((b) => b.id);
 
             setOfferedBookIds(origOffered);
             setTargetBookIds(origTarget);
@@ -129,7 +135,7 @@ export const useTradeOfferData = ({
     };
 
     initData();
-  }, [preselectedPartnerId, preselectedBookId, counterTradeId, currentUserId, addToast, t, tApiError, setOfferedBookIds, setTargetBookIds, setInitialBooksHash, setInventoryTab, setMessage]);
+  }, [preselectedPartnerId, preselectedBookId, counterTradeId, currentUserId, addToast, onNotYourTurn, t, tApiError, setOfferedBookIds, setTargetBookIds, setInitialBooksHash, setInventoryTab, setMessage]);
 
   useEffect(() => {
     if (!selectedPartnerId) {

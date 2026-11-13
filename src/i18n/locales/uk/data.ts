@@ -67,6 +67,7 @@ export const data: DataSchema = {
       'Only the recipient can reject a trade': 'Лише отримувач може відхилити обмін',
       'Only the offer creator can cancel this trade': 'Лише автор пропозиції може скасувати обмін',
       'You do not have permission to modify this trade': 'У вас немає прав для зміни цього обміну',
+      'It is not your turn to modify this trade. Wait for partner response or withdraw the offer': 'Зараз не ваша черга змінювати цю пропозицію. Дочекайтеся відповіді партнера або відкличте її',
       'Book selection is unchanged. Modify the books to send a counter offer': 'Склад книг не змінився. Змініть книги для зустрічної пропозиції',
       'Message cannot be empty': 'Повідомлення не може бути порожнім',
       'Book not found': 'Книгу не знайдено',

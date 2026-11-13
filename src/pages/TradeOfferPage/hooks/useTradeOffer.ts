@@ -70,6 +70,7 @@ export const useTradeOffer = () => {
     preselectedBookId,
     counterTradeId,
     addToast,
+    onNotYourTurn: (origId) => navigate(`/trades/${origId}`),
     setOfferedBookIds,
     setTargetBookIds,
     setInitialBooksHash,

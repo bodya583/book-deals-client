@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpenIcon, SearchIcon, TradeIcon, PlusIcon } from '../../../components/icons';
+import { BookOpenIcon, SearchIcon, PlusIcon } from '../../../components/icons';
 import BookCard from '../../../components/BookCard';
 import { useTranslation } from '../../../i18n';
 import type { Book } from '../../../types/book';
@@ -53,17 +53,7 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
           </p>
         </div>
 
-        {isOtherUser && activeUser ? (
-          <button
-            type="button"
-            className="btn-new-trade profile-books-header-action"
-            style={{ background: '#2d6a4f' }}
-            onClick={() => navigate(`/trades/new?partnerId=${activeUser.id}`)}
-          >
-            <TradeIcon size={18} />
-            <span>{t('profile.proposeTradeWithUser')}</span>
-          </button>
-        ) : !isOtherUser ? (
+        {!isOtherUser && (
           <button
             type="button"
             className="btn-primary-action profile-books-header-action"
@@ -72,7 +62,7 @@ export const ProfileBooksSection: React.FC<ProfileBooksSectionProps> = ({
             <PlusIcon size={18} />
             <span>{t('profile.addBookBtn')}</span>
           </button>
-        ) : null}
+        )}
       </div>
 
       {isOtherUser && loading ? (

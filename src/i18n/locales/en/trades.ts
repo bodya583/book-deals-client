@@ -197,6 +197,7 @@ export const trades: TradesSchema = {
     submitting: 'Sending...',
     errSelectBoth: 'Please select at least one book from each side',
     errLoadOriginal: 'Failed to load original trade for modification',
+    errNotYourTurn: 'It is not your turn to modify this trade offer. Wait for the partner to respond',
     errLoadData: 'Failed to load trade data',
     errSelectPartner: 'Please select a trade partner',
     errSelfTrade: 'Cannot create a trade offer with yourself',
