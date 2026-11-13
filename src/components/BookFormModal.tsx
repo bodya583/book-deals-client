@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import type { Book, BookFormData } from '../types/book';
 import { BOOK_LANGUAGES } from '../types/book';
 import { CloseIcon, BookOpenIcon, GlobeIcon, CalendarIcon } from './icons';
@@ -198,7 +199,7 @@ export const BookFormModal: React.FC<BookFormModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
       <FormContent
         key={mode === 'edit' && initialBook ? initialBook.id : 'create'}
@@ -207,7 +208,8 @@ export const BookFormModal: React.FC<BookFormModalProps> = ({
         onClose={onClose}
         onSubmit={onSubmit}
       />
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -64,7 +64,7 @@ export const RejectTradeModal: React.FC<RejectTradeModalProps> = ({
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem' }}>
           <button
             type="button"
-            className="btn-card-profile-details"
+            className="btn-cancel"
             onClick={onClose}
             disabled={loading}
             style={{ padding: '0.6rem 1.1rem' }}
@@ -73,7 +73,7 @@ export const RejectTradeModal: React.FC<RejectTradeModalProps> = ({
           </button>
           <button
             type="submit"
-            className="btn-trade-reject"
+            className="btn-delete-confirm"
             disabled={loading}
             style={{
               display: 'inline-flex',

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import type { Book } from '../types/book';
 import { formatBookYear } from '../types/book';
@@ -71,7 +72,7 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
       <div
         className="modal-container modal-details"
@@ -247,7 +248,8 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

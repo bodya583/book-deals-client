@@ -1,3 +1,5 @@
+@import './components/ui/Modal/Modal.css';
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CloseIcon } from '../../icons';
 import { useTranslation } from '../../../i18n';
+import './Modal.css';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -47,7 +49,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className="modal-overlay"
       onClick={onClose}
@@ -102,7 +104,8 @@ export const Modal: React.FC<ModalProps> = ({
 
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
