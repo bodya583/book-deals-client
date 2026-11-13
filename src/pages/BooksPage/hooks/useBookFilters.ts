@@ -3,55 +3,123 @@ import { useSearchParams } from 'react-router-dom';
 import type { BookSortOption } from '../../../types/book';
 import type { BookFiltersController, NearCenter } from './booksPage.types';
 
+const STORAGE_KEY = 'bookswap_catalog_filters';
+
+interface SavedFilters {
+  q?: string;
+  genres?: string[];
+  strict?: boolean;
+  languages?: string[];
+  cities?: string[];
+  from?: string;
+  to?: string;
+  nearMe?: boolean;
+  radius?: number;
+  nearCenter?: NearCenter | null;
+  sort?: BookSortOption;
+  view?: 'grid' | 'map';
+}
+
+const getSavedFilters = (): SavedFilters | null => {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SavedFilters;
+  } catch {
+    return null;
+  }
+};
+
+const saveFiltersToStorage = (filters: SavedFilters) => {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+  } catch {
+    // ignore
+  }
+};
+
+const clearFiltersFromStorage = () => {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+};
+
 export const useBookFilters = (): BookFiltersController => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const getParam = useCallback((key: string) => searchParams.get(key) || '', [searchParams]);
-  const getArrayParam = useCallback(
-    (key: string): string[] => {
-      const val = searchParams.get(key);
-      if (!val) return [];
-      return val
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-    },
-    [searchParams]
-  );
+  // Determine initial state: URL searchParams take top precedence, sessionStorage is fallback
+  const saved = useMemo(() => getSavedFilters(), []);
+  const hasUrlParams = useMemo(() => {
+    return Boolean(
+      searchParams.get('q') ||
+        searchParams.get('genres') ||
+        searchParams.get('strict') ||
+        searchParams.get('languages') ||
+        searchParams.get('cities') ||
+        searchParams.get('from') ||
+        searchParams.get('to') ||
+        searchParams.get('nearMe') ||
+        searchParams.get('radius') ||
+        searchParams.get('nearLat') ||
+        searchParams.get('sort') ||
+        searchParams.get('view')
+    );
+  }, [searchParams]);
 
-  const initialQuery = searchParams.get('q') || '';
+  const initialQuery = searchParams.get('q') ?? (hasUrlParams ? '' : saved?.q ?? '');
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [debouncedSearch, setDebouncedSearch] = useState(initialQuery);
 
   const [selectedGenres, setSelectedGenres] = useState<string[]>(() => {
     const val = searchParams.get('genres');
-    return val ? val.split(',').map((s) => s.trim()).filter(Boolean) : [];
+    if (val) return val.split(',').map((s) => s.trim()).filter(Boolean);
+    if (!hasUrlParams && saved?.genres) return saved.genres;
+    return [];
   });
 
   const [strictGenres, setStrictGenres] = useState<boolean>(() => {
-    return searchParams.get('strict') === 'true' || searchParams.get('strict') === '1';
+    const val = searchParams.get('strict');
+    if (val) return val === 'true' || val === '1';
+    if (!hasUrlParams && saved?.strict !== undefined) return saved.strict;
+    return false;
   });
 
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(() => {
     const val = searchParams.get('languages');
-    return val ? val.split(',').map((s) => s.trim()).filter(Boolean) : [];
+    if (val) return val.split(',').map((s) => s.trim()).filter(Boolean);
+    if (!hasUrlParams && saved?.languages) return saved.languages;
+    return [];
   });
 
-  const [yearFrom, setYearFrom] = useState(() => searchParams.get('from') || '');
-  const [yearTo, setYearTo] = useState(() => searchParams.get('to') || '');
+  const [yearFrom, setYearFrom] = useState<string>(() => {
+    return searchParams.get('from') ?? (!hasUrlParams && saved?.from ? saved.from : '');
+  });
+
+  const [yearTo, setYearTo] = useState<string>(() => {
+    return searchParams.get('to') ?? (!hasUrlParams && saved?.to ? saved.to : '');
+  });
 
   const [selectedSettlements, setSelectedSettlements] = useState<string[]>(() => {
     const val = searchParams.get('cities');
-    return val ? val.split(',').map((s) => s.trim()).filter(Boolean) : [];
+    if (val) return val.split(',').map((s) => s.trim()).filter(Boolean);
+    if (!hasUrlParams && saved?.cities) return saved.cities;
+    return [];
   });
 
-  const [nearMe, setNearMe] = useState(() => {
-    return searchParams.get('nearMe') === 'true' || searchParams.get('nearMe') === '1';
+  const [nearMe, setNearMe] = useState<boolean>(() => {
+    const val = searchParams.get('nearMe');
+    if (val) return val === 'true' || val === '1';
+    if (!hasUrlParams && saved?.nearMe !== undefined) return saved.nearMe;
+    return false;
   });
 
   const [radius, setRadius] = useState<number>(() => {
     const r = Number(searchParams.get('radius'));
-    return r && !isNaN(r) && r > 0 ? r : 50;
+    if (r && !isNaN(r) && r > 0) return r;
+    if (!hasUrlParams && saved?.radius) return saved.radius;
+    return 50;
   });
 
   const [nearCenter, setNearCenter] = useState<NearCenter | null>(() => {
@@ -61,6 +129,7 @@ export const useBookFilters = (): BookFiltersController => {
     if (lat && lng && !isNaN(Number(lat)) && !isNaN(Number(lng))) {
       return { lat: Number(lat), lng: Number(lng), name: name || '' };
     }
+    if (!hasUrlParams && saved?.nearCenter) return saved.nearCenter;
     return null;
   });
 
@@ -69,46 +138,51 @@ export const useBookFilters = (): BookFiltersController => {
     if (s && ['newest', 'oldest', 'popular', 'distance', 'title_asc', 'title_desc'].includes(s)) {
       return s as BookSortOption;
     }
+    if (!hasUrlParams && saved?.sort) return saved.sort;
     return 'newest';
   });
 
   const [viewMode, setViewMode] = useState<'grid' | 'map'>(() => {
-    return searchParams.get('view') === 'map' ? 'map' : 'grid';
+    const v = searchParams.get('view');
+    if (v === 'map') return 'map';
+    if (!hasUrlParams && saved?.view) return saved.view;
+    return 'grid';
   });
 
+  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Synchronize state when browser Back/Forward is clicked (URL params change externally)
-  const lastAppliedParamsRef = useRef(searchParams.toString());
+  // Synchronize from external URL changes (e.g. browser Back / Forward buttons)
+  const lastSerializedParamsRef = useRef(searchParams.toString());
 
   useEffect(() => {
-    const currentParamsString = searchParams.toString();
-    if (currentParamsString === lastAppliedParamsRef.current) {
+    const currentSerialized = searchParams.toString();
+    if (currentSerialized === lastSerializedParamsRef.current) {
       return;
     }
-    lastAppliedParamsRef.current = currentParamsString;
+    lastSerializedParamsRef.current = currentSerialized;
 
-    const q = getParam('q');
+    const q = searchParams.get('q') || '';
     setSearchQuery(q);
     setDebouncedSearch(q);
 
-    const g = getArrayParam('genres');
-    setSelectedGenres(g);
+    const g = searchParams.get('genres');
+    setSelectedGenres(g ? g.split(',').map((s) => s.trim()).filter(Boolean) : []);
 
     const strict = searchParams.get('strict') === 'true' || searchParams.get('strict') === '1';
     setStrictGenres(strict);
 
-    const l = getArrayParam('languages');
-    setSelectedLanguages(l);
+    const l = searchParams.get('languages');
+    setSelectedLanguages(l ? l.split(',').map((s) => s.trim()).filter(Boolean) : []);
 
-    const c = getArrayParam('cities');
-    setSelectedSettlements(c);
+    const c = searchParams.get('cities');
+    setSelectedSettlements(c ? c.split(',').map((s) => s.trim()).filter(Boolean) : []);
 
-    setYearFrom(getParam('from'));
-    setYearTo(getParam('to'));
+    setYearFrom(searchParams.get('from') || '');
+    setYearTo(searchParams.get('to') || '');
     setNearMe(searchParams.get('nearMe') === 'true' || searchParams.get('nearMe') === '1');
 
     const r = Number(searchParams.get('radius'));
@@ -132,14 +206,41 @@ export const useBookFilters = (): BookFiltersController => {
 
     const v = searchParams.get('view') === 'map' ? 'map' : 'grid';
     setViewMode(v);
-  }, [searchParams, getParam, getArrayParam]);
+  }, [searchParams]);
 
-  // Synchronize state to URL searchParams whenever filters change
+  // Synchronize state changes to URL searchParams & sessionStorage
   const isInitialMount = useRef(true);
 
   useEffect(() => {
+    // If mounted with fallback from sessionStorage but URL had no params, sync URL once
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      if (!hasUrlParams && saved) {
+        // Hydrate URL with the restored storage state
+        const restoredParams = new URLSearchParams(searchParams);
+        if (saved.q?.trim()) restoredParams.set('q', saved.q.trim());
+        if (saved.genres?.length) restoredParams.set('genres', saved.genres.join(','));
+        if (saved.strict) restoredParams.set('strict', 'true');
+        if (saved.languages?.length) restoredParams.set('languages', saved.languages.join(','));
+        if (saved.cities?.length) restoredParams.set('cities', saved.cities.join(','));
+        if (saved.from?.trim()) restoredParams.set('from', saved.from.trim());
+        if (saved.to?.trim()) restoredParams.set('to', saved.to.trim());
+        if (saved.nearMe) restoredParams.set('nearMe', 'true');
+        if (saved.radius && saved.radius !== 50) restoredParams.set('radius', String(saved.radius));
+        if (saved.nearCenter) {
+          restoredParams.set('nearLat', String(saved.nearCenter.lat));
+          restoredParams.set('nearLng', String(saved.nearCenter.lng));
+          if (saved.nearCenter.name) restoredParams.set('nearName', saved.nearCenter.name);
+        }
+        if (saved.sort && saved.sort !== 'newest') restoredParams.set('sort', saved.sort);
+        if (saved.view && saved.view !== 'grid') restoredParams.set('view', saved.view);
+
+        const restoredStr = restoredParams.toString();
+        if (restoredStr && restoredStr !== searchParams.toString()) {
+          lastSerializedParamsRef.current = restoredStr;
+          setSearchParams(restoredParams, { replace: true });
+        }
+      }
       return;
     }
 
@@ -188,9 +289,45 @@ export const useBookFilters = (): BookFiltersController => {
     if (viewMode !== 'grid') newParams.set('view', viewMode);
     else newParams.delete('view');
 
-    const newParamsString = newParams.toString();
-    if (newParamsString !== searchParams.toString()) {
-      lastAppliedParamsRef.current = newParamsString;
+    const nextSerialized = newParams.toString();
+
+    // Persist active filters to sessionStorage
+    const hasAny = Boolean(
+      debouncedSearch.trim() ||
+        selectedGenres.length > 0 ||
+        strictGenres ||
+        selectedLanguages.length > 0 ||
+        selectedSettlements.length > 0 ||
+        yearFrom.trim() ||
+        yearTo.trim() ||
+        nearMe ||
+        radius !== 50 ||
+        nearCenter !== null ||
+        sortBy !== 'newest' ||
+        viewMode !== 'grid'
+    );
+
+    if (hasAny) {
+      saveFiltersToStorage({
+        q: debouncedSearch.trim() || undefined,
+        genres: selectedGenres.length ? selectedGenres : undefined,
+        strict: strictGenres || undefined,
+        languages: selectedLanguages.length ? selectedLanguages : undefined,
+        cities: selectedSettlements.length ? selectedSettlements : undefined,
+        from: yearFrom.trim() || undefined,
+        to: yearTo.trim() || undefined,
+        nearMe: nearMe || undefined,
+        radius: radius !== 50 ? radius : undefined,
+        nearCenter: nearCenter || undefined,
+        sort: sortBy !== 'newest' ? sortBy : undefined,
+        view: viewMode !== 'grid' ? viewMode : undefined,
+      });
+    } else {
+      clearFiltersFromStorage();
+    }
+
+    if (nextSerialized !== searchParams.toString()) {
+      lastSerializedParamsRef.current = nextSerialized;
       setSearchParams(newParams, { replace: true });
     }
   }, [
@@ -206,6 +343,8 @@ export const useBookFilters = (): BookFiltersController => {
     nearCenter,
     sortBy,
     viewMode,
+    hasUrlParams,
+    saved,
     searchParams,
     setSearchParams,
   ]);
@@ -271,6 +410,7 @@ export const useBookFilters = (): BookFiltersController => {
   );
 
   const reset = useCallback(() => {
+    clearFiltersFromStorage();
     setSearchQuery('');
     setDebouncedSearch('');
     setSelectedGenres([]);
@@ -301,7 +441,8 @@ export const useBookFilters = (): BookFiltersController => {
       'sort',
       'page',
     ].forEach((k) => newParams.delete(k));
-    lastAppliedParamsRef.current = newParams.toString();
+
+    lastSerializedParamsRef.current = newParams.toString();
     setSearchParams(newParams, { replace: true });
   }, [searchParams, setSearchParams]);
 

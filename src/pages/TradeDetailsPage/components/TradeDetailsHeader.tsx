@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Trade } from '../../../types/trade';
 import {
   TradeIcon,
@@ -27,10 +27,21 @@ export const TradeDetailsHeader: React.FC<TradeDetailsHeaderProps> = ({
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <Link to="/trades" className="trade-back-btn">
+        <button
+          type="button"
+          className="trade-back-btn"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', padding: 0 }}
+          onClick={() => {
+            if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              navigate('/trades');
+            }
+          }}
+        >
           <ChevronLeftIcon size={16} />
           <span>{t('tradeDetails.backToTrades')}</span>
-        </Link>
+        </button>
       </div>
 
       <div className="trade-details-header">

@@ -6,36 +6,37 @@ import type { BookPaginationController } from './booksPage.types';
 export const useBookPagination = (initialLimit = 12): BookPaginationController => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const getInitialPage = () => {
+  const getUrlPage = useCallback(() => {
     const p = Number(searchParams.get('page'));
     return p && !isNaN(p) && p > 0 ? p : 1;
-  };
+  }, [searchParams]);
 
-  const [page, setPage] = useState<number>(getInitialPage);
+  const [page, setPage] = useState<number>(getUrlPage);
   const [limit, setLimit] = useState(initialLimit);
   const [meta, setPagination] = useState<BooksPagination>({
     total: 0,
-    page: getInitialPage(),
+    page: getUrlPage(),
     limit: initialLimit,
     totalPages: 1,
   });
 
-  const lastPageParamRef = useRef(searchParams.get('page') || '');
+  const lastAppliedPageRef = useRef(page);
 
-  // Sync external URL searchParam changes (e.g. browser Back/Forward navigation)
+  // Sync state if URL changes externally (Back/Forward)
   useEffect(() => {
-    const currentPageParam = searchParams.get('page') || '';
-    if (currentPageParam === lastPageParamRef.current) return;
-    lastPageParamRef.current = currentPageParam;
-
-    const urlPage = Number(currentPageParam);
-    const resolvedPage = urlPage && !isNaN(urlPage) && urlPage > 0 ? urlPage : 1;
-    setPage(resolvedPage);
-  }, [searchParams]);
+    const urlPage = getUrlPage();
+    if (urlPage !== page) {
+      lastAppliedPageRef.current = urlPage;
+      setPage(urlPage);
+    }
+  }, [getUrlPage, page]);
 
   const changePage = useCallback(
     (newPage: number) => {
+      if (newPage === page) return;
+      lastAppliedPageRef.current = newPage;
       setPage(newPage);
+
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -44,13 +45,12 @@ export const useBookPagination = (initialLimit = 12): BookPaginationController =
           } else {
             next.delete('page');
           }
-          lastPageParamRef.current = next.get('page') || '';
           return next;
         },
         { replace: true }
       );
     },
-    [setSearchParams]
+    [page, setSearchParams]
   );
 
   const changeLimit = useCallback(
@@ -61,7 +61,6 @@ export const useBookPagination = (initialLimit = 12): BookPaginationController =
         (prev) => {
           const next = new URLSearchParams(prev);
           next.delete('page');
-          lastPageParamRef.current = '';
           return next;
         },
         { replace: true }

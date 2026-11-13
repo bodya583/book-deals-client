@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { ChevronLeftIcon } from '../../components/icons';
 import { Toast } from '../../components/Toast';
 import { useTradeOffer, computeBooksHash } from './hooks/useTradeOffer';
@@ -22,10 +21,21 @@ export const TradeOfferPage: React.FC = () => {
 
       <div className="trades-container">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Link to="/trades" className="trade-back-btn">
+          <button
+            type="button"
+            className="trade-back-btn"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', padding: 0 }}
+            onClick={() => {
+              if (window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.href = '/trades';
+              }
+            }}
+          >
             <ChevronLeftIcon size={16} />
             <span>{t('offer.backToTrades')}</span>
-          </Link>
+          </button>
         </div>
 
         <TradeOfferPartnerHeader
