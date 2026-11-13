@@ -22,7 +22,6 @@ export const useBookPagination = (initialLimit = 12): BookPaginationController =
 
   const lastAppliedPageRef = useRef(page);
 
-  // Sync state if URL changes externally (Back/Forward)
   useEffect(() => {
     const urlPage = getUrlPage();
     if (urlPage !== page) {

@@ -33,23 +33,18 @@ const getSavedFilters = (): SavedFilters | null => {
 const saveFiltersToStorage = (filters: SavedFilters) => {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
-  } catch {
-    // ignore
-  }
+  } catch {}
 };
 
 const clearFiltersFromStorage = () => {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // ignore
-  }
+  } catch {}
 };
 
 export const useBookFilters = (): BookFiltersController => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Determine initial state: URL searchParams take top precedence, sessionStorage is fallback
   const saved = useMemo(() => getSavedFilters(), []);
   const hasUrlParams = useMemo(() => {
     return Boolean(
@@ -149,13 +144,11 @@ export const useBookFilters = (): BookFiltersController => {
     return 'grid';
   });
 
-  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Synchronize from external URL changes (e.g. browser Back / Forward buttons)
   const lastSerializedParamsRef = useRef(searchParams.toString());
 
   useEffect(() => {
@@ -208,15 +201,12 @@ export const useBookFilters = (): BookFiltersController => {
     setViewMode(v);
   }, [searchParams]);
 
-  // Synchronize state changes to URL searchParams & sessionStorage
   const isInitialMount = useRef(true);
 
   useEffect(() => {
-    // If mounted with fallback from sessionStorage but URL had no params, sync URL once
     if (isInitialMount.current) {
       isInitialMount.current = false;
       if (!hasUrlParams && saved) {
-        // Hydrate URL with the restored storage state
         const restoredParams = new URLSearchParams(searchParams);
         if (saved.q?.trim()) restoredParams.set('q', saved.q.trim());
         if (saved.genres?.length) restoredParams.set('genres', saved.genres.join(','));
@@ -291,7 +281,6 @@ export const useBookFilters = (): BookFiltersController => {
 
     const nextSerialized = newParams.toString();
 
-    // Persist active filters to sessionStorage
     const hasAny = Boolean(
       debouncedSearch.trim() ||
         selectedGenres.length > 0 ||
