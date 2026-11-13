@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../../api/axiosInstance';
 import { getTradeById, getTradePartners } from '../../../api/tradesApi';
 import { getUserProfileById } from '../../../api/usersApi';
@@ -24,7 +25,6 @@ interface UseTradeOfferDataParams {
   preselectedBookId: string;
   counterTradeId: string;
   addToast: (text: string, type?: 'success' | 'error') => void;
-  onNotYourTurn?: (tradeId: string) => void;
   setOfferedBookIds: (ids: string[]) => void;
   setTargetBookIds: (ids: string[]) => void;
   setInitialBooksHash: (hash: string) => void;
@@ -38,19 +38,43 @@ export const useTradeOfferData = ({
   preselectedBookId,
   counterTradeId,
   addToast,
-  onNotYourTurn,
   setOfferedBookIds,
   setTargetBookIds,
   setInitialBooksHash,
   setInventoryTab,
   setMessage,
 }: UseTradeOfferDataParams) => {
+  const navigate = useNavigate();
   const { t, tApiError } = useTranslation();
   const [partners, setPartners] = useState<TradePartner[]>([]);
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>(preselectedPartnerId);
   const [myBooks, setMyBooks] = useState<Book[]>([]);
   const [partnerBooks, setPartnerBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const callbacksRef = useRef({
+    addToast,
+    setOfferedBookIds,
+    setTargetBookIds,
+    setInitialBooksHash,
+    setInventoryTab,
+    setMessage,
+    t,
+    tApiError,
+  });
+
+  useEffect(() => {
+    callbacksRef.current = {
+      addToast,
+      setOfferedBookIds,
+      setTargetBookIds,
+      setInitialBooksHash,
+      setInventoryTab,
+      setMessage,
+      t,
+      tApiError,
+    };
+  });
 
   useEffect(() => {
     const initData = async () => {
@@ -71,10 +95,8 @@ export const useTradeOfferData = ({
           try {
             const orig = await getTradeById(counterTradeId);
             if (orig.senderId === currentUserId) {
-              addToast(t('offer.errNotYourTurn'), 'error');
-              if (onNotYourTurn) {
-                onNotYourTurn(orig.id);
-              }
+              callbacksRef.current.addToast(callbacksRef.current.t('offer.errNotYourTurn'), 'error');
+              navigate(`/trades/${orig.id}`);
               return;
             }
 
@@ -89,12 +111,12 @@ export const useTradeOfferData = ({
             const origOffered = (orig.requestedBooks || []).map((b) => b.id);
             const origTarget = (orig.offeredBooks || []).map((b) => b.id);
 
-            setOfferedBookIds(origOffered);
-            setTargetBookIds(origTarget);
-            setInitialBooksHash(computeBooksHash(origOffered, origTarget));
-            setMessage('');
+            callbacksRef.current.setOfferedBookIds(origOffered);
+            callbacksRef.current.setTargetBookIds(origTarget);
+            callbacksRef.current.setInitialBooksHash(computeBooksHash(origOffered, origTarget));
+            callbacksRef.current.setMessage('');
           } catch {
-            addToast(t('offer.errLoadOriginal'), 'error');
+            callbacksRef.current.addToast(callbacksRef.current.t('offer.errLoadOriginal'), 'error');
           }
         } else {
           if (preselectedPartnerId) {
@@ -117,8 +139,8 @@ export const useTradeOfferData = ({
           }
 
           if (preselectedBookId) {
-            setTargetBookIds([preselectedBookId]);
-            setInventoryTab('my');
+            callbacksRef.current.setTargetBookIds([preselectedBookId]);
+            callbacksRef.current.setInventoryTab('my');
           }
         }
 
@@ -127,15 +149,15 @@ export const useTradeOfferData = ({
         const errorMsg =
           err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message
             ? (err as any).response.data.message
-            : t('offer.errLoadData');
-        addToast(tApiError(errorMsg), 'error');
+            : callbacksRef.current.t('offer.errLoadData');
+        callbacksRef.current.addToast(callbacksRef.current.tApiError(errorMsg), 'error');
       } finally {
         setLoading(false);
       }
     };
 
     initData();
-  }, [preselectedPartnerId, preselectedBookId, counterTradeId, currentUserId, addToast, onNotYourTurn, t, tApiError, setOfferedBookIds, setTargetBookIds, setInitialBooksHash, setInventoryTab, setMessage]);
+  }, [preselectedPartnerId, preselectedBookId, counterTradeId, currentUserId, navigate]);
 
   useEffect(() => {
     if (!selectedPartnerId) {
